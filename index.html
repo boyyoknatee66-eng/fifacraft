@@ -1,0 +1,1894 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>โกเลมผจญภัย</title>
+<style>
+  html, body {
+    margin: 0; padding: 0; overflow: hidden; width: 100%; height: 100%;
+    background: #87CEEB; touch-action: none; -webkit-user-select: none; user-select: none;
+    font-family: "TH Sarabun New", "Sarabun", sans-serif;
+  }
+  #gameCanvas { display: block; background: #87CEEB; touch-action: none; }
+
+  #hud { position: fixed; top: 8px; left: 8px; right: 8px; pointer-events: none; z-index: 10; }
+  .bar-row { display: flex; align-items: center; margin-bottom: 4px; }
+  .bar-bg { width: 180px; height: 18px; background: #333; border: 2px solid white; border-radius: 4px; overflow: hidden; }
+  .bar-fill { height: 100%; transition: width 0.15s linear; }
+  .hp-fill { background: #e53935; }
+  .laser-fill { background: #ff2fd6; }
+  .bar-label { color: white; font-size: 12px; margin-left: 8px; text-shadow: 1px 1px 2px black; white-space: nowrap; }
+  #scoreLine, #buffLine, #swordLine, #oreLine { color: black; font-size: 13px; font-weight: bold;
+    text-shadow: 0 0 3px white, 0 0 3px white; margin-top: 2px; }
+  #buffLine { color: #1565c0; }
+  #swordLine { color: #6a1b9a; }
+  #oreLine { color: #37474f; }
+
+  #topRight { position: fixed; top: 8px; right: 8px; text-align: right; pointer-events: none; z-index: 10; }
+  #blockSel { color: black; font-size: 13px; font-weight: bold; text-shadow: 0 0 3px white, 0 0 3px white; }
+
+  #gameOverScreen {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.7); color: white;
+    display: none; flex-direction: column; align-items: center; justify-content: center;
+    font-size: 28px; z-index: 50; text-align: center;
+  }
+  #gameOverScreen button { margin-top: 20px; font-size: 20px; padding: 12px 28px; border-radius: 10px;
+    border: none; background: #ff2fd6; color: white; }
+
+  /* touch controls */
+  .ctrlBtn {
+    position: fixed; width: 64px; height: 64px; border-radius: 50%;
+    background: rgba(255,255,255,0.25); border: 2px solid rgba(255,255,255,0.6);
+    color: white; font-size: 22px; display: flex; align-items: center; justify-content: center;
+    z-index: 20; -webkit-user-select: none; user-select: none; touch-action: none;
+  }
+  .ctrlBtn:active { background: rgba(255,255,255,0.5); }
+  #btnLeft   { left: 16px; bottom: 32px; }
+  #btnRight  { left: 92px; bottom: 32px; }
+  #btnJump   { right: 200px; bottom: 32px; }
+  #btnLaser  { right: 108px; bottom: 100px; background: rgba(255,47,214,0.35); }
+  #btnDig    { right: 16px; bottom: 32px; }
+  #btnMode   { right: 16px; bottom: 108px; width: 54px; height: 54px; font-size: 13px; }  #errorBanner {
+    position: fixed; inset: 0; background: rgba(20,20,20,0.95); color: #ff8a80;
+    display: none; z-index: 100; padding: 20px; font-size: 14px; white-space: pre-wrap;
+    overflow-y: auto; font-family: monospace;
+  }
+</style>
+</head>
+<body>
+<canvas id="gameCanvas"></canvas>
+<div id="errorBanner"></div>
+
+<div id="hud">
+  <div class="bar-row">
+    <div class="bar-bg"><div id="hpFill" class="bar-fill hp-fill" style="width:100%"></div></div>
+    <div id="hpLabel" class="bar-label">HP 100/100</div>
+  </div>
+  <div class="bar-row">
+    <div class="bar-bg"><div id="laserFill" class="bar-fill laser-fill" style="width:0%"></div></div>
+    <div id="laserLabel" class="bar-label">เก็บลูกบอลเพื่อปลดล็อกเลเซอร์</div>
+  </div>
+  <div id="scoreLine">ไอเทมที่เก็บได้: 0</div>
+  <div id="buffLine"></div>
+  <div id="swordLine"></div>
+  <div id="oreLine">ถ่านหิน 0  เหล็ก 0  ทอง 0  เพชร 0</div>
+</div>
+
+<div id="topRight">
+  <div id="blockSel">บล็อกที่เลือก: หญ้า</div>
+</div>
+
+<div id="gameOverScreen">
+  <div>คุณตายแล้ว</div>
+  <button id="restartBtn">เริ่มใหม่</button>
+</div>
+
+<!-- touch controls -->
+<div id="btnLeft" class="ctrlBtn">◀</div>
+<div id="btnRight" class="ctrlBtn">▶</div>
+<div id="btnJump" class="ctrlBtn">⤴</div>
+<div id="btnLaser" class="ctrlBtn">⚡F</div>
+<div id="btnDig" class="ctrlBtn">⛏</div>
+<div id="btnMode" class="ctrlBtn">1 หญ้า</div>
+
+<script>
+"use strict";
+
+// Show a visible error banner instead of silently failing (helps diagnose issues
+// in restricted browser contexts, e.g. Quick Look previews, older WebKit builds).
+window.addEventListener("error", (e) => {
+  const el = document.getElementById("errorBanner");
+  if (el) {
+    el.style.display = "block";
+    el.textContent = "เกิดข้อผิดพลาด (กรุณาแคปหน้าจอนี้ส่งกลับ):\n\n" +
+      (e.message || "unknown error") + "\nfile: " + (e.filename || "-") + " line: " + (e.lineno || "-");
+  }
+});
+/* ===================== โกเลมผจญภัย - เวอร์ชันเว็บ (HTML5 Canvas) =====================
+   พอร์ตจากเกม Python/tkinter ต้นฉบับ ให้เล่นได้บน iPad/เบราว์เซอร์ผ่าน Safari
+   ควบคุม: ปุ่มสัมผัสมุมล่าง (มือถือ/iPad) หรือคีย์บอร์ด A/D/W/Space/F/1-3/R (คอมพิวเตอร์)
+   แตะบนฉาก = ขุด/วางบล็อกตามโหมดที่เลือก (ปุ่ม ⛏/🧱)
+=========================================================================================*/
+
+// ---------- constants ----------
+const TILE = 32;
+const WORLD_W = 120;
+const WORLD_H = 40;
+const GRAVITY = 0.55;
+const MAX_FALL = 14;
+const MOVE_SPEED = 4.2;
+const JUMP_SPEED = -11.5;
+const REACH = TILE * 4.5;
+
+const LASER_SPEED = 16;
+const LASER_LIFETIME = 35;
+const PLAYER_LASER_DAMAGE = 45;
+const PATMAN_HP = 120;
+const PATMAN_LASER_DAMAGE = 12;
+const PATMAN_LASER_COOLDOWN = 100;
+const PATMAN_DETECT_RADIUS = TILE * 9;
+
+const MUSHROOM_BOUNCE_SPEED = -18.0;
+const MUSHROOM_COOLDOWN = 18;
+const IRON_GOLEM_PUNCH_RADIUS = TILE * 3;
+const IRON_GOLEM_PUNCH_COOLDOWN = 40;
+const SEA_WIDTH = 14;
+const SEA_LEVEL_TILE = Math.floor(WORLD_H / 2);
+const SEA_FLOOR_TILE = WORLD_H - 3;
+
+const AIR = 0, GRASS = 1, DIRT = 2, STONE = 3, COAL = 4, IRON = 5, GOLD = 6, DIAMOND = 7, WOOD = 8, WATER = 9, SAND = 10;
+const TILE_COLORS = {
+  [GRASS]: "#4caf50", [DIRT]: "#8b5a2b", [STONE]: "#8a8a8a",
+  [COAL]: "#3b3b3b", [IRON]: "#c9a27a", [GOLD]: "#ffd54f", [DIAMOND]: "#4dd0e1",
+  [WOOD]: "#a1662f", [WATER]: "#2196f3", [SAND]: "#e5c072",
+};
+const TILE_NAMES = {
+  [GRASS]: "หญ้า", [DIRT]: "ดิน", [STONE]: "หิน",
+  [COAL]: "ถ่านหิน", [IRON]: "เหล็ก", [GOLD]: "ทอง", [DIAMOND]: "เพชร",
+  [WOOD]: "ไม้", [WATER]: "น้ำ", [SAND]: "ทราย",
+};
+const ORE_TILES = new Set([COAL, IRON, GOLD, DIAMOND]);
+const SOLID_TILES = new Set([GRASS, DIRT, STONE, COAL, IRON, GOLD, DIAMOND, WOOD, SAND]);
+
+function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+function rand(a, b) { return a + Math.random() * (b - a); }
+function randInt(a, b) { return Math.floor(rand(a, b + 1)); }
+function choice(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+function dist(x0, y0, x1, y1) { return Math.hypot(x1 - x0, y1 - y0); }
+
+// ---------- world generation ----------
+function tileAt(world, tx, ty) {
+  if (tx < 0 || tx >= WORLD_W) return STONE;
+  if (ty < 0) return AIR;
+  if (ty >= WORLD_H) return STONE;
+  return world[ty][tx];
+}
+
+function boxCollides(world, x, y, w, h) {
+  if (x < 0 || x + w > WORLD_W * TILE || y + h > WORLD_H * TILE) return true;
+  const left = Math.floor(x / TILE);
+  const right = Math.floor((x + w - 1) / TILE);
+  const top = Math.floor(y / TILE);
+  const bottom = Math.floor((y + h - 1) / TILE);
+  for (let ty = top; ty <= bottom; ty++) {
+    for (let tx = left; tx <= right; tx++) {
+      if (SOLID_TILES.has(tileAt(world, tx, ty))) return true;
+    }
+  }
+  return false;
+}
+
+function buildVillage(world, heights, centerTx) {
+  const half = 3;
+  const baseH = heights[centerTx];
+  for (let x = centerTx - half; x <= centerTx + half; x++) {
+    if (x >= 0 && x < WORLD_W) {
+      heights[x] = baseH;
+      for (let y = 0; y < baseH; y++) world[y][x] = AIR;
+      world[baseH][x] = GRASS;
+      for (let y = baseH + 1; y < Math.min(baseH + 4, WORLD_H); y++) world[y][x] = DIRT;
+      for (let y = baseH + 4; y < WORLD_H; y++) world[y][x] = STONE;
+    }
+  }
+  const houseW = 5, houseH = 4;
+  const hx0 = centerTx - Math.floor(houseW / 2);
+  for (let yy = baseH - houseH; yy < baseH; yy++) {
+    for (let xx = hx0; xx < hx0 + houseW; xx++) {
+      if (yy === baseH - houseH || yy === baseH - 1 || xx === hx0 || xx === hx0 + houseW - 1) {
+        world[yy][xx] = WOOD;
+      } else {
+        world[yy][xx] = AIR;
+      }
+    }
+  }
+  world[baseH - 1][centerTx] = AIR;
+  return baseH;
+}
+
+function generateWorld() {
+  const world = [];
+  for (let y = 0; y < WORLD_H; y++) world.push(new Array(WORLD_W).fill(AIR));
+  const landW = WORLD_W - SEA_WIDTH;
+
+  let height = Math.floor(WORLD_H / 2);
+  const heights = [];
+  for (let x = 0; x < WORLD_W; x++) {
+    height += choice([-1, 0, 0, 0, 1]);
+    height = clamp(height, 8, WORLD_H - 6);
+    heights.push(height);
+  }
+
+  for (let x = 0; x < WORLD_W; x++) {
+    const h = heights[x];
+    world[h][x] = GRASS;
+    for (let y = h + 1; y < Math.min(h + 4, WORLD_H); y++) world[y][x] = DIRT;
+    for (let y = h + 4; y < WORLD_H; y++) world[y][x] = STONE;
+  }
+
+  for (let x = 0; x < WORLD_W; x++) {
+    const h = heights[x];
+    for (let y = h + 4; y < WORLD_H; y++) {
+      const depth = y - (h + 4);
+      const r = Math.random();
+      if (depth >= 16 && r < 0.02) world[y][x] = DIAMOND;
+      else if (depth >= 10 && r < 0.035) world[y][x] = GOLD;
+      else if (depth >= 4 && r < 0.06) world[y][x] = IRON;
+      else if (depth >= 0 && r < 0.09) world[y][x] = COAL;
+    }
+  }
+
+  for (let x = landW; x < WORLD_W; x++) {
+    heights[x] = SEA_LEVEL_TILE;
+    for (let y = 0; y < SEA_LEVEL_TILE; y++) world[y][x] = AIR;
+    for (let y = SEA_LEVEL_TILE; y < SEA_FLOOR_TILE; y++) world[y][x] = WATER;
+    for (let y = SEA_FLOOR_TILE; y < WORLD_H; y++) world[y][x] = STONE;
+  }
+
+  const desertX0 = Math.floor(landW * 0.42);
+  const desertX1 = Math.floor(landW * 0.58);
+  for (let x = desertX0; x < desertX1 && x < landW; x++) {
+    const h = heights[x];
+    world[h][x] = SAND;
+    for (let y = h + 1; y < Math.min(h + 4, WORLD_H); y++) world[y][x] = SAND;
+  }
+
+  const villages = [];
+  for (const centerTx of [Math.floor(landW / 4), Math.floor(landW * 3 / 4)]) {
+    const baseH = buildVillage(world, heights, centerTx);
+    villages.push([centerTx, baseH]);
+  }
+
+  return { world, heights, villages, landW, desertX0, desertX1 };
+}
+
+// ---------- generic entity physics ----------
+function makeEntity(x, y, w, h) {
+  return { x, y, w, h, vx: 0, vy: 0, onGround: false, alive: true };
+}
+
+function moveEntity(world, e, dx, dy) {
+  const newX = e.x + dx;
+  if (!boxCollides(world, newX, e.y, e.w, e.h)) e.x = newX;
+  else e.vx = 0;
+
+  const newY = e.y + dy;
+  if (!boxCollides(world, e.x, newY, e.w, e.h)) {
+    e.y = newY;
+    e.onGround = false;
+  } else {
+    if (dy > 0) e.onGround = true;
+    e.vy = 0;
+  }
+}
+
+function centerOf(e) { return [e.x + e.w / 2, e.y + e.h / 2]; }
+
+// ---------- entity factories ----------
+function makeGolem(x, y) {
+  const e = makeEntity(x, y, TILE - 6, Math.floor(TILE * 1.6));
+  e.hp = 100; e.maxHp = 100;
+  e.speedTimer = 0; e.jumpTimer = 0;
+  e.facing = 1; e.score = 0; e.invuln = 0;
+  e.laserUnlocked = false; e.laserCd = 0;
+  e.hasSword = false;
+  e.ores = { [COAL]: 0, [IRON]: 0, [GOLD]: 0, [DIAMOND]: 0 };
+  return e;
+}
+
+function makeCreeper(x, y, big) {
+  const size = big ? Math.floor(TILE * 1.5) : Math.floor(TILE * 1.05);
+  const e = makeEntity(x, y, size - 4, size);
+  e.big = big;
+  e.dir = choice([-1, 1]);
+  e.changeTimer = randInt(30, 90);
+  e.fuse = null;
+  e.respawnTimer = 0;
+  e.hp = big ? 90 : 55; e.maxHp = e.hp;
+  e.flash = 0;
+  return e;
+}
+
+function makePlantMonster(x, y) {
+  const e = makeEntity(x, y, TILE - 8, Math.floor(TILE * 1.3));
+  e.biteCd = 0; e.chomp = 0;
+  return e;
+}
+
+function makeTiger(x, y) {
+  const e = makeEntity(x, y, Math.floor(TILE * 1.3), Math.floor(TILE * 0.75));
+  e.hp = 90; e.maxHp = 90;
+  e.dir = choice([-1, 1]);
+  e.changeTimer = randInt(40, 100);
+  e.attackCd = 0; e.flash = 0; e.respawnTimer = 0;
+  return e;
+}
+
+function makeMushroomBounce(x, y) {
+  const e = makeEntity(x, y, TILE - 4, Math.floor(TILE * 0.9));
+  e.bounceCd = 0; e.squish = 0;
+  return e;
+}
+
+function makeMushroomWalker(x, y) {
+  const e = makeEntity(x, y, Math.floor(TILE * 0.8), Math.floor(TILE * 0.75));
+  e.dir = choice([-1, 1]);
+  e.changeTimer = randInt(50, 120);
+  return e;
+}
+
+const PIG_SIZES = {
+  pig: [TILE - 8, Math.floor(TILE * 0.9)],
+  chicken: [TILE - 14, Math.floor(TILE * 0.8)],
+  cow: [Math.floor(TILE * 1.3), Math.floor(TILE * 1.1)],
+  worm: [Math.floor(TILE * 1.4), TILE - 14],
+};
+function makePig(x, y, kind, redEyes) {
+  const [w, h] = PIG_SIZES[kind] || PIG_SIZES.pig;
+  const e = makeEntity(x, y, w, h);
+  e.kind = kind; e.redEyes = !!redEyes;
+  e.dir = choice([-1, 1]);
+  e.changeTimer = randInt(40, 100);
+  return e;
+}
+
+function makeAlly(x, y, redEyes) {
+  const e = makeEntity(x, y, TILE - 6, Math.floor(TILE * 1.6));
+  e.facing = 1; e.redEyes = !!redEyes;
+  e.laserCd = randInt(10, 30);
+  return e;
+}
+
+function makePatman(x, y) {
+  const e = makeEntity(x, y, TILE - 6, Math.floor(TILE * 1.5));
+  e.hp = PATMAN_HP; e.maxHp = PATMAN_HP;
+  e.dir = choice([-1, 1]); e.facing = e.dir;
+  e.changeTimer = randInt(40, 100);
+  e.laserCd = randInt(30, PATMAN_LASER_COOLDOWN);
+  e.flash = 0;
+  return e;
+}
+
+function makeIronGolem(x, y, patrolMinX, patrolMaxX) {
+  const e = makeEntity(x, y, Math.floor(TILE * 1.3), Math.floor(TILE * 2.0));
+  e.patrolMinX = patrolMinX; e.patrolMaxX = patrolMaxX;
+  e.dir = 1; e.facing = 1;
+  e.punchCd = 0; e.punchFlash = 0;
+  return e;
+}
+
+function makeVillager(x, y, patrolMinX, patrolMaxX) {
+  const e = makeEntity(x, y, Math.floor(TILE * 0.6), Math.floor(TILE * 1.4));
+  e.patrolMinX = patrolMinX; e.patrolMaxX = patrolMaxX;
+  e.dir = choice([-1, 1]); e.facing = e.dir;
+  e.changeTimer = randInt(60, 150);
+  return e;
+}
+
+function makeTree(x, y, scale) {
+  const w = Math.floor(TILE * 1.6 * scale);
+  const h = Math.floor(TILE * 3.2 * scale);
+  return makeEntity(x - w / 2, y - h, w, h);
+}
+
+function makeCactus(x, y, scale) {
+  const w = Math.floor(TILE * 1.1 * scale);
+  const h = Math.floor(TILE * 2.4 * scale);
+  const e = makeEntity(x - w / 2, y - h, w, h);
+  e.armSide = choice([-1, 1, 0]);
+  return e;
+}
+
+function makeBeehive(x, y) {
+  const e = makeEntity(x, y, Math.floor(TILE * 0.85), Math.floor(TILE * 0.65));
+  e.cycle = 1200;       // 20 วิ ที่ 60fps
+  e.outDuration = 540;  // ผึ้งอยู่นอกรัง 9 วิ ก่อนบินกลับ
+  e.timer = randInt(0, e.cycle - 1);
+  e.beeOut = false;
+  e.beeX = 0; e.beeY = 0;
+  return e;
+}
+
+function makeLizard(x, y) {
+  const e = makeEntity(x, y, Math.floor(TILE * 0.75), Math.floor(TILE * 0.35));
+  e.dir = choice([-1, 1]);
+  e.changeTimer = randInt(20, 60);
+  e.pauseTimer = 0;
+  return e;
+}
+
+function makeFish(x, y) {
+  const e = makeEntity(x, y, Math.floor(TILE * 0.6), Math.floor(TILE * 0.32));
+  e.dir = choice([-1, 1]); e.vdir = choice([-1, 1]);
+  e.changeTimer = randInt(40, 100);
+  return e;
+}
+
+function makeTurtle(x, y) {
+  const e = makeEntity(x, y, Math.floor(TILE * 0.85), Math.floor(TILE * 0.55));
+  e.dir = choice([-1, 1]); e.vdir = choice([-1, 1]);
+  e.changeTimer = randInt(60, 140);
+  e.paddle = rand(0, 6.28);
+  return e;
+}
+
+function makeLandTurtle(x, y) {
+  const e = makeEntity(x, y, Math.floor(TILE * 0.85), Math.floor(TILE * 0.55));
+  e.dir = choice([-1, 1]);
+  e.changeTimer = randInt(30, 80);
+  e.pauseTimer = 0;
+  e.paddle = rand(0, 6.28);
+  return e;
+}
+
+function makeJellyfish(x, y) {
+  const e = makeEntity(x, y, Math.floor(TILE * 0.55), Math.floor(TILE * 0.7));
+  e.vdir = choice([-1, 1]);
+  e.changeTimer = randInt(60, 140);
+  e.phase = rand(0, 6.28);
+  return e;
+}
+
+function makeSeaweed(x, y, height) {
+  const w = TILE * 0.3;
+  const e = makeEntity(x - w / 2, y - height, w, height);
+  e.phase = rand(0, 6.28);
+  return e;
+}
+
+function makeFallingItem(x, y, kind) {
+  const e = makeEntity(x, y, TILE - 10, TILE - 10);
+  e.kind = kind;
+  return e;
+}
+
+function makeLaser(x, y, vx, vy, owner, color) {
+  return { x, y, vx, vy, owner, color, life: LASER_LIFETIME };
+}
+
+// ---------- global game state ----------
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
+let VIEW_W = window.innerWidth, VIEW_H = window.innerHeight;
+
+function resizeCanvas() {
+  VIEW_W = window.innerWidth;
+  VIEW_H = window.innerHeight;
+  canvas.width = VIEW_W;
+  canvas.height = VIEW_H;
+}
+window.addEventListener("resize", resizeCanvas);
+
+const keys = new Set();
+const G = {}; // holds all mutable game state, reset by newGame()
+const BLOCK_KEYS = { "1": GRASS, "2": DIRT, "3": STONE };
+const BLOCK_ORDER = [GRASS, DIRT, STONE];
+
+function newGame() {
+  const { world, heights, villages, landW, desertX0, desertX1 } = generateWorld();
+  G.world = world;
+  G.heights = heights;
+  G.villages = villages;
+  G.landW = landW;
+  G.desertX0 = desertX0;
+  G.desertX1 = desertX1;
+  G.gameOver = false;
+  G.animTimer = 0;
+  G.selectedBlock = GRASS;
+  G.digMode = true; // true = dig on tap, false = place on tap
+
+  const spawnTx = Math.floor(WORLD_W / 2);
+  const spawnY = (heights[spawnTx] - 3) * TILE;
+  G.player = makeGolem(spawnTx * TILE, spawnY);
+
+  G.creepers = [];
+  for (let i = 0; i < 1; i++) {
+    const tx = randInt(5, landW - 5);
+    const ty = heights[tx] - 2;
+    G.creepers.push(makeCreeper(tx * TILE, ty * TILE, Math.random() < 0.5));
+  }
+
+  G.plants = [];
+  for (let i = 0; i < 1; i++) {
+    const tx = randInt(5, landW - 5);
+    const ty = heights[tx] - 1;
+    G.plants.push(makePlantMonster(tx * TILE, ty * TILE));
+  }
+
+  G.mushroomsBounce = [];
+  for (let i = 0; i < 1; i++) {
+    const tx = randInt(5, landW - 5);
+    const ty = heights[tx] - 1;
+    G.mushroomsBounce.push(makeMushroomBounce(tx * TILE + 2, ty * TILE + (TILE - Math.floor(TILE * 0.9))));
+  }
+
+  G.patmen = [];
+  for (let i = 0; i < 1; i++) {
+    const tx = randInt(5, landW - 5);
+    const ty = Math.min(WORLD_H - 3, heights[tx] + randInt(4, 8));
+    G.patmen.push(makePatman(tx * TILE, ty * TILE));
+  }
+
+  G.pigs = [];
+  for (const [kind, count] of [["pig", 1], ["chicken", 1], ["cow", 1], ["worm", 1]]) {
+    for (let i = 0; i < count; i++) {
+      const tx = randInt(5, landW - 5);
+      const ty = heights[tx] - 1;
+      const redEyes = kind === "pig" ? Math.random() < 0.35 : false;
+      G.pigs.push(makePig(tx * TILE, ty * TILE, kind, redEyes));
+    }
+  }
+  G.allies = [];
+
+  G.trees = [];
+  for (let i = 0; i < 12; i++) {
+    let tx = randInt(3, landW - 3);
+    while (tx >= G.desertX0 && tx < G.desertX1) tx = randInt(3, landW - 3);
+    const ty = heights[tx];
+    G.trees.push(makeTree(tx * TILE + TILE / 2, ty * TILE, rand(0.8, 1.3)));
+  }
+
+  G.cacti = [];
+  for (let i = 0; i < 6; i++) {
+    const tx = randInt(G.desertX0, G.desertX1 - 1);
+    const ty = heights[tx];
+    G.cacti.push(makeCactus(tx * TILE + TILE / 2, ty * TILE, rand(0.8, 1.2)));
+  }
+
+  G.beehives = [];
+  for (let i = 0; i < 3; i++) {
+    let tx = randInt(3, landW - 3);
+    while (tx >= G.desertX0 && tx < G.desertX1) tx = randInt(3, landW - 3);
+    const ty = heights[tx] - randInt(2, 3);
+    G.beehives.push(makeBeehive(tx * TILE, ty * TILE));
+  }
+
+  G.lizards = [];
+  for (let i = 0; i < 1; i++) {
+    const tx = randInt(5, landW - 5);
+    const ty = heights[tx] - 1;
+    G.lizards.push(makeLizard(tx * TILE, ty * TILE));
+  }
+
+  G.landTurtles = [];
+  for (let i = 0; i < 1; i++) {
+    const tx = randInt(5, landW - 5);
+    const ty = heights[tx] - 1;
+    G.landTurtles.push(makeLandTurtle(tx * TILE, ty * TILE));
+  }
+
+  G.walkingMushrooms = [];
+  for (let i = 0; i < 1; i++) {
+    const tx = randInt(5, landW - 5);
+    const ty = heights[tx] - 1;
+    G.walkingMushrooms.push(makeMushroomWalker(tx * TILE, ty * TILE));
+  }
+
+  G.tigers = [];
+  for (let i = 0; i < 1; i++) {
+    const tx = randInt(5, landW - 5);
+    const ty = heights[tx] - 2;
+    G.tigers.push(makeTiger(tx * TILE, ty * TILE));
+  }
+
+  G.ironGolems = [];
+  G.villagers = [];
+  for (const [centerTx, baseH] of villages) {
+    const gx = (centerTx - 4) * TILE;
+    const gy = (baseH - 2) * TILE;
+    const patrolMin = (centerTx - 6) * TILE;
+    const patrolMax = (centerTx + 6) * TILE;
+    G.ironGolems.push(makeIronGolem(gx, gy, patrolMin, patrolMax));
+
+    const vPatrolMin = (centerTx - 4) * TILE;
+    const vPatrolMax = (centerTx + 4) * TILE;
+    for (let i = 0; i < 1; i++) {
+      const vx = rand(vPatrolMin, vPatrolMax);
+      G.villagers.push(makeVillager(vx, (baseH - 2) * TILE, vPatrolMin, vPatrolMax));
+    }
+  }
+
+  const seaX0 = landW * TILE, seaX1 = WORLD_W * TILE;
+  const seaY0 = SEA_LEVEL_TILE * TILE, seaY1 = SEA_FLOOR_TILE * TILE;
+  G.seaBounds = [seaX0, seaX1, seaY0, seaY1];
+
+  G.fish = [];
+  for (let i = 0; i < 1; i++) {
+    const x = rand(seaX0 + 20, seaX1 - 40);
+    const y = rand(seaY0 + 10, seaY1 - 20);
+    G.fish.push(makeFish(x, y));
+  }
+
+  G.jellyfish = [];
+  for (let i = 0; i < 1; i++) {
+    const x = rand(seaX0 + 20, seaX1 - 40);
+    const y = rand(seaY0 + 10, seaY1 - 20);
+    G.jellyfish.push(makeJellyfish(x, y));
+  }
+
+  G.turtles = [];
+  for (let i = 0; i < 1; i++) {
+    const x = rand(seaX0 + 20, seaX1 - 40);
+    const y = rand(seaY0 + 10, seaY1 - 20);
+    G.turtles.push(makeTurtle(x, y));
+  }
+
+  G.seaweeds = [];
+  for (let i = 0; i < 10; i++) {
+    const x = rand(seaX0 + 10, seaX1 - 10);
+    const h = rand(TILE * 0.8, TILE * 1.8);
+    G.seaweeds.push(makeSeaweed(x, seaY1, h));
+  }
+
+  G.playerLasers = [];
+  G.patmanLasers = [];
+  G.items = [];
+  G.itemSpawnTimer = 60;
+
+  G.cameraX = G.player.x - VIEW_W / 2;
+  G.cameraY = G.player.y - VIEW_H / 2;
+
+  document.getElementById("gameOverScreen").style.display = "none";
+}
+
+// ---------- input handling ----------
+window.addEventListener("keydown", (e) => {
+  const k = e.key.toLowerCase();
+  keys.add(k);
+  if (k === "1" || k === "2" || k === "3") G.selectedBlock = BLOCK_KEYS[k];
+  if (k === "r" && G.gameOver) newGame();
+  if (k === "f" && !G.gameOver) firePlayerLaser();
+});
+window.addEventListener("keyup", (e) => keys.delete(e.key.toLowerCase()));
+
+function bindHold(id, keyName) {
+  const el = document.getElementById(id);
+  const start = (ev) => { ev.preventDefault(); keys.add(keyName); };
+  const end = (ev) => { ev.preventDefault(); keys.delete(keyName); };
+  el.addEventListener("touchstart", start, { passive: false });
+  el.addEventListener("touchend", end, { passive: false });
+  el.addEventListener("touchcancel", end, { passive: false });
+  el.addEventListener("mousedown", start);
+  el.addEventListener("mouseup", end);
+  el.addEventListener("mouseleave", end);
+}
+bindHold("btnLeft", "a");
+bindHold("btnRight", "d");
+bindHold("btnJump", "w");
+
+document.getElementById("btnLaser").addEventListener("touchstart", (ev) => {
+  ev.preventDefault();
+  if (!G.gameOver) firePlayerLaser();
+}, { passive: false });
+document.getElementById("btnLaser").addEventListener("click", () => {
+  if (!G.gameOver) firePlayerLaser();
+});
+
+document.getElementById("btnDig").addEventListener("click", () => {
+  G.digMode = !G.digMode;
+  document.getElementById("btnDig").textContent = G.digMode ? "⛏" : "🧱";
+});
+document.getElementById("btnDig").addEventListener("touchstart", (ev) => {
+  ev.preventDefault();
+  G.digMode = !G.digMode;
+  document.getElementById("btnDig").textContent = G.digMode ? "⛏" : "🧱";
+}, { passive: false });
+
+function cycleBlock() {
+  const idx = BLOCK_ORDER.indexOf(G.selectedBlock);
+  G.selectedBlock = BLOCK_ORDER[(idx + 1) % BLOCK_ORDER.length];
+  document.getElementById("btnMode").textContent = TILE_NAMES[G.selectedBlock];
+}
+document.getElementById("btnMode").addEventListener("click", cycleBlock);
+document.getElementById("btnMode").addEventListener("touchstart", (ev) => { ev.preventDefault(); cycleBlock(); }, { passive: false });
+
+document.getElementById("restartBtn").addEventListener("click", newGame);
+
+function screenToTile(sx, sy) {
+  const wx = sx + G.cameraX;
+  const wy = sy + G.cameraY;
+  return [Math.floor(wx / TILE), Math.floor(wy / TILE)];
+}
+
+function handleWorldTap(sx, sy) {
+  if (G.gameOver) return;
+  const [tx, ty] = screenToTile(sx, sy);
+  const [px, py] = centerOf(G.player);
+  const wx = tx * TILE + TILE / 2, wy = ty * TILE + TILE / 2;
+  if (dist(px, py, wx, wy) > REACH) return;
+  if (tx < 0 || tx >= WORLD_W || ty < 0 || ty >= WORLD_H) return;
+
+  if (G.digMode) {
+    const t = G.world[ty][tx];
+    if (t === AIR || t === WATER) return;
+    if (ORE_TILES.has(t)) G.player.ores[t] += 1;
+    G.world[ty][tx] = AIR;
+  } else {
+    if (G.world[ty][tx] === AIR) G.world[ty][tx] = G.selectedBlock;
+  }
+}
+
+canvas.addEventListener("mousedown", (e) => {
+  if (e.button === 0) handleWorldTap(e.clientX, e.clientY);
+  else if (e.button === 2) {
+    const wasDig = G.digMode;
+    G.digMode = false;
+    handleWorldTap(e.clientX, e.clientY);
+    G.digMode = wasDig;
+  }
+});
+canvas.addEventListener("contextmenu", (e) => e.preventDefault());
+canvas.addEventListener("touchstart", (e) => {
+  for (const t of e.changedTouches) handleWorldTap(t.clientX, t.clientY);
+}, { passive: true });
+
+// ---------- laser firing ----------
+function firePlayerLaser() {
+  const p = G.player;
+  if (!p.laserUnlocked || p.laserCd > 0) return;
+  p.laserCd = 12;
+  const [cx, cy] = centerOf(p);
+  G.playerLasers.push(makeLaser(cx, cy, LASER_SPEED * p.facing, 0, "player", "#ff2fd6"));
+}
+
+// ---------- update: player ----------
+function updatePlayer() {
+  const p = G.player;
+  if (p.hp <= 0) { G.gameOver = true; return; }
+
+  let dx = 0;
+  const speed = MOVE_SPEED * (p.speedTimer > 0 ? 1.7 : 1.0);
+  if (keys.has("a") || keys.has("arrowleft")) { dx -= speed; p.facing = -1; }
+  if (keys.has("d") || keys.has("arrowright")) { dx += speed; p.facing = 1; }
+
+  if ((keys.has("w") || keys.has(" ") || keys.has("space") || keys.has("arrowup")) && p.onGround) {
+    p.vy = JUMP_SPEED * (p.jumpTimer > 0 ? 1.3 : 1.0);
+  }
+
+  const [pcx, pcy] = centerOf(p);
+  const inWater = tileAt(G.world, Math.floor(pcx / TILE), Math.floor(pcy / TILE)) === WATER;
+  if (inWater) {
+    p.vy = Math.min(p.vy + GRAVITY * 0.25, 3.0);
+    if (keys.has("w") || keys.has(" ") || keys.has("space") || keys.has("arrowup")) p.vy = -3.2;
+  } else {
+    p.vy = Math.min(p.vy + GRAVITY, MAX_FALL);
+  }
+  moveEntity(G.world, p, dx, p.vy);
+
+  if (p.speedTimer > 0) p.speedTimer--;
+  if (p.jumpTimer > 0) p.jumpTimer--;
+  if (p.invuln > 0) p.invuln--;
+  if (p.laserCd > 0) p.laserCd--;
+}
+
+// ---------- update: creepers ----------
+function updateCreepers() {
+  const [px, py] = centerOf(G.player);
+  for (const c of G.creepers) {
+    if (!c.alive) {
+      c.respawnTimer--;
+      if (c.respawnTimer <= 0) {
+        const tx = randInt(5, G.landW - 5);
+        const ty = G.heights[tx] - 2;
+        c.x = tx * TILE; c.y = ty * TILE;
+        c.alive = true; c.fuse = null; c.vx = 0; c.vy = 0; c.hp = c.maxHp;
+      }
+      continue;
+    }
+    const [cx, cy] = centerOf(c);
+    const d = dist(px, py, cx, cy);
+
+    if (d < TILE * 3.5) {
+      c.dir = px > cx ? 1 : -1;
+      c.fuse = c.fuse === null ? 45 : c.fuse - 1;
+    } else {
+      c.fuse = null;
+      c.changeTimer--;
+      if (c.changeTimer <= 0) { c.dir = choice([-1, 1]); c.changeTimer = randInt(40, 100); }
+    }
+
+    const spd = c.fuse !== null ? 2.4 : 1.4;
+    c.vy = Math.min(c.vy + GRAVITY, MAX_FALL);
+    moveEntity(G.world, c, c.dir * spd, c.vy);
+
+    if (c.fuse !== null && c.fuse <= 0) explodeCreeper(c);
+  }
+}
+
+function explodeCreeper(c) {
+  const [cx, cy] = centerOf(c);
+  const radiusTiles = c.big ? 3 : 2;
+  const ctx_ = Math.floor(cx / TILE), cty = Math.floor(cy / TILE);
+  for (let ty = cty - radiusTiles; ty <= cty + radiusTiles; ty++) {
+    for (let tx = ctx_ - radiusTiles; tx <= ctx_ + radiusTiles; tx++) {
+      if (Math.hypot(tx - ctx_, ty - cty) <= radiusTiles) {
+        if (tx >= 0 && tx < WORLD_W && ty >= 0 && ty < WORLD_H) G.world[ty][tx] = AIR;
+      }
+    }
+  }
+  const [px, py] = centerOf(G.player);
+  const d = dist(px, py, cx, cy);
+  if (d <= radiusTiles * TILE && G.player.invuln <= 0) {
+    const dmg = c.big ? 35 : 20;
+    G.player.hp = Math.max(0, G.player.hp - dmg);
+    G.player.invuln = 40;
+  }
+  c.alive = false;
+  c.respawnTimer = 150;
+}
+
+// ---------- update: plants ----------
+function updatePlants() {
+  const [px, py] = centerOf(G.player);
+  for (const plant of G.plants) {
+    plant.vy = Math.min(plant.vy + GRAVITY, MAX_FALL);
+    moveEntity(G.world, plant, 0, plant.vy);
+    const [plx, ply] = centerOf(plant);
+    const d = dist(px, py, plx, ply);
+    if (plant.biteCd > 0) plant.biteCd--;
+    if (plant.chomp > 0) plant.chomp--;
+    if (d < TILE * 1.2) {
+      plant.chomp = 10;
+      if (plant.biteCd <= 0 && G.player.invuln <= 0) {
+        G.player.hp = Math.max(0, G.player.hp - 8);
+        G.player.invuln = 30;
+        plant.biteCd = 45;
+      }
+    }
+  }
+}
+
+// ---------- update: tigers ----------
+function updateTigers() {
+  const [px, py] = centerOf(G.player);
+  for (const t of G.tigers) {
+    if (!t.alive) {
+      t.respawnTimer--;
+      if (t.respawnTimer <= 0) {
+        const tx = randInt(5, G.landW - 5);
+        const ty = G.heights[tx] - 2;
+        t.x = tx * TILE; t.y = ty * TILE;
+        t.alive = true; t.hp = t.maxHp; t.vx = 0; t.vy = 0;
+      }
+      continue;
+    }
+    const [tcx, tcy] = centerOf(t);
+    const d = dist(px, py, tcx, tcy);
+    let spd;
+    if (d < TILE * 5) {
+      t.dir = px > tcx ? 1 : -1;
+      spd = 3.2;
+    } else {
+      t.changeTimer--;
+      if (t.changeTimer <= 0) { t.dir = choice([-1, 1]); t.changeTimer = randInt(40, 100); }
+      spd = 1.6;
+    }
+    t.vy = Math.min(t.vy + GRAVITY, MAX_FALL);
+    moveEntity(G.world, t, t.dir * spd, t.vy);
+    if (t.attackCd > 0) t.attackCd--;
+    if (t.flash > 0) t.flash--;
+    if (d < TILE * 1.3 && t.attackCd <= 0 && G.player.invuln <= 0) {
+      G.player.hp = Math.max(0, G.player.hp - 15);
+      G.player.invuln = 35;
+      t.attackCd = 50;
+    }
+  }
+}
+
+// ---------- update: pigs / lizards / sea life / villagers / walking mushrooms ----------
+function updatePigs() {
+  for (const pig of G.pigs) {
+    pig.changeTimer--;
+    if (pig.changeTimer <= 0) { pig.dir = choice([-1, 1]); pig.changeTimer = randInt(60, 140); }
+    pig.vy = Math.min(pig.vy + GRAVITY, MAX_FALL);
+    moveEntity(G.world, pig, pig.dir * 1.2, pig.vy);
+  }
+}
+
+function updateLizards() {
+  for (const lz of G.lizards) {
+    let moveDx = 0;
+    if (lz.pauseTimer > 0) {
+      lz.pauseTimer--;
+    } else {
+      lz.changeTimer--;
+      if (lz.changeTimer <= 0) {
+        if (Math.random() < 0.3) lz.pauseTimer = randInt(20, 50);
+        else lz.dir = choice([-1, 1]);
+        lz.changeTimer = randInt(20, 60);
+      }
+      moveDx = lz.dir * 2.0;
+    }
+    lz.vy = Math.min(lz.vy + GRAVITY, MAX_FALL);
+    moveEntity(G.world, lz, moveDx, lz.vy);
+  }
+}
+
+function updateFish() {
+  const [x0, x1, y0, y1] = G.seaBounds;
+  for (const f of G.fish) {
+    f.changeTimer--;
+    if (f.changeTimer <= 0) {
+      f.dir = choice([-1, 1]); f.vdir = choice([-1, 1]);
+      f.changeTimer = randInt(40, 100);
+    }
+    f.x = clamp(f.x + f.dir * 1.6, x0, x1 - f.w);
+    f.y = clamp(f.y + f.vdir * 0.4, y0, y1 - f.h);
+  }
+}
+
+function updateTurtles() {
+  const [x0, x1, y0, y1] = G.seaBounds;
+  for (const t of G.turtles) {
+    t.changeTimer--;
+    if (t.changeTimer <= 0) {
+      t.dir = choice([-1, 1]); t.vdir = choice([-1, 1]);
+      t.changeTimer = randInt(60, 140);
+    }
+    t.paddle += 0.05;
+    t.x = clamp(t.x + t.dir * 0.7, x0, x1 - t.w);
+    t.y = clamp(t.y + t.vdir * 0.2, y0, y1 - t.h);
+  }
+}
+
+function updateLandTurtles() {
+  for (const t of G.landTurtles) {
+    let moveDx = 0;
+    if (t.pauseTimer > 0) {
+      t.pauseTimer--;
+    } else {
+      t.changeTimer--;
+      if (t.changeTimer <= 0) {
+        if (Math.random() < 0.4) t.pauseTimer = randInt(30, 80);
+        else t.dir = choice([-1, 1]);
+        t.changeTimer = randInt(30, 80);
+      }
+      moveDx = t.dir * 0.6;
+      t.paddle += 0.06;
+    }
+    t.vy = Math.min(t.vy + GRAVITY, MAX_FALL);
+    moveEntity(G.world, t, moveDx, t.vy);
+  }
+}
+
+function updateJellyfish() {
+  const [x0, x1, y0, y1] = G.seaBounds;
+  for (const j of G.jellyfish) {
+    j.changeTimer--;
+    if (j.changeTimer <= 0) { j.vdir = choice([-1, 1]); j.changeTimer = randInt(60, 140); }
+    j.y = clamp(j.y + j.vdir * 0.25, y0, y1 - j.h);
+    j.x = clamp(j.x + Math.sin(G.animTimer * 0.02 + j.phase) * 0.3, x0, x1 - j.w);
+  }
+}
+
+function updateVillagers() {
+  for (const v of G.villagers) {
+    v.changeTimer--;
+    if (v.changeTimer <= 0) { v.dir = choice([-1, 1]); v.changeTimer = randInt(60, 150); }
+    const newX = v.x + v.dir * 0.9;
+    if (newX < v.patrolMinX || newX > v.patrolMaxX) v.dir *= -1;
+    v.facing = v.dir;
+    v.vy = Math.min(v.vy + GRAVITY, MAX_FALL);
+    moveEntity(G.world, v, v.dir * 0.9, v.vy);
+  }
+}
+
+function updateWalkingMushrooms() {
+  for (const wm of G.walkingMushrooms) {
+    wm.changeTimer--;
+    if (wm.changeTimer <= 0) { wm.dir = choice([-1, 1]); wm.changeTimer = randInt(50, 120); }
+    wm.vy = Math.min(wm.vy + GRAVITY, MAX_FALL);
+    moveEntity(G.world, wm, wm.dir * 1.0, wm.vy);
+  }
+}
+
+// ---------- update: mushroom bounce pads ----------
+function rectsOverlap(a, b) {
+  return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
+}
+function updateMushroomsBounce() {
+  const p = G.player;
+  for (const m of G.mushroomsBounce) {
+    if (m.bounceCd > 0) m.bounceCd--;
+    if (m.squish > 0) m.squish--;
+    if (m.bounceCd <= 0 && rectsOverlap(p, m)) {
+      p.vy = MUSHROOM_BOUNCE_SPEED;
+      p.onGround = false;
+      m.bounceCd = MUSHROOM_COOLDOWN;
+      m.squish = 10;
+    }
+  }
+}
+
+// ---------- update: patman ----------
+function updatePatmen() {
+  const [px, py] = centerOf(G.player);
+  for (const pm of G.patmen) {
+    if (pm.hp <= 0) continue;
+    const [pmx, pmy] = centerOf(pm);
+    const d = dist(px, py, pmx, pmy);
+
+    pm.changeTimer--;
+    if (pm.changeTimer <= 0 || d < PATMAN_DETECT_RADIUS) {
+      pm.dir = px > pmx ? 1 : -1;
+      pm.changeTimer = randInt(50, 110);
+    }
+    pm.facing = pm.dir;
+
+    const tx = clamp(Math.floor(pm.x / TILE), 0, WORLD_W - 1);
+    const minY = (G.heights[tx] + 2) * TILE;
+    const maxY = (WORLD_H - 2) * TILE;
+    pm.x = clamp(pm.x + pm.dir * 1.1, TILE, WORLD_W * TILE - TILE - pm.w);
+    if (d < PATMAN_DETECT_RADIUS) pm.y += clamp(py - pmy, -1.0, 1.0) * 0.6;
+    pm.y = clamp(pm.y, minY, maxY);
+
+    if (pm.laserCd > 0) pm.laserCd--;
+    if (pm.flash > 0) pm.flash--;
+
+    if (d < PATMAN_DETECT_RADIUS && pm.laserCd <= 0) {
+      pm.laserCd = PATMAN_LASER_COOLDOWN;
+      const ddx = px - pmx, ddy = py - pmy;
+      const dlen = Math.hypot(ddx, ddy) || 1;
+      const vx = ddx / dlen * LASER_SPEED, vy = ddy / dlen * LASER_SPEED;
+      G.patmanLasers.push(makeLaser(pmx, pmy, vx, vy, "patman", "#39ff14"));
+    }
+  }
+}
+
+function onPatmanKilled(pm) {
+  const [x, y] = centerOf(pm);
+  const sword = makeFallingItem(x - (TILE - 10) / 2, y - (TILE - 10) / 2, "sword");
+  sword.vy = -3;
+  G.items.push(sword);
+}
+
+// ---------- update: pig -> ally transformation & allies ----------
+function transformPig(pig) {
+  const idx = G.pigs.indexOf(pig);
+  if (idx >= 0) G.pigs.splice(idx, 1);
+  G.allies.push(makeAlly(pig.x, pig.y, pig.kind === "pig" ? pig.redEyes : false));
+}
+
+function updateAllies() {
+  const aliveP = G.patmen.filter((pm) => pm.hp > 0);
+  for (const ally of G.allies) {
+    ally.vy = Math.min(ally.vy + GRAVITY, MAX_FALL);
+    if (ally.laserCd > 0) ally.laserCd--;
+
+    if (aliveP.length === 0) { moveEntity(G.world, ally, 0, ally.vy); continue; }
+
+    let target = aliveP[0], bestD = Infinity;
+    const [ax0, ay0] = centerOf(ally);
+    for (const pm of aliveP) {
+      const [pmx, pmy] = centerOf(pm);
+      const d = dist(ax0, ay0, pmx, pmy);
+      if (d < bestD) { bestD = d; target = pm; }
+    }
+    const [tx_, ty_] = centerOf(target);
+    const [ax, ay] = centerOf(ally);
+    const ddx = tx_ - ax, ddy = ty_ - ay;
+    ally.facing = ddx > 0 ? 1 : -1;
+    moveEntity(G.world, ally, clamp(ddx, -2.4, 2.4), ally.vy);
+
+    const d2 = Math.hypot(ddx, ddy) || 1;
+    if (d2 < PATMAN_DETECT_RADIUS && ally.laserCd <= 0) {
+      ally.laserCd = ally.redEyes ? 40 : 60;
+      const vx = ddx / d2 * LASER_SPEED, vy = ddy / d2 * LASER_SPEED;
+      G.playerLasers.push(makeLaser(ax, ay, vx, vy, "ally", "#00e5ff"));
+    }
+  }
+}
+
+// ---------- update: iron golems ----------
+function updateIronGolems() {
+  for (const ig of G.ironGolems) {
+    ig.vy = Math.min(ig.vy + GRAVITY, MAX_FALL);
+    const newX = ig.x + ig.dir * 1.0;
+    if (newX < ig.patrolMinX || newX > ig.patrolMaxX) ig.dir *= -1;
+    ig.facing = ig.dir;
+    moveEntity(G.world, ig, ig.dir * 1.0, ig.vy);
+
+    if (ig.punchCd > 0) ig.punchCd--;
+    if (ig.punchFlash > 0) ig.punchFlash--;
+
+    const [igx, igy] = centerOf(ig);
+    if (ig.punchCd <= 0) {
+      for (const cr of G.creepers) {
+        if (!cr.alive) continue;
+        const [crx, cry] = centerOf(cr);
+        if (dist(igx, igy, crx, cry) < IRON_GOLEM_PUNCH_RADIUS) {
+          cr.alive = false;
+          cr.respawnTimer = 150;
+          ig.punchCd = IRON_GOLEM_PUNCH_COOLDOWN;
+          ig.punchFlash = 10;
+          break;
+        }
+      }
+    }
+  }
+}
+
+// ---------- update: lasers ----------
+function updateLasers() {
+  const stillPlayer = [];
+  for (const laser of G.playerLasers) {
+    laser.x += laser.vx; laser.y += laser.vy; laser.life--;
+    const tx = Math.floor(laser.x / TILE), ty = Math.floor(laser.y / TILE);
+    if (tx >= 0 && tx < WORLD_W && ty >= 0 && ty < WORLD_H && G.world[ty][tx] !== AIR) {
+      G.world[ty][tx] = AIR;
+    }
+
+    let hit = false;
+
+    for (const pm of G.patmen) {
+      if (pm.hp <= 0) continue;
+      const [pmx, pmy] = centerOf(pm);
+      if (dist(laser.x, laser.y, pmx, pmy) < TILE * 0.8) {
+        pm.hp -= PLAYER_LASER_DAMAGE; pm.flash = 8; hit = true;
+        if (pm.hp <= 0) onPatmanKilled(pm);
+        break;
+      }
+    }
+
+    if (!hit && laser.owner === "player") {
+      for (const pig of G.pigs.slice()) {
+        const [pgx, pgy] = centerOf(pig);
+        if (dist(laser.x, laser.y, pgx, pgy) < TILE * 0.8) { transformPig(pig); hit = true; break; }
+      }
+    }
+
+    if (!hit) {
+      for (const cr of G.creepers) {
+        if (!cr.alive) continue;
+        const [crx, cry] = centerOf(cr);
+        if (dist(laser.x, laser.y, crx, cry) < TILE * 0.8) {
+          cr.hp -= PLAYER_LASER_DAMAGE; cr.flash = 8; hit = true;
+          if (cr.hp <= 0) { cr.alive = false; cr.respawnTimer = 150; G.player.score++; }
+          break;
+        }
+      }
+    }
+
+    if (!hit) {
+      for (const t of G.tigers) {
+        if (!t.alive) continue;
+        const [tx_, ty_] = centerOf(t);
+        if (dist(laser.x, laser.y, tx_, ty_) < TILE * 0.8) {
+          t.hp -= PLAYER_LASER_DAMAGE; t.flash = 8; hit = true;
+          if (t.hp <= 0) { t.alive = false; t.respawnTimer = 200; G.player.score++; }
+          break;
+        }
+      }
+    }
+
+    const inBounds = laser.x >= 0 && laser.x <= WORLD_W * TILE && laser.y >= 0 && laser.y <= WORLD_H * TILE;
+    if (laser.life > 0 && !hit && inBounds) stillPlayer.push(laser);
+  }
+  G.playerLasers = stillPlayer;
+
+  const stillPatman = [];
+  const [px, py] = centerOf(G.player);
+  for (const laser of G.patmanLasers) {
+    laser.x += laser.vx; laser.y += laser.vy; laser.life--;
+    if (dist(laser.x, laser.y, px, py) < TILE * 0.7) {
+      if (G.player.invuln <= 0) {
+        G.player.hp = Math.max(0, G.player.hp - PATMAN_LASER_DAMAGE);
+        G.player.invuln = 25;
+      }
+      continue;
+    }
+    if (laser.life > 0) stillPatman.push(laser);
+  }
+  G.patmanLasers = stillPatman;
+}
+
+// ---------- update: falling items ----------
+function updateItems() {
+  const p = G.player;
+  const [px, py] = centerOf(p);
+  const stillItems = [];
+  for (const it of G.items) {
+    it.vy = Math.min(it.vy + GRAVITY * 0.6, MAX_FALL);
+    moveEntity(G.world, it, 0, it.vy);
+
+    const [ix, iy] = centerOf(it);
+    if (dist(px, py, ix, iy) < TILE) {
+      if (it.kind === "dart") { p.speedTimer = 300; p.hp = p.maxHp; }
+      else if (it.kind === "bird") { p.jumpTimer = 300; p.hp = p.maxHp; }
+      else if (it.kind === "ball") p.laserUnlocked = true;
+      else if (it.kind === "sword") p.hasSword = true;
+      p.score++;
+      continue;
+    }
+    if (it.y < WORLD_H * TILE + 200) stillItems.push(it);
+  }
+  G.items = stillItems;
+
+  G.itemSpawnTimer--;
+  if (G.itemSpawnTimer <= 0) {
+    G.itemSpawnTimer = randInt(90, 180);
+    const tx = randInt(2, G.landW - 2);
+    const kind = choice(["dart", "bird", "ball"]);
+    G.items.push(makeFallingItem(tx * TILE, 0, kind));
+  }
+}
+
+// ---------- main update ----------
+function updateBeehives() {
+  for (const hive of G.beehives) {
+    hive.timer = (hive.timer + 1) % hive.cycle;
+    if (hive.timer < hive.outDuration) {
+      hive.beeOut = true;
+      const frac = hive.timer / hive.outDuration;
+      const angle = frac * Math.PI * 4;
+      const radius = TILE * 1.5;
+      hive.beeX = hive.x + hive.w / 2 + Math.cos(angle) * radius;
+      hive.beeY = hive.y + hive.h * 0.3 + Math.sin(angle * 1.3) * (TILE * 0.9);
+    } else {
+      hive.beeOut = false;
+    }
+  }
+}
+
+function update() {
+  G.animTimer++;
+  updatePlayer();
+  if (G.gameOver) return;
+  updateCreepers();
+  updatePlants();
+  updateMushroomsBounce();
+  updatePigs();
+  updateLizards();
+  updateLandTurtles();
+  updateFish();
+  updateTurtles();
+  updateJellyfish();
+  updateVillagers();
+  updateWalkingMushrooms();
+  updateTigers();
+  updatePatmen();
+  updateAllies();
+  updateIronGolems();
+  updateLasers();
+  updateItems();
+  updateBeehives();
+
+  G.cameraX = G.player.x + G.player.w / 2 - VIEW_W / 2;
+  G.cameraY = G.player.y + G.player.h / 2 - VIEW_H / 2;
+  G.cameraX = clamp(G.cameraX, 0, WORLD_W * TILE - VIEW_W);
+  G.cameraY = clamp(G.cameraY, 0, WORLD_H * TILE - VIEW_H);
+
+  if (G.player.hp <= 0) {
+    G.gameOver = true;
+    document.getElementById("gameOverScreen").style.display = "flex";
+  }
+}
+
+// ---------- render helpers ----------
+function w2s(x, y) { return [x - G.cameraX, y - G.cameraY]; }
+
+function drawRect(x, y, w, h, fill, stroke) {
+  ctx.fillStyle = fill;
+  ctx.fillRect(x, y, w, h);
+  if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = 1; ctx.strokeRect(x, y, w, h); }
+}
+function drawOval(x0, y0, x1, y1, fill, stroke, lw) {
+  ctx.beginPath();
+  ctx.ellipse((x0 + x1) / 2, (y0 + y1) / 2, Math.abs(x1 - x0) / 2, Math.abs(y1 - y0) / 2, 0, 0, Math.PI * 2);
+  if (fill) { ctx.fillStyle = fill; ctx.fill(); }
+  if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = lw || 1; ctx.stroke(); }
+}
+function drawLine(x0, y0, x1, y1, color, width) {
+  ctx.strokeStyle = color; ctx.lineWidth = width || 1;
+  ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke();
+}
+function drawPoly(points, fill, stroke) {
+  ctx.beginPath();
+  ctx.moveTo(points[0][0], points[0][1]);
+  for (let i = 1; i < points.length; i++) ctx.lineTo(points[i][0], points[i][1]);
+  ctx.closePath();
+  if (fill) { ctx.fillStyle = fill; ctx.fill(); }
+  if (stroke) { ctx.strokeStyle = stroke; ctx.stroke(); }
+}
+
+// ---------- render: world ----------
+function drawWorld() {
+  ctx.fillStyle = "#87CEEB";
+  ctx.fillRect(0, 0, VIEW_W, VIEW_H);
+  const left = Math.max(0, Math.floor(G.cameraX / TILE));
+  const right = Math.min(WORLD_W - 1, Math.floor((G.cameraX + VIEW_W) / TILE) + 1);
+  const top = Math.max(0, Math.floor(G.cameraY / TILE));
+  const bottom = Math.min(WORLD_H - 1, Math.floor((G.cameraY + VIEW_H) / TILE) + 1);
+  for (let ty = top; ty <= bottom; ty++) {
+    for (let tx = left; tx <= right; tx++) {
+      const t = G.world[ty][tx];
+      if (t === AIR) continue;
+      const [sx, sy] = w2s(tx * TILE, ty * TILE);
+      drawRect(sx, sy, TILE, TILE, TILE_COLORS[t], "rgba(0,0,0,0.15)");
+    }
+  }
+}
+
+// ---------- render: golem / allies ----------
+function drawGolemLike(e, bodyColor, drawEyesBlack) {
+  const [x0, y0] = w2s(e.x, e.y);
+  const x1 = x0 + e.w, y1 = y0 + e.h;
+  const headH = e.h * 0.3;
+  drawRect(x0, y0, e.w, headH, bodyColor, "black");
+  const eyeY = y0 + headH * 0.4;
+  if (drawEyesBlack) {
+    drawRect(x0 + e.w * 0.25, eyeY, e.w * 0.15, 4, "black");
+    drawRect(x0 + e.w * 0.6, eyeY, e.w * 0.15, 4, "black");
+  }
+  drawRect(x0, y0 + headH, e.w, e.h - headH, bodyColor, "black");
+  const armY = y0 + headH + 5;
+  drawLine(x0, armY, x0 - 12 * e.facing, armY + 15, bodyColor, 6);
+  drawLine(x1, armY, x1 + 12 * e.facing, armY + 15, bodyColor, 6);
+}
+
+function drawGolem(p) {
+  const flashing = p.invuln > 0 && Math.floor(p.invuln / 5) % 2 === 1;
+  drawGolemLike(p, flashing ? "#ffffff" : "#e91e63", true);
+}
+
+function drawAlly(a) {
+  const bodyColor = a.redEyes ? "#ff3d7f" : "#ff6fae";
+  const [x0, y0] = w2s(a.x, a.y);
+  const x1 = x0 + a.w, y1 = y0 + a.h;
+  const headH = a.h * 0.3;
+  drawRect(x0, y0, a.w, headH, bodyColor, "#00e5ff");
+  const eyeY = y0 + headH * 0.4;
+  drawRect(x0 + a.w * 0.25, eyeY, a.w * 0.15, 4, "black");
+  drawRect(x0 + a.w * 0.6, eyeY, a.w * 0.15, 4, "black");
+  drawRect(x0, y0 + headH, a.w, a.h - headH, bodyColor, "#00e5ff");
+  const armY = y0 + headH + 5;
+  drawLine(x0, armY, x0 - 12 * a.facing, armY + 15, bodyColor, 6);
+  drawLine(x1, armY, x1 + 12 * a.facing, armY + 15, bodyColor, 6);
+}
+
+// ---------- render: hostiles ----------
+function drawCreeper(cr) {
+  const [x0, y0] = w2s(cr.x, cr.y);
+  const x1 = x0 + cr.w, y1 = y0 + cr.h;
+  let color;
+  if (cr.flash > 0) color = "#ffffff";
+  else if (cr.fuse === null) color = "#3fa34d";
+  else color = (cr.fuse % 6 < 3) ? "#ffffff" : "#3fa34d";
+  drawRect(x0, y0, cr.w, cr.h, color, "#1b4d24");
+  const fw = cr.w * 0.2, fh = cr.h * 0.15;
+  const fx = x0 + cr.w * 0.2, fy = y0 + cr.h * 0.2;
+  drawRect(fx, fy, fw, fh, "black");
+  drawRect(fx + cr.w * 0.4, fy, fw, fh, "black");
+  const mouthY = y0 + cr.h * 0.45;
+  drawRect(x0 + cr.w * 0.3, mouthY, cr.w * 0.4, cr.h * 0.3, "black");
+}
+
+function drawTiger(t) {
+  const [x0, y0] = w2s(t.x, t.y);
+  const x1 = x0 + t.w, y1 = y0 + t.h;
+  const bodyColor = t.flash > 0 ? "#ffffff" : "#ff9800";
+  const cy = (y0 + y1) / 2;
+  const tailX = t.dir > 0 ? x0 : x1;
+  drawLine(tailX, cy, tailX - t.dir * t.w * 0.3, y0 + t.h * 0.15, bodyColor, 5);
+  drawOval(x0, y0 + t.h * 0.1, x1, y1, bodyColor, "#5d3a00", 2);
+  for (let i = 0; i < 4; i++) {
+    const sx = x0 + t.w * (0.2 + i * 0.18);
+    drawLine(sx, y0 + t.h * 0.15, sx - 4, y1 - 2, "#212121", 3);
+  }
+  const legW = t.w * 0.1;
+  for (const lx of [x0 + t.w * 0.2, x0 + t.w * 0.65]) drawRect(lx, y1 - 4, legW, 12, bodyColor, "#5d3a00");
+  const headR = t.h * 0.42;
+  const headX = t.dir > 0 ? x1 : x0;
+  const hx = headX - t.dir * headR * 0.3, hy = y0 + t.h * 0.25;
+  drawOval(hx - headR, hy - headR, hx + headR, hy + headR, bodyColor, "#5d3a00", 2);
+  drawPoly([[hx - headR * 0.6, hy - headR * 0.7], [hx - headR * 0.2, hy - headR * 1.3], [hx + headR * 0.1, hy - headR * 0.6]], bodyColor, "#5d3a00");
+  const eyeX = hx + t.dir * headR * 0.3;
+  drawOval(eyeX - 2, hy - 2, eyeX + 2, hy + 2, "#212121");
+  drawLine(hx - headR * 0.5, hy, hx + headR * 0.5, hy - 2, "#212121", 2);
+  const hpW = t.w * (t.hp / t.maxHp);
+  drawRect(x0, y0 - 8, t.w, 5, "#333333");
+  drawRect(x0, y0 - 8, hpW, 5, "#e53935");
+}
+
+function drawPatman(pm) {
+  const [x0, y0] = w2s(pm.x, pm.y);
+  const x1 = x0 + pm.w, y1 = y0 + pm.h;
+  const color = pm.flash > 0 ? "#ffffff" : "#1a1a1a";
+  const bodyTop = y0 + pm.h * 0.28, legsTop = y1 - pm.h * 0.3, legW = pm.w * 0.18;
+  drawRect(x0 + pm.w * 0.15, legsTop, legW, y1 - legsTop, color, "black");
+  drawRect(x1 - pm.w * 0.15 - legW, legsTop, legW, y1 - legsTop, color, "black");
+  drawRect(x0 + pm.w * 0.12, bodyTop, x1 - x0 - pm.w * 0.24, legsTop - bodyTop, color, "black");
+  const armY = bodyTop + 6;
+  drawLine(x0 + pm.w * 0.12, armY, x0 - 10 * pm.facing, armY + 14, color, 6);
+  drawLine(x1 - pm.w * 0.12, armY, x1 + 10 * pm.facing, armY + 14, color, 6);
+  drawOval(x0 + pm.w * 0.2, y0, x1 - pm.w * 0.2, bodyTop + 4, color, "black", 1);
+  const earH = pm.h * 0.18;
+  drawPoly([[x0 + pm.w * 0.25, y0 + 4], [x0 + pm.w * 0.32, y0 - earH], [x0 + pm.w * 0.42, y0 + 4]], color, "black");
+  drawPoly([[x1 - pm.w * 0.25, y0 + 4], [x1 - pm.w * 0.32, y0 - earH], [x1 - pm.w * 0.42, y0 + 4]], color, "black");
+  const eyeY = y0 + pm.h * 0.12;
+  drawOval(x0 + pm.w * 0.3, eyeY, x0 + pm.w * 0.3 + 5, eyeY + 5, "#39ff14");
+  drawOval(x1 - pm.w * 0.3 - 5, eyeY, x1 - pm.w * 0.3, eyeY + 5, "#39ff14");
+  const hpW = pm.w * (pm.hp / pm.maxHp);
+  drawRect(x0, y0 - 10, pm.w, 5, "#333333");
+  drawRect(x0, y0 - 10, hpW, 5, "#39ff14");
+}
+
+function drawIronGolem(ig) {
+  const [x0, y0] = w2s(ig.x, ig.y);
+  const x1 = x0 + ig.w, y1 = y0 + ig.h;
+  const color = ig.punchFlash > 0 ? "#eeeeee" : "#9e9e9e";
+  const legsTop = y1 - ig.h * 0.28, legW = ig.w * 0.22;
+  drawRect(x0 + ig.w * 0.12, legsTop, legW, y1 - legsTop, color, "#4a4a4a");
+  drawRect(x1 - ig.w * 0.12 - legW, legsTop, legW, y1 - legsTop, color, "#4a4a4a");
+  const bodyTop = y0 + ig.h * 0.28;
+  drawRect(x0 + ig.w * 0.05, bodyTop, x1 - x0 - ig.w * 0.1, legsTop - bodyTop, color, "#4a4a4a");
+  const armY = bodyTop + 4;
+  drawRect(x0 - ig.w * 0.18, armY, ig.w * 0.23, ig.h * 0.4, color, "#4a4a4a");
+  drawRect(x1 - ig.w * 0.05, armY, ig.w * 0.23, ig.h * 0.4, color, "#4a4a4a");
+  drawRect(x0 + ig.w * 0.2, y0, x1 - x0 - ig.w * 0.4, bodyTop - y0 + 2, color, "#4a4a4a");
+  const eyeY = y0 + ig.h * 0.1;
+  drawRect(x0 + ig.w * 0.3, eyeY, 5, 5, "#e53935");
+  drawRect(x1 - ig.w * 0.3 - 5, eyeY, 5, 5, "#e53935");
+}
+
+function drawVillager(v) {
+  const [x0, y0] = w2s(v.x, v.y);
+  const x1 = x0 + v.w, y1 = y0 + v.h;
+  const robeColor = "#8d6e4a";
+  const headH = v.h * 0.32;
+  drawRect(x0, y0 + headH, v.w, v.h - headH, robeColor, "#5c452c");
+  drawOval(x0, y0, x1, y0 + headH, "#e0b088", "#5c452c", 1);
+  drawRect(x0, y0 + headH * 0.7, v.w, headH * 0.15, "#5c452c");
+}
+
+// ---------- render: mushrooms ----------
+function drawMushroomBounce(m) {
+  let [x0, y0] = w2s(m.x, m.y);
+  const x1 = x0 + m.w, y1 = y0 + m.h;
+  const squash = Math.min(m.squish, 8);
+  y0 += squash;
+  const capBottom = y0 + (y1 - y0) * 0.45;
+  const stemW = m.w * 0.4, stemX0 = x0 + (m.w - stemW) / 2;
+  drawRect(stemX0, capBottom, stemW, y1 - capBottom, "#fff3d6", "#c9a86a");
+  ctx.beginPath();
+  ctx.ellipse((x0 + x1) / 2, y0 + (capBottom - y0), (x1 - x0) / 2, (capBottom - y0), 0, Math.PI, 0, true);
+  ctx.fillStyle = "#e53935"; ctx.fill(); ctx.strokeStyle = "#7a1f1a"; ctx.stroke();
+  const capH = capBottom - y0;
+  for (const [sx, sy, r] of [[0.28, 0.35, 3], [0.55, 0.2, 2.5], [0.72, 0.45, 3]]) {
+    const spx = x0 + m.w * sx, spy = y0 + capH * sy;
+    drawOval(spx - r, spy - r, spx + r, spy + r, "white");
+  }
+}
+
+function drawWalkingMushroom(wm) {
+  const [x0, y0] = w2s(wm.x, wm.y);
+  const x1 = x0 + wm.w, y1 = y0 + wm.h;
+  const capBottom = y0 + wm.h * 0.55;
+  const stemW = wm.w * 0.5, stemX0 = x0 + (wm.w - stemW) / 2;
+  const legW = wm.w * 0.15;
+  drawRect(stemX0 + 2, y1 - 5, legW, 9, "#fff3d6", "#c9a86a");
+  drawRect(x1 - stemX0 - legW - 2, y1 - 5, legW, 9, "#fff3d6", "#c9a86a");
+  drawRect(stemX0, capBottom, stemW, y1 - capBottom, "#fff3d6", "#c9a86a");
+  ctx.beginPath();
+  ctx.ellipse((x0 + x1) / 2, y0 + (capBottom - y0), (x1 - x0) / 2, (capBottom - y0), 0, Math.PI, 0, true);
+  ctx.fillStyle = "#e53935"; ctx.fill(); ctx.strokeStyle = "#7a1f1a"; ctx.stroke();
+  const capH = capBottom - y0;
+  for (const [sx, sy, r] of [[0.3, 0.4, 2.5], [0.6, 0.25, 2], [0.75, 0.5, 2.5]]) {
+    const spx = x0 + wm.w * sx, spy = y0 + capH * sy;
+    drawOval(spx - r, spy - r, spx + r, spy + r, "white");
+  }
+}
+
+// ---------- render: pig family ----------
+function drawPigBody(pig) {
+  const [x0, y0] = w2s(pig.x, pig.y);
+  const x1 = x0 + pig.w, y1 = y0 + pig.h;
+  const bodyColor = pig.redEyes ? "#ff8fa8" : "#ffb3c6";
+  drawOval(x0, y0 + pig.h * 0.15, x1, y1, bodyColor, "#c2607e");
+  drawPoly([[x0 + pig.w * 0.1, y0 + pig.h * 0.2], [x0 + pig.w * 0.25, y0], [x0 + pig.w * 0.4, y0 + pig.h * 0.2]], bodyColor, "#c2607e");
+  drawPoly([[x1 - pig.w * 0.1, y0 + pig.h * 0.2], [x1 - pig.w * 0.25, y0], [x1 - pig.w * 0.4, y0 + pig.h * 0.2]], bodyColor, "#c2607e");
+  const snoutCx = (x0 + x1) / 2, snoutY = y0 + pig.h * 0.55;
+  drawOval(snoutCx - 8, snoutY - 5, snoutCx + 8, snoutY + 5, "#ff7f9e", "#c2607e");
+  drawOval(snoutCx - 4, snoutY - 2, snoutCx - 1, snoutY + 1, "#8a3b4f");
+  drawOval(snoutCx + 1, snoutY - 2, snoutCx + 4, snoutY + 1, "#8a3b4f");
+  const eyeColor = pig.redEyes ? "#e53935" : "#3e2723";
+  const eyeY = y0 + pig.h * 0.3;
+  drawOval(x0 + pig.w * 0.25, eyeY, x0 + pig.w * 0.25 + 5, eyeY + 5, eyeColor);
+  drawOval(x1 - pig.w * 0.25 - 5, eyeY, x1 - pig.w * 0.25, eyeY + 5, eyeColor);
+}
+
+function drawChicken(ch) {
+  const [x0, y0] = w2s(ch.x, ch.y);
+  const x1 = x0 + ch.w, y1 = y0 + ch.h;
+  const bodyColor = "#ffc1d9";
+  drawOval(x0, y0 + ch.h * 0.2, x1, y1, bodyColor, "#d9789e");
+  const headR = ch.w * 0.28, hx = x1 - headR * 0.6, hy = y0 + ch.h * 0.3;
+  drawOval(hx - headR, hy - headR, hx + headR, hy + headR, bodyColor, "#d9789e");
+  drawPoly([[hx - 3, hy - headR], [hx, hy - headR - 6], [hx + 3, hy - headR]], "#e53935");
+  drawPoly([[hx + headR, hy], [hx + headR + 7, hy + 2], [hx + headR, hy + 4]], "#ffb300");
+  drawOval(hx + 2, hy - 3, hx + 5, hy, "#3e2723");
+  drawOval(x0 + ch.w * 0.15, y0 + ch.h * 0.45, x0 + ch.w * 0.55, y1 - 2, "#ff8fb3");
+}
+
+function drawCow(cow) {
+  const [x0, y0] = w2s(cow.x, cow.y);
+  const x1 = x0 + cow.w, y1 = y0 + cow.h;
+  const bodyColor = "#ffb3c6";
+  drawOval(x0, y0 + cow.h * 0.15, x1, y1, bodyColor, "#c2607e", 2);
+  for (const [sx, sy, r] of [[0.25, 0.4, 8], [0.6, 0.6, 7], [0.75, 0.3, 6]]) {
+    const spx = x0 + cow.w * sx, spy = y0 + cow.h * sy;
+    drawOval(spx - r, spy - r, spx + r, spy + r, "#ffe6ee");
+  }
+  drawLine(x0 + cow.w * 0.15, y0 + cow.h * 0.2, x0 + cow.w * 0.05, y0, "#e8b4bf", 4);
+  drawLine(x1 - cow.w * 0.15, y0 + cow.h * 0.2, x1 - cow.w * 0.05, y0, "#e8b4bf", 4);
+  const snoutCx = (x0 + x1) / 2, snoutY = y0 + cow.h * 0.6;
+  drawOval(snoutCx - 10, snoutY - 6, snoutCx + 10, snoutY + 6, "#ff7f9e", "#c2607e");
+  drawOval(snoutCx - 5, snoutY - 2, snoutCx - 2, snoutY + 1, "#8a3b4f");
+  drawOval(snoutCx + 2, snoutY - 2, snoutCx + 5, snoutY + 1, "#8a3b4f");
+  const eyeY = y0 + cow.h * 0.3;
+  drawOval(x0 + cow.w * 0.28, eyeY, x0 + cow.w * 0.28 + 5, eyeY + 5, "#3e2723");
+  drawOval(x1 - cow.w * 0.28 - 5, eyeY, x1 - cow.w * 0.28, eyeY + 5, "#3e2723");
+}
+
+function drawWorm(worm) {
+  const [x0, y0] = w2s(worm.x, worm.y);
+  const x1 = x0 + worm.w, y1 = y0 + worm.h;
+  const cy = (y0 + y1) / 2;
+  const segs = 4, segW = worm.w / segs;
+  for (let i = 0; i < segs; i++) {
+    const sx0 = x0 + i * segW;
+    const color = i % 2 === 0 ? "#ff9ebd" : "#ff7fa8";
+    drawOval(sx0, y0, sx0 + segW + 2, y1, color, "#d9789e");
+  }
+  const eyeX = x1 - segW * 0.4;
+  drawOval(eyeX - 2, cy - 5, eyeX + 2, cy - 1, "#3e2723");
+  drawOval(eyeX - 2, cy + 1, eyeX + 2, cy + 5, "#3e2723");
+}
+
+function drawPig(pig) {
+  if (pig.kind === "chicken") drawChicken(pig);
+  else if (pig.kind === "cow") drawCow(pig);
+  else if (pig.kind === "worm") drawWorm(pig);
+  else drawPigBody(pig);
+}
+
+function drawLizard(lz) {
+  const [x0, y0] = w2s(lz.x, lz.y);
+  const x1 = x0 + lz.w, y1 = y0 + lz.h;
+  const bodyColor = "#7cb342";
+  drawLine(x0, (y0 + y1) / 2, x0 - lz.w * 0.35, y1, bodyColor, 4);
+  drawOval(x0, y0, x1 - lz.w * 0.15, y1, bodyColor, "#4a7c1f");
+  for (const [sx, sy] of [[0.3, 0.3], [0.55, 0.6]]) {
+    const spx = x0 + lz.w * sx, spy = y0 + lz.h * sy;
+    drawOval(spx - 2, spy - 2, spx + 2, spy + 2, "#33691e");
+  }
+  const headCx = x1 - lz.w * 0.2, headCy = (y0 + y1) / 2;
+  drawOval(headCx - lz.w * 0.18, y0, x1, y1, bodyColor, "#4a7c1f");
+  drawOval(x1 - 5, headCy - 3, x1 - 1, headCy + 1, "#212121");
+}
+
+function drawLandTurtle(t) {
+  const [x0, y0] = w2s(t.x, t.y);
+  const x1 = x0 + t.w, y1 = y0 + t.h;
+  const cy = (y0 + y1) / 2;
+  const headX = t.dir > 0 ? x1 : x0;
+  const legLift = Math.abs(Math.sin(t.paddle)) * (t.h * 0.12);
+  // legs
+  for (const fx of [0.18, 0.42, 0.6, 0.84]) {
+    const lx = x0 + t.w * fx;
+    drawLine(lx, y1 - t.h * 0.05, lx, y1 + t.h * 0.22 - legLift, "#43a047", 3);
+  }
+  // shell
+  drawOval(x0 + t.w * 0.06, y0, x1 - t.w * 0.06, y1 - t.h * 0.05, "#6d9c40", "#33691e", 2);
+  drawLine((x0 + x1) / 2, y0 + t.h * 0.1, (x0 + x1) / 2, y1 - t.h * 0.15, "#33691e", 1.5);
+  drawLine(x0 + t.w * 0.28, y0 + t.h * 0.2, x0 + t.w * 0.28, y1 - t.h * 0.25, "#33691e", 1.5);
+  drawLine(x1 - t.w * 0.28, y0 + t.h * 0.2, x1 - t.w * 0.28, y1 - t.h * 0.25, "#33691e", 1.5);
+  // head
+  drawOval(headX - (t.dir > 0 ? -t.w * 0.02 : t.w * 0.22), cy - t.h * 0.16,
+    headX + (t.dir > 0 ? t.w * 0.22 : -t.w * 0.02), cy + t.h * 0.16, "#7cb342", "#33691e");
+  const eyeX = headX + (t.dir > 0 ? t.w * 0.13 : -t.w * 0.13);
+  drawOval(eyeX - 1.5, cy - 4, eyeX + 1.5, cy - 1, "#212121");
+}
+
+function drawTree(tree) {
+  const [x0, y0] = w2s(tree.x, tree.y);
+  const x1 = x0 + tree.w, y1 = y0 + tree.h;
+  const trunkW = tree.w * 0.22;
+  const trunkX0 = (x0 + x1) / 2 - trunkW / 2;
+  const trunkTop = y0 + tree.h * 0.4;
+  drawRect(trunkX0, trunkTop, trunkW, y1 - trunkTop, "#6d4c28", "#4a3218");
+  const cx = (x0 + x1) / 2, canopyR = tree.w * 0.55;
+  drawOval(cx - canopyR, y0, cx + canopyR, y0 + tree.h * 0.55, "#2e7d32", "#1b5e20");
+  drawOval(cx - canopyR * 0.75, y0 - tree.h * 0.1, cx + canopyR * 0.4, y0 + tree.h * 0.32, "#388e3c");
+  drawOval(cx - canopyR * 0.3, y0 - tree.h * 0.15, cx + canopyR * 0.85, y0 + tree.h * 0.28, "#43a047");
+}
+
+function drawCactus(cactus) {
+  const [x0, y0] = w2s(cactus.x, cactus.y);
+  const x1 = x0 + cactus.w, y1 = y0 + cactus.h;
+  const bodyW = cactus.w * 0.5;
+  const cx = (x0 + x1) / 2;
+  drawRect(cx - bodyW / 2, y0, bodyW, y1 - y0, "#4d8f3d", "#2f5a26");
+  const armW = cactus.w * 0.3, armH = cactus.h * 0.36;
+  if (cactus.armSide !== 0) {
+    const armX = cactus.armSide > 0 ? cx + bodyW / 2 - 2 : cx - bodyW / 2 - armW + 2;
+    const armY = y0 + cactus.h * 0.28;
+    drawRect(armX, armY, armW, armH, "#4d8f3d", "#2f5a26");
+    drawRect(armX, armY, armW, cactus.w * 0.28, "#4d8f3d", "#2f5a26");
+  }
+  ctx.strokeStyle = "#2f5a26";
+  ctx.lineWidth = 1;
+  for (let yy = y0 + 6; yy < y1 - 4; yy += 8) {
+    ctx.beginPath(); ctx.moveTo(cx - bodyW / 2, yy); ctx.lineTo(cx - bodyW / 2 - 3, yy); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(cx + bodyW / 2, yy); ctx.lineTo(cx + bodyW / 2 + 3, yy); ctx.stroke();
+  }
+}
+
+function drawBeehive(hive) {
+  const [x0, y0] = w2s(hive.x, hive.y);
+  const x1 = x0 + hive.w, y1 = y0 + hive.h;
+  const cx = (x0 + x1) / 2;
+  drawOval(x0 + hive.w * 0.1, y0 + hive.h * 0.35, x1 - hive.w * 0.1, y1, "#c98a3c", "#7a4e1e", 1.5);
+  drawOval(x0 + hive.w * 0.2, y0, x1 - hive.w * 0.2, y0 + hive.h * 0.6, "#d69a4e", "#7a4e1e", 1.5);
+  drawOval(cx - 4, y1 - 9, cx + 4, y1 - 1, "#3b2410");
+
+  if (hive.beeOut) {
+    const [bx, by] = w2s(hive.beeX, hive.beeY);
+    drawOval(bx - 6, by - 8, bx + 1, by - 2, "rgba(255,255,255,0.65)");
+    drawOval(bx - 1, by - 8, bx + 6, by - 2, "rgba(255,255,255,0.65)");
+    drawOval(bx - 5, by - 4, bx + 5, by + 4, "#ffca28", "#3b2410", 1);
+    drawLine(bx - 2, by - 4, bx - 2, by + 4, "#3b2410", 1.5);
+    drawLine(bx + 2, by - 4, bx + 2, by + 4, "#3b2410", 1.5);
+  }
+}
+
+// ---------- render: sea life ----------
+function drawSeaweed(sw) {
+  const [x0, y0] = w2s(sw.x, sw.y);
+  const x1 = x0 + sw.w, y1 = y0 + sw.h;
+  const cx = (x0 + x1) / 2;
+  const baseY = y1;
+  const sway = Math.sin(G.animTimer * 0.04 + sw.phase) * (sw.w * 1.5);
+  const segs = 4;
+  ctx.beginPath();
+  for (let i = 0; i <= segs; i++) {
+    const frac = i / segs;
+    const py = baseY - (baseY - y0) * frac;
+    const px = cx + sway * (frac * frac);
+    if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+  }
+  ctx.strokeStyle = "#2e7d4f";
+  ctx.lineWidth = Math.max(3, sw.w * 0.4);
+  ctx.lineCap = "round";
+  ctx.stroke();
+}
+
+function drawFish(f) {
+  const [x0, y0] = w2s(f.x, f.y);
+  const x1 = x0 + f.w, y1 = y0 + f.h;
+  const cy = (y0 + y1) / 2;
+  const bodyColor = f.dir > 0 ? "#ff8a3d" : "#ffb74d";
+  const headX = f.dir > 0 ? x1 : x0;
+  const tailX = f.dir > 0 ? x0 : x1;
+  drawOval(x0 + f.w * 0.15, y0, x1 - f.w * 0.15, y1, bodyColor, "#c9660a");
+  const tailMid = tailX + (f.dir > 0 ? -f.w * 0.2 : f.w * 0.2);
+  drawPoly([[tailX, cy], [tailMid, y0], [tailMid, y1]], bodyColor, "#c9660a");
+  const eyeX = headX - (f.dir > 0 ? f.w * 0.22 : -f.w * 0.22);
+  drawOval(eyeX - 2, cy - 3, eyeX + 2, cy + 1, "#212121");
+}
+
+function drawTurtle(t) {
+  const [x0, y0] = w2s(t.x, t.y);
+  const x1 = x0 + t.w, y1 = y0 + t.h;
+  const cy = (y0 + y1) / 2;
+  const headX = t.dir > 0 ? x1 : x0;
+  const tailX = t.dir > 0 ? x0 : x1;
+  const flip = Math.sin(t.paddle) * (t.h * 0.18);
+  // flippers
+  drawOval(tailX + (t.dir > 0 ? t.w * 0.08 : -t.w * 0.08), cy - t.h * 0.1 + flip,
+    tailX + (t.dir > 0 ? t.w * 0.3 : -t.w * 0.3), cy + t.h * 0.35 + flip, "#43a047", "#1b5e20");
+  drawOval(tailX + (t.dir > 0 ? t.w * 0.08 : -t.w * 0.08), cy - t.h * 0.35 - flip,
+    tailX + (t.dir > 0 ? t.w * 0.3 : -t.w * 0.3), cy + t.h * 0.1 - flip, "#43a047", "#1b5e20");
+  // shell
+  drawOval(x0 + t.w * 0.08, y0, x1 - t.w * 0.08, y1, "#6d9c40", "#33691e", 2);
+  drawLine((x0 + x1) / 2, y0 + t.h * 0.1, (x0 + x1) / 2, y1 - t.h * 0.1, "#33691e", 1.5);
+  drawLine(x0 + t.w * 0.28, y0 + t.h * 0.2, x0 + t.w * 0.28, y1 - t.h * 0.2, "#33691e", 1.5);
+  drawLine(x1 - t.w * 0.28, y0 + t.h * 0.2, x1 - t.w * 0.28, y1 - t.h * 0.2, "#33691e", 1.5);
+  // head
+  drawOval(headX - (t.dir > 0 ? -t.w * 0.02 : t.w * 0.22), cy - t.h * 0.16,
+    headX + (t.dir > 0 ? t.w * 0.22 : -t.w * 0.02), cy + t.h * 0.16, "#7cb342", "#33691e");
+  const eyeX = headX + (t.dir > 0 ? t.w * 0.13 : -t.w * 0.13);
+  drawOval(eyeX - 1.5, cy - 4, eyeX + 1.5, cy - 1, "#212121");
+}
+
+function drawJellyfish(j) {
+  const [x0, y0] = w2s(j.x, j.y);
+  const x1 = x0 + j.w, y1 = y0 + j.h;
+  const pulse = Math.sin(G.animTimer * 0.05 + j.phase) * (j.h * 0.08);
+  const bellBottom = y0 + j.h * 0.55 + pulse;
+  ctx.save();
+  ctx.globalAlpha = 0.55;
+  ctx.beginPath();
+  ctx.ellipse((x0 + x1) / 2, y0 + (bellBottom - y0), (x1 - x0) / 2, (bellBottom - y0), 0, Math.PI, 0, true);
+  ctx.fillStyle = "#ce93d8"; ctx.fill();
+  ctx.strokeStyle = "#8e24aa"; ctx.stroke();
+  ctx.restore();
+  for (let i = 0; i < 4; i++) {
+    const tx = x0 + (i + 0.5) * (j.w / 4);
+    const wobble = Math.sin(G.animTimer * 0.08 + j.phase + i) * 4;
+    drawLine(tx, bellBottom, tx + wobble, y1, "#ba68c8", 2);
+  }
+}
+
+// ---------- render: items & lasers ----------
+function drawItem(it) {
+  const [x0, y0] = w2s(it.x, it.y);
+  const x1 = x0 + it.w, y1 = y0 + it.h;
+  const cx = (x0 + x1) / 2, cy = (y0 + y1) / 2;
+  if (it.kind === "dart") {
+    drawPoly([[cx, y0], [x1, cy], [cx, y1], [x0, cy]], "#2b2b2b", "#3fa34d");
+  } else if (it.kind === "bird") {
+    drawOval(x0, y0, x1, y1, "#e91e63", "#1976d2", 2);
+    drawPoly([[cx, y0], [x1, cy], [cx, cy]], "#cddc39");
+  } else if (it.kind === "ball") {
+    drawOval(x0, y0, x1, y1, "#ff9800", "#5d4037", 2);
+    drawLine(x0, cy, x1, cy, "#5d4037");
+    drawLine(cx, y0, cx, y1, "#5d4037");
+  } else if (it.kind === "sword") {
+    drawLine(cx, y0, cx, y1 - 4, "#cfd8dc", 4);
+    drawLine(x0 + 3, y1 - 8, x1 - 3, y1 - 8, "#8d6e63", 4);
+    drawRect(cx - 3, y1 - 6, 6, 6, "#4e342e");
+  }
+}
+
+function drawLaser(laser) {
+  const [x0, y0] = w2s(laser.x, laser.y);
+  const length = 14;
+  const ang = (laser.vx || laser.vy) ? Math.atan2(laser.vy, laser.vx) : 0;
+  const x1 = x0 - Math.cos(ang) * length;
+  const y1 = y0 - Math.sin(ang) * length;
+  drawLine(x1, y1, x0, y0, laser.color, 4);
+}
+
+// ---------- main render ----------
+function render() {
+  drawWorld();
+
+  for (const sw of G.seaweeds) drawSeaweed(sw);
+  for (const f of G.fish) drawFish(f);
+  for (const t of G.turtles) drawTurtle(t);
+  for (const j of G.jellyfish) drawJellyfish(j);
+  for (const tree of G.trees) drawTree(tree);
+  for (const cactus of G.cacti) drawCactus(cactus);
+  for (const hive of G.beehives) drawBeehive(hive);
+  for (const plant of G.plants) drawPlant(plant);
+  for (const m of G.mushroomsBounce) drawMushroomBounce(m);
+  for (const pig of G.pigs) drawPig(pig);
+  for (const wm of G.walkingMushrooms) drawWalkingMushroom(wm);
+  for (const lz of G.lizards) drawLizard(lz);
+  for (const t of G.landTurtles) drawLandTurtle(t);
+  for (const v of G.villagers) drawVillager(v);
+  for (const ally of G.allies) drawAlly(ally);
+  for (const ig of G.ironGolems) drawIronGolem(ig);
+  for (const cr of G.creepers) if (cr.alive) drawCreeper(cr);
+  for (const t of G.tigers) if (t.alive) drawTiger(t);
+  for (const pm of G.patmen) if (pm.hp > 0) drawPatman(pm);
+  for (const it of G.items) drawItem(it);
+  for (const laser of G.playerLasers) drawLaser(laser);
+  for (const laser of G.patmanLasers) drawLaser(laser);
+  drawGolem(G.player);
+}
+
+function drawPlant(plant) {
+  const [x0, y0] = w2s(plant.x, plant.y);
+  const x1 = x0 + plant.w, y1 = y0 + plant.h;
+  const stemX = (x0 + x1) / 2;
+  drawLine(stemX, y1, stemX, y0 + plant.h * 0.4, "#2e7d32", 5);
+  const mouthOpen = 6 + plant.chomp;
+  drawPoly([[x0, y0 + plant.h * 0.4], [x1, y0 + plant.h * 0.4], [stemX, y0 - mouthOpen]], "#43a047", "#1b5e20");
+  for (let i = 0; i < 4; i++) {
+    const tx = x0 + (x1 - x0) * (i / 3);
+    drawLine(tx, y0 + plant.h * 0.4, tx, y0 + plant.h * 0.4 - 6, "white");
+  }
+  for (const ddx of [-8, 0, 8]) drawLine(stemX, y1, stemX + ddx, y1 + 10, "#2e7d32", 3);
+}
+
+// ---------- HUD sync (DOM, cheaper than redrawing text on canvas every frame) ----------
+function syncHud() {
+  const p = G.player;
+  document.getElementById("hpFill").style.width = Math.max(0, (p.hp / p.maxHp) * 100) + "%";
+  document.getElementById("hpLabel").textContent = `HP ${p.hp}/${p.maxHp}`;
+
+  const laserFill = document.getElementById("laserFill");
+  const laserLabel = document.getElementById("laserLabel");
+  if (p.laserUnlocked) {
+    laserFill.style.width = "100%";
+    laserLabel.textContent = "เลเซอร์: ไม่จำกัด (ปุ่ม F หรือ ⚡F)";
+  } else {
+    laserFill.style.width = "0%";
+    laserLabel.textContent = "เก็บลูกบอลเพื่อปลดล็อกเลเซอร์";
+  }
+
+  document.getElementById("scoreLine").textContent = `ไอเทมที่เก็บได้: ${p.score}`;
+
+  const buffs = [];
+  if (p.speedTimer > 0) buffs.push(`ความเร็ว +70% (${Math.floor(p.speedTimer / 30) + 1}s)`);
+  if (p.jumpTimer > 0) buffs.push(`กระโดดสูง (${Math.floor(p.jumpTimer / 30) + 1}s)`);
+  document.getElementById("buffLine").textContent = buffs.join(" | ");
+
+  document.getElementById("swordLine").textContent = p.hasSword ? "ได้ดาบจากแพทแมนแล้ว!" : "";
+
+  document.getElementById("oreLine").textContent =
+    `ถ่านหิน ${p.ores[COAL]}  เหล็ก ${p.ores[IRON]}  ทอง ${p.ores[GOLD]}  เพชร ${p.ores[DIAMOND]}`;
+
+  document.getElementById("blockSel").textContent = `บล็อกที่เลือก: ${TILE_NAMES[G.selectedBlock]} (แตะปุ่มสลับ)`;
+}
+
+// ---------- main loop (fixed 33ms step, matching the original 30fps feel) ----------
+const STEP_MS = 33.33;
+let lastTime = performance.now();
+let accumulator = 0;
+
+function loop(now) {
+  try {
+    const dt = now - lastTime;
+    lastTime = now;
+    accumulator += dt;
+    accumulator = Math.min(accumulator, STEP_MS * 5); // avoid spiral of death on tab-switch
+
+    while (accumulator >= STEP_MS) {
+      if (!G.gameOver) update();
+      accumulator -= STEP_MS;
+    }
+
+    render();
+    syncHud();
+    requestAnimationFrame(loop);
+  } catch (err) {
+    showFatalErrorRef(err);
+  }
+}
+let showFatalErrorRef = () => {}; // set once showFatalError is defined below
+
+// ---------- init ----------
+function showFatalError(err) {
+  const el = document.getElementById("errorBanner");
+  if (el) {
+    el.style.display = "block";
+    el.textContent = "เกิดข้อผิดพลาด (กรุณาแคปหน้าจอนี้ส่งกลับ):\n\n" + (err && err.stack ? err.stack : String(err));
+  }
+}
+showFatalErrorRef = showFatalError;
+try {
+  resizeCanvas();
+  newGame();
+  document.getElementById("btnMode").textContent = TILE_NAMES[G.selectedBlock];
+  document.getElementById("btnDig").textContent = "⛏";
+  requestAnimationFrame(loop);
+} catch (err) {
+  showFatalError(err);
+}
+
+</script>
+</body>
+</html>
