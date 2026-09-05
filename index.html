@@ -37,6 +37,42 @@
     font-family:'Press Start 2P',cursive; font-size:13px; color:#ffe0e0;
     text-shadow:0 2px 0 #7a1010; pointer-events:none; opacity:0; transition:opacity 0.4s;
   }
+  #shopPanel{
+    position:fixed; left:50%; top:50%; transform:translate(-50%,-50%);
+    width:min(92vw,420px); z-index:31; display:none;
+    background:#2a2a1a; border:4px solid #FFD54F; border-radius:14px;
+    box-shadow:0 8px 0 #8a6a00, 0 8px 24px rgba(0,0,0,0.6);
+    padding:14px; font-family:'Kanit',sans-serif; color:#fff;
+  }
+  #shopPanel.show{ display:block; }
+  #shopHead{
+    display:flex; align-items:center; justify-content:space-between;
+    margin-bottom:10px; font-weight:700; color:#FFD54F; font-size:17px;
+  }
+  #shopClose{
+    background:#c0392b; color:#fff; border:none; border-radius:8px;
+    width:26px;height:26px; font-weight:700; cursor:pointer;
+  }
+  .shopItem{
+    display:flex; align-items:center; gap:10px;
+    background:rgba(255,255,255,0.06); border-radius:10px; padding:10px;
+    margin-bottom:10px;
+  }
+  .shopItemIcon{ font-size:30px; width:44px; text-align:center; flex-shrink:0; }
+  .shopItemInfo{ flex:1; min-width:0; }
+  .shopItemName{ font-weight:700; color:#FFD54F; font-size:14px; }
+  .shopItemDesc{ font-size:12px; color:#ddd; line-height:1.4; margin-top:2px; }
+  .shopBuyBtn{
+    background:#FFD54F; color:#3a2a00; border:none; border-radius:8px;
+    padding:9px 12px; font-weight:700; cursor:pointer; font-family:'Kanit',sans-serif;
+    font-size:13px; flex-shrink:0; white-space:nowrap;
+  }
+  #shopMsg{
+    font-size:12px; color:#FFE9A8; text-align:center; min-height:16px;
+    opacity:0; transition:opacity 0.3s;
+  }
+  #shopMsg.show{ opacity:1; }
+
   #timeStopLabel.show{ opacity:1; }
 
   #fifaOverlay{
@@ -316,6 +352,31 @@
   <div class="hud-chip" id="clockChip" style="display:none;"></div>
   <div class="hud-chip" id="followChip" style="display:none;">🙂 ตามเรามาแล้ว!</div>
   <div class="hud-chip" id="godChip" style="display:none;">👑 พระเจ้า</div>
+  <div class="hud-chip" id="shopBtn" style="cursor:pointer;">🏪 ร้านค้า</div>
+</div>
+
+<div id="shopPanel">
+  <div id="shopHead">
+    <span>🏪 ร้านค้า</span>
+    <button id="shopClose">✕</button>
+  </div>
+  <div class="shopItem">
+    <div class="shopItemIcon">🔵⏰</div>
+    <div class="shopItemInfo">
+      <div class="shopItemName">นาฬิกาสีฟ้า</div>
+      <div class="shopItemDesc">ย้อนเวลากลับไปตอนกลางวันได้ทันที (ใช้ซ้ำได้เรื่อยๆ)</div>
+    </div>
+    <button class="shopBuyBtn" id="buyClockBtn">💎 9</button>
+  </div>
+  <div class="shopItem">
+    <div class="shopItemIcon">🍾</div>
+    <div class="shopItemInfo">
+      <div class="shopItemName">ขวดจับแมลง</div>
+      <div class="shopItemDesc">จับแมลงเพื่อนยิ้ม 2 ตัวมารวมกันเป็นแมลงตัวใหม่ที่ใหญ่กว่า (ต้องอยู่ในโลกเพื่อนยิ้ม)</div>
+    </div>
+    <button class="shopBuyBtn" id="buyBottleBtn">💎 10</button>
+  </div>
+  <div id="shopMsg"></div>
 </div>
 <div id="hint">ลากเมาส์ (หรือลากนิ้วฝั่งขวา) เพื่อมองรอบตัว • WASD เดิน</div>
 <div id="prompt"></div>
@@ -378,6 +439,7 @@
     <p>🧡 หา "มนุษย์หัวดาบ" ที่เดินอยู่ในทุ่งโล่ง กิน E เพื่อกินหัวใจแล้วกลายร่างเป็นมัน อมตะเช่นกัน ฟันดาบฆ่าสัตว์ได้ด้วย <span class="key">M</span> และวิ่งเร็วขึ้นด้วย <span class="key">G</span>!</p>
     <p>🌙 กลางคืนจะมี<b>โครงกระดูก</b>โผล่ขึ้นมาจากพื้นดินและไล่ตีเรา! พอถึงกลางวันมันจะจมกลับลงดินหายไปเอง แต่อย่ากลัวไป เพราะ<b>มนุษย์เหล็ก</b>ที่เฝ้าหมู่บ้านจะช่วยต่อยโครงกระดูกให้ตอนกลางคืน</p>
     <p>😊🐝 พิมพ์คำว่า <b>fifa</b> ในกล่องแชทเพื่อนยิ้ม (หรือพิมพ์ตอนเล่นถ้ามีคีย์บอร์ด) เพื่อเข้าสู่<b>โลกเพื่อนยิ้ม</b> ทุกอย่างจะเป็นสีเหลืองและมี<b>แมลงเพื่อนยิ้ม</b>บินอยู่รอบตัว! ถ้าแมลงเพื่อนยิ้มแตะโดนสัตว์ สัตว์ตัวนั้นจะกลายเป็น<b>เพื่อนยิ้มสีฟ้า</b> ที่คอยวิ่งตามปกป้องเราจากโครงกระดูกตลอดไป</p>
+    <p>🏪 แตะปุ่ม <b>ร้านค้า</b> มุมบนซ้ายเพื่อซื้อของด้วยเพชร 💎 มี<b>นาฬิกาสีฟ้า</b> (9 เพชร) ย้อนเวลากลับไปตอนกลางวันได้ และ<b>ขวดจับแมลง</b> (10 เพชร) ใช้รวมแมลงเพื่อนยิ้ม 2 ตัวให้กลายเป็นแมลงตัวใหม่ที่ใหญ่กว่า</p>
     <p>🤡 ระวัง<b>ตัวตลก 6 ขา</b> ที่ไต่ปีนกำแพง/บินตามขึ้นไปได้แม้บนที่สูง มันจะไล่ตีเราถ้าเข้าใกล้!</p>
     <button id="playBtn">▶ เริ่มเล่น</button>
     <p>👁️⚙️ ในทะเลทรายมี "มอนสเตอร์ 6 แขน" (เลื่อยยนต์ ดาบ ปืน มือ และหัวจิ๋ว) กิน E เพื่อกลายร่าง แล้วใช้ <span class="key">B</span> หยิบจับสัตว์ และ <span class="key">V</span> ยื่นคองับกัดสัตว์ระยะไกล! กด <span class="key">O</span> ค้างเพื่อปีนกำแพงขึ้นตรงๆ และกด <span class="key">L</span> เพื่อบินทะลุกำแพง/สิ่งกีดขวางได้ 3 วิ</p>
@@ -4124,7 +4186,7 @@
   }
 
   // ================= Player & input state =================
-  const player = { x:0, y:EYE_HEIGHT, z:12, vy:0, yaw:Math.PI, pitch:0, grounded:true, flightTimer:0, transformed:false, transformedSword:false, transformedHybrid:false, transformedParty:false, transformedBlack:false, transformedBlob:false, transformedBoneThief:false, phaseTimer:0, trapTimer:0, hasClock:false, godMode:false };
+  const player = { x:0, y:EYE_HEIGHT, z:12, vy:0, yaw:Math.PI, pitch:0, grounded:true, flightTimer:0, transformed:false, transformedSword:false, transformedHybrid:false, transformedParty:false, transformedBlack:false, transformedBlob:false, transformedBoneThief:false, phaseTimer:0, trapTimer:0, hasClock:false, godMode:false, hasBlueClock:false, hasBottle:false };
   const keys = {};
   let active = false; // true once "start" pressed
   const stats = { wood:0, corn:0, gems:0, captured:0 };
@@ -4823,7 +4885,7 @@
   const smileyBugWingMat = new THREE.MeshBasicMaterial({color:0xfff6d0, transparent:true, opacity:0.55, side:THREE.DoubleSide});
 
   const smileyBugs = [];
-  function makeSmileyBug(){
+  function makeSmileyBug(big){
     const g = new THREE.Group();
     const body = new THREE.Mesh(new THREE.SphereGeometry(0.17,10,8), smileyBugMat);
     g.add(body);
@@ -4840,12 +4902,24 @@
     g.userData.radius = 2.5 + Math.random()*6;
     g.userData.speed = (0.4 + Math.random()*0.6) * (Math.random()<0.5?1:-1);
     g.userData.heightOff = Math.random()*2.4;
-    g.userData.convertCooldown = Math.random()*1.5;
+    g.userData.convertCooldown = big ? 0 : Math.random()*1.5;
+    if(big){
+      g.scale.set(2.1,2.1,2.1);
+      g.userData.super = true;
+    }
     g.visible = false;
     scene.add(g);
     smileyBugs.push(g);
+    return g;
   }
   for(let i=0;i<16;i++) makeSmileyBug();
+  function makeSuperSmileyBug(x,z){
+    const g = makeSmileyBug(true);
+    g.userData.radius = Math.max(2, Math.hypot(x-player.x, z-player.z));
+    g.userData.baseAngle = Math.atan2(z-player.z, x-player.x);
+    g.visible = fifaWorldActive;
+    return g;
+  }
 
   function updateSmileyBugs(dt, elapsed){
     if(!fifaWorldActive) return;
@@ -4864,17 +4938,18 @@
 
       // touch an animal -> it becomes a blue smiley friend that protects us from skeletons
       if(b.userData.convertCooldown>0){ b.userData.convertCooldown -= dt; return; }
+      const touchDist = b.userData.super ? 1.6 : 0.9;
       outerAnimalTouch:
       for(const arr of animalArrays){
         for(let ai=arr.length-1; ai>=0; ai--){
           const a = arr[ai];
           const dist = Math.hypot(a.position.x-b.position.x, a.position.z-b.position.z);
-          if(dist<0.9){
+          if(dist<touchDist){
             const ax=a.position.x, az=a.position.z;
             if(a.parent) a.parent.remove(a); else scene.remove(a);
             arr.splice(ai,1);
             spawnSmileyFriend(ax,az);
-            b.userData.convertCooldown = 1.5;
+            b.userData.convertCooldown = b.userData.super ? 0.3 : 1.5;
             updateHUD();
             break outerAnimalTouch;
           }
@@ -4924,6 +4999,67 @@
     e.stopPropagation();
     if(e.code==='Enter') askSmiley();
   });
+
+  // ================= Shop: blue clock (rewind time) & bottle (combine smiley bugs) =================
+  const shopBtnEl = document.getElementById('shopBtn');
+  const shopPanelEl = document.getElementById('shopPanel');
+  const shopCloseEl = document.getElementById('shopClose');
+  const shopMsgEl = document.getElementById('shopMsg');
+  const buyClockBtnEl = document.getElementById('buyClockBtn');
+  const buyBottleBtnEl = document.getElementById('buyBottleBtn');
+
+  let shopMsgTimer = null;
+  function flashShopMsg(text){
+    shopMsgEl.textContent = text;
+    shopMsgEl.classList.add('show');
+    if(shopMsgTimer) clearTimeout(shopMsgTimer);
+    shopMsgTimer = setTimeout(()=> shopMsgEl.classList.remove('show'), 2600);
+  }
+  function refreshShopButtons(){
+    buyClockBtnEl.textContent = player.hasBlueClock ? 'ใช้ ⏰' : '💎 9';
+    buyBottleBtnEl.textContent = player.hasBottle ? 'ใช้ 🍾' : '💎 10';
+  }
+  function useBlueClock(){
+    cycleT = 10;
+    updateDayNight(0);
+    flashShopMsg('⏰🔵 ย้อนเวลากลับไปตอนกลางวันแล้ว!');
+  }
+  function useBottle(){
+    const activeBugs = smileyBugs.filter(b=>b.visible && !b.userData.super);
+    if(!fifaWorldActive || activeBugs.length<2){
+      flashShopMsg('ต้องอยู่ในโลกเพื่อนยิ้ม (พิมพ์ fifa) และมีแมลงอย่างน้อย 2 ตัวก่อนนะ!');
+      return;
+    }
+    const b1 = activeBugs[0], b2 = activeBugs[1];
+    const cx = (b1.position.x+b2.position.x)/2;
+    const cz = (b1.position.z+b2.position.z)/2;
+    [b1,b2].forEach(b=>{
+      scene.remove(b);
+      const idx = smileyBugs.indexOf(b);
+      if(idx>=0) smileyBugs.splice(idx,1);
+    });
+    makeSuperSmileyBug(cx,cz);
+    flashShopMsg('🍾✨ รวมแมลงสำเร็จ! ได้แมลงเพื่อนยิ้มตัวใหม่ที่ใหญ่กว่า!');
+  }
+  buyClockBtnEl.addEventListener('click', ()=>{
+    if(player.hasBlueClock){ useBlueClock(); return; }
+    if(stats.gems<9){ flashShopMsg('เพชรไม่พอ ต้องมี 💎9'); return; }
+    stats.gems -= 9; player.hasBlueClock = true;
+    updateHUD(); refreshShopButtons();
+    flashShopMsg('ซื้อนาฬิกาสีฟ้าสำเร็จ! กดปุ่มนี้อีกครั้งเพื่อย้อนเวลา ⏰');
+  });
+  buyBottleBtnEl.addEventListener('click', ()=>{
+    if(player.hasBottle){ useBottle(); return; }
+    if(stats.gems<10){ flashShopMsg('เพชรไม่พอ ต้องมี 💎10'); return; }
+    stats.gems -= 10; player.hasBottle = true;
+    updateHUD(); refreshShopButtons();
+    flashShopMsg('ซื้อขวดจับแมลงสำเร็จ! กดปุ่มนี้อีกครั้งเพื่อรวมแมลง 🍾');
+  });
+  shopBtnEl.addEventListener('click', ()=>{
+    refreshShopButtons();
+    shopPanelEl.classList.add('show');
+  });
+  shopCloseEl.addEventListener('click', ()=> shopPanelEl.classList.remove('show'));
 
 
   function updateHUD(){
