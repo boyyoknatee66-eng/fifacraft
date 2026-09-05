@@ -377,6 +377,7 @@
     <p>👹 ลึกในถ้ำมืดมี "มนุษย์หัวปืน" หากกด E กินหัวใจมันได้ เราจะกลายร่างเป็นมัน อมตะ บินได้ตลอดกาล ยิงปืนได้ด้วย <span class="key">T</span> โคลนตัวเองได้ด้วย <span class="key">R</span> และเล็งไปที่สัตว์แล้วกด <span class="key">K</span> เพื่อสั่งให้ร่างโคลนยิงแทนเรา!</p>
     <p>🧡 หา "มนุษย์หัวดาบ" ที่เดินอยู่ในทุ่งโล่ง กิน E เพื่อกินหัวใจแล้วกลายร่างเป็นมัน อมตะเช่นกัน ฟันดาบฆ่าสัตว์ได้ด้วย <span class="key">M</span> และวิ่งเร็วขึ้นด้วย <span class="key">G</span>!</p>
     <p>🌙 กลางคืนจะมี<b>โครงกระดูก</b>โผล่ขึ้นมาจากพื้นดินและไล่ตีเรา! พอถึงกลางวันมันจะจมกลับลงดินหายไปเอง แต่อย่ากลัวไป เพราะ<b>มนุษย์เหล็ก</b>ที่เฝ้าหมู่บ้านจะช่วยต่อยโครงกระดูกให้ตอนกลางคืน</p>
+    <p>😊🐝 พิมพ์คำว่า <b>fifa</b> ในกล่องแชทเพื่อนยิ้ม (หรือพิมพ์ตอนเล่นถ้ามีคีย์บอร์ด) เพื่อเข้าสู่<b>โลกเพื่อนยิ้ม</b> ทุกอย่างจะเป็นสีเหลืองและมี<b>แมลงเพื่อนยิ้ม</b>บินอยู่รอบตัว! ถ้าแมลงเพื่อนยิ้มแตะโดนสัตว์ สัตว์ตัวนั้นจะกลายเป็น<b>เพื่อนยิ้มสีฟ้า</b> ที่คอยวิ่งตามปกป้องเราจากโครงกระดูกตลอดไป</p>
     <p>🤡 ระวัง<b>ตัวตลก 6 ขา</b> ที่ไต่ปีนกำแพง/บินตามขึ้นไปได้แม้บนที่สูง มันจะไล่ตีเราถ้าเข้าใกล้!</p>
     <button id="playBtn">▶ เริ่มเล่น</button>
     <p>👁️⚙️ ในทะเลทรายมี "มอนสเตอร์ 6 แขน" (เลื่อยยนต์ ดาบ ปืน มือ และหัวจิ๋ว) กิน E เพื่อกลายร่าง แล้วใช้ <span class="key">B</span> หยิบจับสัตว์ และ <span class="key">V</span> ยื่นคองับกัดสัตว์ระยะไกล! กด <span class="key">O</span> ค้างเพื่อปีนกำแพงขึ้นตรงๆ และกด <span class="key">L</span> เพื่อบินทะลุกำแพง/สิ่งกีดขวางได้ 3 วิ</p>
@@ -3119,6 +3120,101 @@
   spawnIronGolem(-11,14);
   spawnIronGolem(11,30);
 
+  // ================= Blue Smiley Friends (animals touched by smiley bugs become these; they guard us from skeletons) =================
+  const blueFaceMat = new THREE.MeshLambertMaterial({color:0x4FC3F7, emissive:0x0a3a4a});
+  const blueDarkMat = new THREE.MeshLambertMaterial({color:0x0d2b36});
+  const blueBodyMat = new THREE.MeshLambertMaterial({color:0x29B6F6});
+  function makeSmileyFriend(){
+    const g = new THREE.Group();
+    const body = new THREE.Mesh(new THREE.SphereGeometry(0.32,10,8), blueBodyMat);
+    body.position.y = 0.42; g.add(body);
+    const head = new THREE.Mesh(new THREE.SphereGeometry(0.28,14,12), blueFaceMat);
+    head.position.y = 0.95; g.add(head);
+    [-0.11,0.11].forEach(ex=>{
+      const eye = new THREE.Mesh(new THREE.SphereGeometry(0.038,8,8), blueDarkMat);
+      eye.scale.set(0.8,1.3,0.6);
+      eye.position.set(ex,0.98,0.24);
+      g.add(eye);
+    });
+    const smile = new THREE.Mesh(new THREE.TorusGeometry(0.11,0.02,8,16,Math.PI*0.75), blueDarkMat);
+    smile.position.set(0,0.87,0.22);
+    smile.rotation.z = Math.PI*1.12;
+    g.add(smile);
+    g.userData.type = 'smileyfriend';
+    g.traverse(o=>{o.userData.rootRef=g;});
+    return g;
+  }
+  const smileyFriends = [];
+  function spawnSmileyFriend(x,z){
+    const g = makeSmileyFriend();
+    g.position.set(x,0,z);
+    g.userData.target = {x,z};
+    g.userData.wait = Math.random()*2;
+    g.userData.attackCooldown = 0;
+    g.userData.seed = Math.random()*10;
+    scene.add(g);
+    smileyFriends.push(g);
+    return g;
+  }
+  function updateSmileyFriends(dt, elapsed){
+    smileyFriends.forEach(g=>{
+      const st = g.userData;
+      if(st.attackCooldown>0) st.attackCooldown -= dt;
+      g.position.y = Math.sin(elapsed*2+st.seed)*0.04;
+
+      let target=null, bestDist=18;
+      skeletons.forEach(s=>{
+        if(s.userData.state!=='active') return;
+        const d = Math.hypot(s.position.x-g.position.x, s.position.z-g.position.z);
+        if(d<bestDist){ bestDist=d; target=s; }
+      });
+
+      if(target){
+        const dx = target.position.x-g.position.x, dz = target.position.z-g.position.z;
+        const d = Math.hypot(dx,dz);
+        if(d>1.1){
+          const spd = 2.3;
+          g.position.x += (dx/d)*spd*dt;
+          g.position.z += (dz/d)*spd*dt;
+          g.rotation.y = Math.atan2(dx,dz);
+        } else {
+          g.rotation.y = Math.atan2(dx,dz);
+          if(st.attackCooldown<=0){
+            st.attackCooldown = 1.0;
+            scene.remove(target);
+            const idx = skeletons.indexOf(target);
+            if(idx>=0) skeletons.splice(idx,1);
+          }
+        }
+      } else {
+        // no skeleton nearby right now: stay close to the player, ready to defend
+        const dxp = player.x-g.position.x, dzp = player.z-g.position.z;
+        const distP = Math.hypot(dxp,dzp);
+        if(distP > 6){
+          const spd = 1.7;
+          g.position.x += (dxp/distP)*spd*dt;
+          g.position.z += (dzp/distP)*spd*dt;
+          g.rotation.y = Math.atan2(dxp,dzp);
+        } else {
+          st.wait -= dt;
+          if(st.wait<=0){
+            const ang=Math.random()*Math.PI*2, rad=Math.random()*3;
+            st.target = {x:player.x+Math.cos(ang)*rad, z:player.z+Math.sin(ang)*rad};
+            st.wait = 3+Math.random()*3;
+          }
+          const dx = st.target.x-g.position.x, dz = st.target.z-g.position.z;
+          const d = Math.hypot(dx,dz);
+          if(d>0.3){
+            const spd = 1.0;
+            g.position.x += (dx/d)*spd*dt;
+            g.position.z += (dz/d)*spd*dt;
+            g.rotation.y = Math.atan2(dx,dz);
+          }
+        }
+      }
+    });
+  }
+
   function updateIronGolems(dt, elapsed){
     ironGolems.forEach(g=>{
       const st = g.userData;
@@ -4744,6 +4840,7 @@
     g.userData.radius = 2.5 + Math.random()*6;
     g.userData.speed = (0.4 + Math.random()*0.6) * (Math.random()<0.5?1:-1);
     g.userData.heightOff = Math.random()*2.4;
+    g.userData.convertCooldown = Math.random()*1.5;
     g.visible = false;
     scene.add(g);
     smileyBugs.push(g);
@@ -4764,6 +4861,25 @@
       const flap = Math.sin(elapsed*26+i)*0.9;
       b.userData.wingL.rotation.z = flap;
       b.userData.wingR.rotation.z = -flap;
+
+      // touch an animal -> it becomes a blue smiley friend that protects us from skeletons
+      if(b.userData.convertCooldown>0){ b.userData.convertCooldown -= dt; return; }
+      outerAnimalTouch:
+      for(const arr of animalArrays){
+        for(let ai=arr.length-1; ai>=0; ai--){
+          const a = arr[ai];
+          const dist = Math.hypot(a.position.x-b.position.x, a.position.z-b.position.z);
+          if(dist<0.9){
+            const ax=a.position.x, az=a.position.z;
+            if(a.parent) a.parent.remove(a); else scene.remove(a);
+            arr.splice(ai,1);
+            spawnSmileyFriend(ax,az);
+            b.userData.convertCooldown = 1.5;
+            updateHUD();
+            break outerAnimalTouch;
+          }
+        }
+      }
     });
   }
 
@@ -5384,6 +5500,7 @@
     updateSkeletons(worldDt, worldElapsed);
     checkSkeletonHit(worldDt);
     updateIronGolems(worldDt, worldElapsed);
+    updateSmileyFriends(worldDt, worldElapsed);
     updateSpiderClowns(worldDt, worldElapsed);
     checkSpiderClownHit(worldDt);
     updateBullets(worldDt);
