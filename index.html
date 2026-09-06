@@ -366,7 +366,7 @@
       <div class="shopItemName">นาฬิกาสีฟ้า</div>
       <div class="shopItemDesc">ย้อนเวลากลับไปตอนกลางวันได้ทันที (ใช้ซ้ำได้เรื่อยๆ)</div>
     </div>
-    <button class="shopBuyBtn" id="buyClockBtn">💎 9</button>
+    <button class="shopBuyBtn" id="buyClockBtn">💎 8</button>
   </div>
   <div class="shopItem">
     <div class="shopItemIcon">🍾</div>
@@ -374,7 +374,7 @@
       <div class="shopItemName">ขวดจับแมลง</div>
       <div class="shopItemDesc">จับแมลงเพื่อนยิ้ม 2 ตัวมารวมกันเป็นแมลงตัวใหม่ที่ใหญ่กว่า (ต้องอยู่ในโลกเพื่อนยิ้ม)</div>
     </div>
-    <button class="shopBuyBtn" id="buyBottleBtn">💎 10</button>
+    <button class="shopBuyBtn" id="buyBottleBtn">💎 6</button>
   </div>
   <div id="shopMsg"></div>
 </div>
@@ -439,7 +439,7 @@
     <p>🧡 หา "มนุษย์หัวดาบ" ที่เดินอยู่ในทุ่งโล่ง กิน E เพื่อกินหัวใจแล้วกลายร่างเป็นมัน อมตะเช่นกัน ฟันดาบฆ่าสัตว์ได้ด้วย <span class="key">M</span> และวิ่งเร็วขึ้นด้วย <span class="key">G</span>!</p>
     <p>🌙 กลางคืนจะมี<b>โครงกระดูก</b>โผล่ขึ้นมาจากพื้นดินและไล่ตีเรา! พอถึงกลางวันมันจะจมกลับลงดินหายไปเอง แต่อย่ากลัวไป เพราะ<b>มนุษย์เหล็ก</b>ที่เฝ้าหมู่บ้านจะช่วยต่อยโครงกระดูกให้ตอนกลางคืน</p>
     <p>😊🐝 พิมพ์คำว่า <b>fifa</b> ในกล่องแชทเพื่อนยิ้ม (หรือพิมพ์ตอนเล่นถ้ามีคีย์บอร์ด) เพื่อเข้าสู่<b>โลกเพื่อนยิ้ม</b> ทุกอย่างจะเป็นสีเหลืองและมี<b>แมลงเพื่อนยิ้ม</b>บินอยู่รอบตัว! ถ้าแมลงเพื่อนยิ้มแตะโดนสัตว์ สัตว์ตัวนั้นจะกลายเป็น<b>เพื่อนยิ้มสีฟ้า</b> ที่คอยวิ่งตามปกป้องเราจากโครงกระดูกตลอดไป</p>
-    <p>🏪 แตะปุ่ม <b>ร้านค้า</b> มุมบนซ้ายเพื่อซื้อของด้วยเพชร 💎 มี<b>นาฬิกาสีฟ้า</b> (9 เพชร) ย้อนเวลากลับไปตอนกลางวันได้ และ<b>ขวดจับแมลง</b> (10 เพชร) ใช้รวมแมลงเพื่อนยิ้ม 2 ตัวให้กลายเป็นแมลงตัวใหม่ที่ใหญ่กว่า</p>
+    <p>🏪 แตะปุ่ม <b>ร้านค้า</b> มุมบนซ้ายเพื่อซื้อของด้วยเพชร 💎 มี<b>นาฬิกาสีฟ้า</b> (8 เพชร) ย้อนเวลากลับไปตอนกลางวันได้ และ<b>ขวดจับแมลง</b> (6 เพชร) ใช้รวมแมลงเพื่อนยิ้ม 2 ตัวให้กลายเป็นแมลงตัวใหม่ที่ใหญ่กว่า</p>
     <p>🤡 ระวัง<b>ตัวตลก 6 ขา</b> ที่ไต่ปีนกำแพง/บินตามขึ้นไปได้แม้บนที่สูง มันจะไล่ตีเราถ้าเข้าใกล้!</p>
     <button id="playBtn">▶ เริ่มเล่น</button>
     <p>👁️⚙️ ในทะเลทรายมี "มอนสเตอร์ 6 แขน" (เลื่อยยนต์ ดาบ ปืน มือ และหัวจิ๋ว) กิน E เพื่อกลายร่าง แล้วใช้ <span class="key">B</span> หยิบจับสัตว์ และ <span class="key">V</span> ยื่นคองับกัดสัตว์ระยะไกล! กด <span class="key">O</span> ค้างเพื่อปีนกำแพงขึ้นตรงๆ และกด <span class="key">L</span> เพื่อบินทะลุกำแพง/สิ่งกีดขวางได้ 3 วิ</p>
@@ -5016,8 +5016,8 @@
     shopMsgTimer = setTimeout(()=> shopMsgEl.classList.remove('show'), 2600);
   }
   function refreshShopButtons(){
-    buyClockBtnEl.textContent = player.hasBlueClock ? 'ใช้ ⏰' : '💎 9';
-    buyBottleBtnEl.textContent = player.hasBottle ? 'ใช้ 🍾' : '💎 10';
+    buyClockBtnEl.textContent = player.hasBlueClock ? 'ใช้ ⏰' : '💎 8';
+    buyBottleBtnEl.textContent = player.hasBottle ? 'ใช้ 🍾' : '💎 6';
   }
   function useBlueClock(){
     cycleT = 10;
@@ -5043,15 +5043,15 @@
   }
   buyClockBtnEl.addEventListener('click', ()=>{
     if(player.hasBlueClock){ useBlueClock(); return; }
-    if(stats.gems<9){ flashShopMsg('เพชรไม่พอ ต้องมี 💎9'); return; }
-    stats.gems -= 9; player.hasBlueClock = true;
+    if(stats.gems<8){ flashShopMsg('เพชรไม่พอ ต้องมี 💎8'); return; }
+    stats.gems -= 8; player.hasBlueClock = true;
     updateHUD(); refreshShopButtons();
     flashShopMsg('ซื้อนาฬิกาสีฟ้าสำเร็จ! กดปุ่มนี้อีกครั้งเพื่อย้อนเวลา ⏰');
   });
   buyBottleBtnEl.addEventListener('click', ()=>{
     if(player.hasBottle){ useBottle(); return; }
-    if(stats.gems<10){ flashShopMsg('เพชรไม่พอ ต้องมี 💎10'); return; }
-    stats.gems -= 10; player.hasBottle = true;
+    if(stats.gems<6){ flashShopMsg('เพชรไม่พอ ต้องมี 💎6'); return; }
+    stats.gems -= 6; player.hasBottle = true;
     updateHUD(); refreshShopButtons();
     flashShopMsg('ซื้อขวดจับแมลงสำเร็จ! กดปุ่มนี้อีกครั้งเพื่อรวมแมลง 🍾');
   });
