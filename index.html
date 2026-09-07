@@ -441,6 +441,7 @@
     <p>😊🐝 พิมพ์คำว่า <b>fifa</b> ในกล่องแชทเพื่อนยิ้ม (หรือพิมพ์ตอนเล่นถ้ามีคีย์บอร์ด) เพื่อเข้าสู่<b>โลกเพื่อนยิ้ม</b> ทุกอย่างจะเป็นสีเหลืองและมี<b>แมลงเพื่อนยิ้ม</b>บินอยู่รอบตัว! ถ้าแมลงเพื่อนยิ้มแตะโดนสัตว์ สัตว์ตัวนั้นจะกลายเป็น<b>เพื่อนยิ้มสีฟ้า</b> ที่คอยวิ่งตามปกป้องเราจากโครงกระดูกตลอดไป</p>
     <p>🏪 แตะปุ่ม <b>ร้านค้า</b> มุมบนซ้ายเพื่อซื้อของด้วยเพชร 💎 มี<b>นาฬิกาสีฟ้า</b> (1 เพชร) ย้อนเวลากลับไปตอนกลางวันได้ และ<b>ขวดจับแมลง</b> (4 เพชร) ใช้รวมแมลงเพื่อนยิ้ม 2 ตัวให้กลายเป็นแมลงตัวใหม่ที่ใหญ่กว่า</p>
     <p>🐢🐯🐸🐰🦎🐭⛰️🌴 ในโลกมีสัตว์ใหม่เพิ่ม เต่า เสือ กบ กระต่าย กิ้งก่า หนู เดินเล่นอยู่ทั่วแผนที่ พร้อม<b>ภูเขา</b>และ<b>ป่าใหญ่</b>ทางทิศตะวันตก และมี<b>ต้นกล้วย ต้นแอปเปิ้ล</b> เก้าอี้ พัดลม ถังขยะ โคมไฟ ให้เห็นรอบๆ หมู่บ้าน หากลาย <b>ขวาน 🪓</b> (ใกล้ร้านค้า) จะเก็บไม้ได้เพิ่มขึ้น และ <b>ดาบ ⚔️</b> ให้ฟันสัตว์ได้โดยไม่ต้องแปลงร่าง (กด M)</p>
+    <p>🦆🦒🦛🐘🦁🦏 มีสัตว์เพิ่มอีก เป็ด ยีราฟ ฮิปโป ช้าง สิงโต แรด เดินเล่นทั่วแผนที่ 🦀🐋⭐️🎐 ในบึงมอนสเตอร์มี ปู ปลาวาฬ ปลาดาว แมงกะพรุน 🦋🐛🐜 มีแมลง ผีเสื้อ ตะขาบ หนอน มด ไต่/บินอยู่รอบๆ และมี<b>ต้นมะพร้าว ต้นมะม่วง ต้นมังคุด</b> เพิ่มในป่าด้วย</p>
     <p>🤡 ระวัง<b>ตัวตลก 6 ขา</b> ที่ไต่ปีนกำแพง/บินตามขึ้นไปได้แม้บนที่สูง มันจะไล่ตีเราถ้าเข้าใกล้!</p>
     <button id="playBtn">▶ เริ่มเล่น</button>
     <p>👁️⚙️ ในทะเลทรายมี "มอนสเตอร์ 6 แขน" (เลื่อยยนต์ ดาบ ปืน มือ และหัวจิ๋ว) กิน E เพื่อกลายร่าง แล้วใช้ <span class="key">B</span> หยิบจับสัตว์ และ <span class="key">V</span> ยื่นคองับกัดสัตว์ระยะไกล! กด <span class="key">O</span> ค้างเพื่อปีนกำแพงขึ้นตรงๆ และกด <span class="key">L</span> เพื่อบินทะลุกำแพง/สิ่งกีดขวางได้ 3 วิ</p>
@@ -678,6 +679,84 @@
     do{ x=(Math.random()-0.5)*70; z=(Math.random()-0.5)*70; }
     while(inDesert(x,z) || inCave(x,z) || inBlueField(x,z) || inLava(x,z) || inVillage(x,z) || inSeaMonster(x,z));
     makeAppleTree(x,z);
+  }
+
+  // ================= More fruit trees: coconut, mango, mangosteen =================
+  const coconutFruitMat = new THREE.MeshLambertMaterial({color:0x6D4C2F});
+  const mangoFruitMat = new THREE.MeshLambertMaterial({color:0xF2A93B});
+  const mangoLeafMat = new THREE.MeshLambertMaterial({color:0x2E7D32});
+  const mangosteenFruitMat = new THREE.MeshLambertMaterial({color:0x5B2C6F});
+  function makeCoconutTree(x,z){
+    const g = new THREE.Group();
+    const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.14,0.22,3.6,8), logMat);
+    trunk.position.y = 1.8; trunk.rotation.z = 0.08; g.add(trunk);
+    for(let i=0;i<6;i++){
+      const a = (i/6)*Math.PI*2;
+      const frond = new THREE.Mesh(new THREE.BoxGeometry(1.6,0.08,0.35), bananaLeafMat);
+      frond.position.set(Math.cos(a)*0.7, 3.6, Math.sin(a)*0.7);
+      frond.rotation.y = a; frond.rotation.z = 0.3;
+      g.add(frond);
+    }
+    for(let i=0;i<3;i++){
+      const nut = new THREE.Mesh(new THREE.SphereGeometry(0.14,8,8), coconutFruitMat);
+      const a = Math.random()*Math.PI*2;
+      nut.position.set(Math.cos(a)*0.2, 3.35, Math.sin(a)*0.2);
+      g.add(nut);
+    }
+    g.position.set(x,0,z);
+    scene.add(g);
+    trees.push({group:g, x, z, r:0.7});
+  }
+  function makeMangoTree(x,z){
+    const g = new THREE.Group();
+    const trunk = new THREE.Mesh(new THREE.BoxGeometry(0.6,2.4,0.6), logMat);
+    trunk.position.y = 1.2; g.add(trunk);
+    const leaf = new THREE.Mesh(new THREE.SphereGeometry(1.4,10,8), mangoLeafMat);
+    leaf.position.y = 2.9; g.add(leaf);
+    for(let i=0;i<6;i++){
+      const a = Math.random()*Math.PI*2, r = 0.8+Math.random()*0.5;
+      const mango = new THREE.Mesh(new THREE.SphereGeometry(0.13,8,8), mangoFruitMat);
+      mango.scale.set(0.9,1.3,0.9);
+      mango.position.set(Math.cos(a)*r, 2.6+Math.random()*0.7, Math.sin(a)*r);
+      g.add(mango);
+    }
+    g.position.set(x,0,z);
+    scene.add(g);
+    trees.push({group:g, x, z, r:0.85});
+  }
+  function makeMangosteenTree(x,z){
+    const g = new THREE.Group();
+    const trunk = new THREE.Mesh(new THREE.BoxGeometry(0.55,2.5,0.55), logMat);
+    trunk.position.y = 1.25; g.add(trunk);
+    const leaf = new THREE.Mesh(new THREE.SphereGeometry(1.35,10,8), leafMat);
+    leaf.position.y = 3.0; g.add(leaf);
+    for(let i=0;i<7;i++){
+      const a = Math.random()*Math.PI*2, r = 0.8+Math.random()*0.5;
+      const fruit = new THREE.Mesh(new THREE.SphereGeometry(0.12,8,8), mangosteenFruitMat);
+      fruit.position.set(Math.cos(a)*r, 2.7+Math.random()*0.7, Math.sin(a)*r);
+      g.add(fruit);
+    }
+    g.position.set(x,0,z);
+    scene.add(g);
+    trees.push({group:g, x, z, r:0.8});
+  }
+  for(let i=0;i<6;i++){
+    let x,z;
+    do{ x=(Math.random()-0.5)*70; z=(Math.random()-0.5)*70; }
+    while(inDesert(x,z) || inCave(x,z) || inBlueField(x,z) || inLava(x,z) || inVillage(x,z) || inSeaMonster(x,z));
+    makeCoconutTree(x,z);
+  }
+  for(let i=0;i<6;i++){
+    let x,z;
+    do{ x=(Math.random()-0.5)*70; z=(Math.random()-0.5)*70; }
+    while(inDesert(x,z) || inCave(x,z) || inBlueField(x,z) || inLava(x,z) || inVillage(x,z) || inSeaMonster(x,z));
+    makeMangoTree(x,z);
+  }
+  for(let i=0;i<6;i++){
+    let x,z;
+    do{ x=(Math.random()-0.5)*70; z=(Math.random()-0.5)*70; }
+    while(inDesert(x,z) || inCave(x,z) || inBlueField(x,z) || inLava(x,z) || inVillage(x,z) || inSeaMonster(x,z));
+    makeMangosteenTree(x,z);
   }
 
   // ================= Extra forest patch & mountain landmark =================
@@ -3118,11 +3197,13 @@
         leg.position.set(lx, opts.legH/2, lz); g.add(leg);
       });
     }
-    g.userData.target = randomHorseTarget();
+    g.userData.target = (opts.targetFn||randomHorseTarget)();
     g.userData.wait = Math.random()*2;
     g.userData.speed = opts.speed;
     g.userData.hopping = !!opts.hopping;
-    const start = randomHorseTarget();
+    g.userData.hoverH = opts.hoverH||0;
+    g.userData.targetFn = opts.targetFn||randomHorseTarget;
+    const start = g.userData.targetFn();
     g.position.set(start.x,0,start.z);
     scene.add(g);
     arr.push(g);
@@ -3132,7 +3213,7 @@
     arr.forEach((g,i)=>{
       g.userData.wait -= dt;
       if(g.userData.wait<=0){
-        g.userData.target = randomHorseTarget();
+        g.userData.target = g.userData.targetFn();
         g.userData.wait = 1.5 + Math.random()*(g.userData.hopping?2.5:3);
       }
       const tgt = g.userData.target;
@@ -3143,9 +3224,9 @@
         g.position.x += (dx/d)*spd*dt;
         g.position.z += (dz/d)*spd*dt;
         g.rotation.y = Math.atan2(dx,dz);
-        g.position.y = g.userData.hopping ? Math.abs(Math.sin(elapsed*7+i))*0.25 : Math.abs(Math.sin(elapsed*9+i))*0.04;
+        g.position.y = g.userData.hoverH + (g.userData.hopping ? Math.abs(Math.sin(elapsed*7+i))*0.25 : Math.abs(Math.sin(elapsed*9+i))*0.04);
       } else {
-        g.position.y = 0;
+        g.position.y = g.userData.hoverH;
       }
     });
   }
@@ -3156,6 +3237,20 @@
     updateSimpleCritters(rabbits, dt, elapsed);
     updateSimpleCritters(lizards, dt, elapsed);
     updateSimpleCritters(mice, dt, elapsed);
+    updateSimpleCritters(ducks, dt, elapsed);
+    updateSimpleCritters(giraffes, dt, elapsed);
+    updateSimpleCritters(hippos, dt, elapsed);
+    updateSimpleCritters(elephants, dt, elapsed);
+    updateSimpleCritters(lions, dt, elapsed);
+    updateSimpleCritters(rhinos, dt, elapsed);
+    updateSimpleCritters(crabs, dt, elapsed);
+    updateSimpleCritters(whales, dt, elapsed);
+    updateSimpleCritters(starfishes, dt, elapsed);
+    updateSimpleCritters(jellyfishes, dt, elapsed);
+    updateSimpleCritters(butterflies, dt, elapsed);
+    updateSimpleCritters(centipedes, dt, elapsed);
+    updateSimpleCritters(worms, dt, elapsed);
+    updateSimpleCritters(ants, dt, elapsed);
   }
   for(let i=0;i<3;i++) makeSimpleCritter(turtles, {bodyColor:0x2e7d32, legColor:0x1b5e20, size:[0.5,0.28,0.42], legH:0.12, speed:0.5});
   for(let i=0;i<2;i++) makeSimpleCritter(tigers,  {bodyColor:0xff9800, legColor:0xff9800, size:[0.95,0.5,0.42], legH:0.42, speed:2.6});
@@ -3164,6 +3259,38 @@
   for(let i=0;i<4;i++) makeSimpleCritter(lizards, {bodyColor:0x8bc34a, legColor:0x689f38, size:[0.4,0.16,0.3], legH:0.07, speed:1.6});
   for(let i=0;i<5;i++) makeSimpleCritter(mice,    {bodyColor:0x9e9e9e, legColor:0x757575, size:[0.22,0.16,0.28], legH:0.06, speed:1.9});
   animalArrays.push(turtles, tigers, frogs, rabbits, lizards, mice);
+
+  // ================= More land animals: duck, giraffe, hippo, elephant, lion, rhino =================
+  const ducks=[], giraffes=[], hippos=[], elephants=[], lions=[], rhinos=[];
+  for(let i=0;i<4;i++) makeSimpleCritter(ducks,     {bodyColor:0xF5D033, legColor:0xE8A63C, size:[0.28,0.22,0.4], legH:0.12, speed:1.5});
+  for(let i=0;i<2;i++) makeSimpleCritter(giraffes,  {bodyColor:0xE8C170, legColor:0xD9A94F, size:[0.6,1.5,0.35], legH:1.0, speed:1.8});
+  for(let i=0;i<2;i++) makeSimpleCritter(hippos,    {bodyColor:0x9e9ea3, legColor:0x83838a, size:[1.1,0.6,0.55], legH:0.22, speed:1.0});
+  for(let i=0;i<2;i++) makeSimpleCritter(elephants, {bodyColor:0x8d8d8d, legColor:0x707070, size:[1.3,0.85,0.65], legH:0.5, speed:1.3});
+  for(let i=0;i<2;i++) makeSimpleCritter(lions,     {bodyColor:0xC9963C, legColor:0xB9832A, size:[0.85,0.5,0.4], legH:0.35, speed:2.8});
+  for(let i=0;i<2;i++) makeSimpleCritter(rhinos,    {bodyColor:0x808070, legColor:0x6c6c5e, size:[1.0,0.55,0.5], legH:0.3, speed:1.7});
+  animalArrays.push(ducks, giraffes, hippos, elephants, lions, rhinos);
+
+  // ================= Sea creatures: crab, whale, starfish, jellyfish (live in the swampy sea zone) =================
+  const crabs=[], whales=[], starfishes=[], jellyfishes=[];
+  function randomSeaTarget(){
+    return {
+      x: SEAMONSTER.x1 + Math.random()*(SEAMONSTER.x2-SEAMONSTER.x1),
+      z: SEAMONSTER.z1 + Math.random()*(SEAMONSTER.z2-SEAMONSTER.z1)
+    };
+  }
+  for(let i=0;i<4;i++) makeSimpleCritter(crabs,      {bodyColor:0xE53935, legColor:0xC62828, size:[0.35,0.15,0.35], legH:0.05, speed:1.2, targetFn:randomSeaTarget});
+  for(let i=0;i<2;i++) makeSimpleCritter(whales,     {bodyColor:0x1565C0, legColor:0x1565C0, size:[1.6,0.7,0.7], legH:0, speed:1.0, noLegs:true, hoverH:0.35, targetFn:randomSeaTarget});
+  for(let i=0;i<3;i++) makeSimpleCritter(starfishes, {bodyColor:0xFF7043, legColor:0xFF7043, size:[0.4,0.08,0.4], legH:0.02, speed:0.4, noLegs:true, targetFn:randomSeaTarget});
+  for(let i=0;i<3;i++) makeSimpleCritter(jellyfishes,{bodyColor:0xCE93D8, legColor:0xCE93D8, size:[0.3,0.35,0.3], legH:0, speed:0.6, noLegs:true, hoverH:0.6, targetFn:randomSeaTarget});
+  animalArrays.push(crabs, whales, starfishes, jellyfishes);
+
+  // ================= Insects: butterfly, centipede, worm, ant =================
+  const butterflies=[], centipedes=[], worms=[], ants=[];
+  for(let i=0;i<6;i++) makeSimpleCritter(butterflies, {bodyColor:0xFF80AB, legColor:0xFF80AB, size:[0.12,0.1,0.14], legH:0, speed:1.8, noLegs:true, hopping:true, hoverH:0.7});
+  for(let i=0;i<4;i++) makeSimpleCritter(centipedes,  {bodyColor:0x6D4C41, legColor:0x4E342E, size:[0.5,0.06,0.1], legH:0.03, speed:1.0});
+  for(let i=0;i<4;i++) makeSimpleCritter(worms,        {bodyColor:0xE6A6A0, legColor:0xE6A6A0, size:[0.35,0.07,0.09], legH:0, speed:0.5, noLegs:true});
+  for(let i=0;i<6;i++) makeSimpleCritter(ants,          {bodyColor:0x212121, legColor:0x111111, size:[0.12,0.07,0.08], legH:0.03, speed:2.2});
+  animalArrays.push(butterflies, centipedes, worms, ants);
   function checkBulletHit(bl){
     // man-eating trees: scare off, don't kill
     for(const t of manEaters){
