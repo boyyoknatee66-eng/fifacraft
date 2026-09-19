@@ -194,7 +194,7 @@
   #shootBtn:active, #cloneBtn:active{ transform:translateY(3px); box-shadow:0 2px 0 #202a52; }
 
   #godBar{
-    position:fixed; left:14px; bottom:14px; z-index:12;
+    position:fixed; left:14px; bottom:230px; z-index:12;
     display:none; flex-wrap:wrap; gap:6px; max-width:220px;
   }
   #godBar.show{ display:flex; }
@@ -353,6 +353,7 @@
   <div class="hud-chip" id="followChip" style="display:none;">🙂 ตามเรามาแล้ว!</div>
   <div class="hud-chip" id="godChip" style="display:none;">👑 พระเจ้า</div>
   <div class="hud-chip" id="shopBtn" style="cursor:pointer;">🏪 ร้านค้า</div>
+  <div class="hud-chip" id="viewToggleBtn" style="cursor:pointer;">🎥 มุมมอง</div>
 </div>
 
 <div id="shopPanel">
@@ -442,12 +443,14 @@
     <p>🏪 แตะปุ่ม <b>ร้านค้า</b> มุมบนซ้ายเพื่อซื้อของด้วยเพชร 💎 มี<b>นาฬิกาสีฟ้า</b> (1 เพชร) ย้อนเวลากลับไปตอนกลางวันได้ และ<b>ขวดจับแมลง</b> (4 เพชร) ใช้รวมแมลงเพื่อนยิ้ม 2 ตัวให้กลายเป็นแมลงตัวใหม่ที่ใหญ่กว่า</p>
     <p>🐢🐯🐸🐰🦎🐭⛰️🌴 ในโลกมีสัตว์ใหม่เพิ่ม เต่า เสือ กบ กระต่าย กิ้งก่า หนู เดินเล่นอยู่ทั่วแผนที่ พร้อม<b>ภูเขา</b>และ<b>ป่าใหญ่</b>ทางทิศตะวันตก และมี<b>ต้นกล้วย ต้นแอปเปิ้ล</b> เก้าอี้ พัดลม ถังขยะ โคมไฟ ให้เห็นรอบๆ หมู่บ้าน หากลาย <b>ขวาน 🪓</b> (ใกล้ร้านค้า) จะเก็บไม้ได้เพิ่มขึ้น และ <b>ดาบ ⚔️</b> ให้ฟันสัตว์ได้โดยไม่ต้องแปลงร่าง (กด M)</p>
     <p>🦆🦒🦛🐘🦁🦏 มีสัตว์เพิ่มอีก เป็ด ยีราฟ ฮิปโป ช้าง สิงโต แรด เดินเล่นทั่วแผนที่ 🦀🐋⭐️🎐 ในบึงมอนสเตอร์มี ปู ปลาวาฬ ปลาดาว แมงกะพรุน 🦋🐛🐜 มีแมลง ผีเสื้อ ตะขาบ หนอน มด ไต่/บินอยู่รอบๆ และมี<b>ต้นมะพร้าว ต้นมะม่วง ต้นมังคุด</b> เพิ่มในป่าด้วย</p>
+    <p>🎥 แตะปุ่ม <b>มุมมอง</b> มุมบนซ้าย (หรือกด <span class="key">I</span> ถ้ามีคีย์บอร์ด) เพื่อสลับมุมกล้องเป็น<b>บุคคลที่สาม (Third-Person)</b> มองเห็นตัวละครจากด้านหลัง แตะอีกครั้งเพื่อกลับเป็นมุมมองเดิม</p>
     <p>🤡 ระวัง<b>ตัวตลก 6 ขา</b> ที่ไต่ปีนกำแพง/บินตามขึ้นไปได้แม้บนที่สูง มันจะไล่ตีเราถ้าเข้าใกล้!</p>
     <button id="playBtn">▶ เริ่มเล่น</button>
     <p>👁️⚙️ ในทะเลทรายมี "มอนสเตอร์ 6 แขน" (เลื่อยยนต์ ดาบ ปืน มือ และหัวจิ๋ว) กิน E เพื่อกลายร่าง แล้วใช้ <span class="key">B</span> หยิบจับสัตว์ และ <span class="key">V</span> ยื่นคองับกัดสัตว์ระยะไกล! กด <span class="key">O</span> ค้างเพื่อปีนกำแพงขึ้นตรงๆ และกด <span class="key">L</span> เพื่อบินทะลุกำแพง/สิ่งกีดขวางได้ 3 วิ</p>
     <p>🎈💛 มี "ปีศาจลูกโป่ง" ตัวสีเหลืองเดือด ถือลูกโป่งแดง เดินอยู่ในทุ่งโล่ง กิน E เพื่อกลายร่าง แล้วกด <span class="key">C</span> พ่นลูกโป่งใส่สัตว์ให้ลอยขึ้นแล้วตกตาย จากนั้นจะเกิดใหม่ที่อื่น! ระวัง — มันจะแตะสัตว์อื่นให้กลายเป็นพวกเดียวกันไปเรื่อยๆ ด้วย และถ้าเราถูกโครงกระดูกหรือตัวตลก 6 ขาคุกคามอยู่ใกล้ๆ ปีศาจลูกโป่งที่อยู่แถวนั้นจะช่วยพ่นลูกโป่งใส่ศัตรูให้เราด้วย!</p>
     <p>🟡 มีวงกลมสีเหลืองลึกลับซ่อนอยู่มุมหนึ่งของแผนที่ — ยืนอยู่ในวงกลมนั้นครบ 1 วินาทีแล้วจะร่วงตกลงไปใน<b>เขาวงกตสีเหลือง</b>ลับ ข้างในมี "ปีศาจดำ" (E กลายร่าง แล้วกด <span class="key">1</span> แยกร่างโคลนตัวเอง), "ก้อนมือสีไข่" (E กลายร่าง แล้วกด <span class="key">9</span> กินสัตว์), "ปีศาจโขมยกระดูก" หน้าดำตาขาวตัวเหลือง (E กลายร่าง แล้วกด <span class="key">9</span> พ่นกระดูกฆ่าสัตว์ระยะไกล และกด <span class="key">8</span> ค้างเพื่อปีนกำแพง) และปีศาจลูกโป่งอีกตัวก็ซ่อนอยู่ในนั้นด้วย!</p>
     <p>👁️ กลางทะเลทรายมี "อสูรหกแขน" (เลื่อยยนต์ x2, หัว, ดาบ, ปืน, มือ) กด E กินหัวใจแปลงร่างเป็นมันได้ อมตะเช่นกัน ใช้ <span class="key">B</span> ฟันดาบ และ <span class="key">U</span> ยิงปืนได้ทั้งคู่!</p>
+    <p>🗺️ แผนที่ขยายกว้างขึ้นแล้ว! 💧⛰️ มี<b>น้ำตก</b>ไหลลงมาจากภูเขาทางทิศตะวันตกเฉียงเหนือ 🕳️ มี<b>ถ้ำแห่งที่สอง</b>ซ่อนอยู่ไกลสุดทางทิศตะวันออกเฉียงเหนือ (มีเห็ดเรืองแสงในถ้ำเหมือนกัน) และพอถึง<b>กลางคืน</b>จะมี<b>ผีตัวเรืองแสง</b> สีขาว ตาสีดำ ปากสีดำ ล่องลอยไปมาทั่วแผนที่ (ยังไม่ทำร้ายเรา แค่ล่องลอยผ่านไปมาให้เห็นบรรยากาศ)</p>
     <p>🕷️🦂🍃🪲 ในถ้ำมีแมงมุมอาศัยอยู่ในรังของมัน ในทะเลทรายมีแมงป่อง 6 ตัวเดินเพ่นพ่าน และตามทุ่งหญ้าจะเจอตั๊กแตนใบไม้มาเลเซียสีเขียวกับด้วงงวงสีน้ำเงินเดินเล่นไปมา</p>
     <p>🕸️🏜️ ในทะเลทรายยังมี "แมงมุมทรายหกตา" ตัวจอมพรางตัวสีเดียวกับทราย มันเป็นแมงมุมพิษร้ายแรงที่สุดชนิดหนึ่งของโลก พบจริงในทะเลทรายทางภาคใต้ของแอฟริกา ปกติมันจะซุ่มนิ่งๆ แล้วพุ่งเข้าหาเหยื่ออย่างรวดเร็ว</p>
     <p>🍂🦗 ตามทุ่งหญ้ายังมี "ตั๊กแตนตำข้าวผี" ตัวเล็กจากแอฟริกา รูปร่างเหมือนใบไม้แห้งกรอบทั้งตัว มันจะยืนนิ่งๆ แกว่งตัวเบาๆ เหมือนใบไม้ต้องลม พรางตัวเก่งจนทั้งนักล่าและเหยื่อมองไม่เห็นมันเลย</p>
@@ -461,7 +464,7 @@
   const scene = new THREE.Scene();
   const SKY_COLOR = 0x8FD3F4;
   scene.background = new THREE.Color(SKY_COLOR);
-  scene.fog = new THREE.Fog(SKY_COLOR, 30, 150);
+  scene.fog = new THREE.Fog(SKY_COLOR, 30, 190);
 
   const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 200);
   const EYE_HEIGHT = 1.7;
@@ -514,7 +517,7 @@
   }
   const grassTex = makeTexture(16,(ctx,s)=>speckle(ctx,s,'#6FAE3E','#4F8A2A',26));
   grassTex.wrapS = grassTex.wrapT = THREE.RepeatWrapping;
-  grassTex.repeat.set(58,58);
+  grassTex.repeat.set(75,75);
 
   const logTex = makeTexture(16,(ctx,s)=>{
     ctx.fillStyle='#8B5A2B'; ctx.fillRect(0,0,s,s);
@@ -555,8 +558,8 @@
   const cactusMat = new THREE.MeshLambertMaterial({map:cactusTex});
 
   // ================= World =================
-  const WORLD_BOUND = 85;
-  const ground = new THREE.Mesh(new THREE.PlaneGeometry(200,200), grassMat);
+  const WORLD_BOUND = 115;
+  const ground = new THREE.Mesh(new THREE.PlaneGeometry(260,260), grassMat);
   ground.rotation.x = -Math.PI/2;
   ground.receiveShadow = true;
   scene.add(ground);
@@ -780,6 +783,87 @@
   makeMountain(-70, 60, 1);
   makeMountain(-60, 68, 0.7);
   makeMountain(-80, 66, 0.8);
+
+  // ================= Waterfall (cascading down from the mountain) =================
+  const waterfallTex = makeTexture(16,(ctx,s)=>{
+    ctx.fillStyle = '#bfe9ff'; ctx.fillRect(0,0,s,s);
+    ctx.strokeStyle = 'rgba(255,255,255,0.65)'; ctx.lineWidth = 1;
+    for(let i=0;i<s;i+=3){ ctx.beginPath(); ctx.moveTo(i,0); ctx.lineTo(i,s); ctx.stroke(); }
+  });
+  waterfallTex.wrapS = waterfallTex.wrapT = THREE.RepeatWrapping;
+  waterfallTex.repeat.set(2,6);
+  const waterfallMat = new THREE.MeshLambertMaterial({map:waterfallTex, transparent:true, opacity:0.85, side:THREE.DoubleSide});
+  const cliffMat = new THREE.MeshLambertMaterial({color:0x7d7d6d});
+  function makeWaterfall(x,z){
+    const g = new THREE.Group();
+    const cliff = new THREE.Mesh(new THREE.BoxGeometry(6,10,3), cliffMat);
+    cliff.position.set(0,5,-1.2); g.add(cliff);
+    const fall = new THREE.Mesh(new THREE.PlaneGeometry(2.2,9.5), waterfallMat);
+    fall.position.set(0,4.7,0.3); g.add(fall);
+    g.userData.fall = fall;
+    const pool = new THREE.Mesh(new THREE.CircleGeometry(3.2,20), waterMat);
+    pool.rotation.x = -Math.PI/2; pool.position.set(0,0.05,1.6);
+    g.add(pool);
+    g.position.set(x,0,z);
+    scene.add(g);
+    return g;
+  }
+  const waterfall1 = makeWaterfall(-70, 50);
+  function updateWaterfall(dt){
+    waterfall1.userData.fall.material.map.offset.y -= dt*1.2;
+  }
+
+  // ================= Glowing white ghost (black eyes & mouth, appears at night) =================
+  const ghostBodyMat = new THREE.MeshLambertMaterial({color:0xffffff, emissive:0xcfd8ff, transparent:true, opacity:0.85});
+  const ghostDarkMat = new THREE.MeshLambertMaterial({color:0x0a0a0a});
+  const ghosts = [];
+  function makeGhost(){
+    const g = new THREE.Group();
+    const body = new THREE.Mesh(new THREE.SphereGeometry(0.35,12,10), ghostBodyMat);
+    body.scale.set(1,1.3,1); g.add(body);
+    const tail = new THREE.Mesh(new THREE.ConeGeometry(0.32,0.5,10), ghostBodyMat);
+    tail.position.y = -0.55; tail.rotation.x = Math.PI; g.add(tail);
+    [-0.12,0.12].forEach(ex=>{
+      const eye = new THREE.Mesh(new THREE.SphereGeometry(0.05,8,8), ghostDarkMat);
+      eye.position.set(ex,0.1,0.32); g.add(eye);
+    });
+    const mouth = new THREE.Mesh(new THREE.SphereGeometry(0.06,8,8), ghostDarkMat);
+    mouth.scale.set(1,0.6,0.6); mouth.position.set(0,-0.06,0.33);
+    g.add(mouth);
+    const glow = new THREE.PointLight(0xddeeff, 0.9, 6);
+    g.add(glow);
+    g.userData.target = randomHorseTarget();
+    g.userData.wait = Math.random()*2;
+    g.userData.speed = 0.9;
+    g.userData.seed = Math.random()*10;
+    const start = randomHorseTarget();
+    g.position.set(start.x, 1.6, start.z);
+    g.visible = false;
+    scene.add(g);
+    ghosts.push(g);
+    return g;
+  }
+  for(let i=0;i<5;i++) makeGhost();
+  function updateGhosts(dt, elapsed){
+    ghosts.forEach((g,i)=>{
+      g.visible = isNight;
+      if(!isNight) return;
+      g.userData.wait -= dt;
+      if(g.userData.wait<=0){
+        g.userData.target = randomHorseTarget();
+        g.userData.wait = 3+Math.random()*4;
+      }
+      const tgt = g.userData.target;
+      const dx = tgt.x-g.position.x, dz = tgt.z-g.position.z;
+      const d = Math.hypot(dx,dz);
+      if(d>0.3){
+        g.position.x += (dx/d)*g.userData.speed*dt;
+        g.position.z += (dz/d)*g.userData.speed*dt;
+        g.rotation.y = Math.atan2(dx,dz);
+      }
+      g.position.y = 1.5 + Math.sin(elapsed*1.4+g.userData.seed)*0.25;
+    });
+  }
 
   // ================= Decorative blocks: chair, fan, trash can, lamp =================
   const chairWoodMat = new THREE.MeshLambertMaterial({color:0x8a5a34});
@@ -1102,6 +1186,40 @@
       leg.rotation.x = (i%4-1.5)*0.25 + Math.sin(elapsed*3+i)*0.06;
     });
     spiderInstance.position.y = spiderWebPos.y + Math.sin(elapsed*1.4)*0.03;
+  }
+
+  // ================= Second cave (far NE), with its own glow mushrooms =================
+  const CAVE2 = {x1:60, x2:88, z1:60, z2:86, h:6};
+  const cave2Group = new THREE.Group();
+  scene.add(cave2Group);
+  const cave2Interior = {x1:CAVE2.x1+1.6, x2:CAVE2.x2-1.6, z1:CAVE2.z1+1.6, z2:CAVE2.z2-1.6};
+  const CAVE2_ENTRANCE_CX = (CAVE2.x1+CAVE2.x2)/2, CAVE2_ENTRANCE_HALFW = 2.4;
+  function inCave2(x,z){ return x>=CAVE2.x1 && x<=CAVE2.x2 && z>=CAVE2.z1 && z<=CAVE2.z2; }
+
+  const cave2Floor = new THREE.Mesh(new THREE.BoxGeometry(CAVE2.x2-CAVE2.x1, 0.3, CAVE2.z2-CAVE2.z1), caveStoneMat);
+  cave2Floor.position.set((CAVE2.x1+CAVE2.x2)/2, -0.15, (CAVE2.z1+CAVE2.z2)/2);
+  cave2Group.add(cave2Floor);
+  const cave2Roof = new THREE.Mesh(new THREE.BoxGeometry(CAVE2.x2-CAVE2.x1, 0.5, CAVE2.z2-CAVE2.z1), caveStoneMat);
+  cave2Roof.position.set((CAVE2.x1+CAVE2.x2)/2, CAVE2.h, (CAVE2.z1+CAVE2.z2)/2);
+  cave2Group.add(cave2Roof);
+  function addCave2WallBlock(x,z){
+    const block = new THREE.Mesh(new THREE.BoxGeometry(1.6, CAVE2.h, 1.6), caveStoneMat);
+    block.position.set(x, CAVE2.h/2, z);
+    cave2Group.add(block);
+    caveWalls.push({x, z, r:1.05});
+  }
+  for(let x=CAVE2.x1+0.8; x<=CAVE2.x2-0.8+0.01; x+=1.6) addCave2WallBlock(x, CAVE2.z1+0.8);
+  for(let x=CAVE2.x1+0.8; x<=CAVE2.x2-0.8+0.01; x+=1.6){
+    if(Math.abs(x-CAVE2_ENTRANCE_CX) > CAVE2_ENTRANCE_HALFW) addCave2WallBlock(x, CAVE2.z2-0.8);
+  }
+  for(let z=CAVE2.z1+0.8+1.6; z<=CAVE2.z2-0.8-1.6+0.01; z+=1.6){
+    addCave2WallBlock(CAVE2.x1+0.8, z);
+    addCave2WallBlock(CAVE2.x2-0.8, z);
+  }
+  for(let i=0;i<10;i++){
+    const x = cave2Interior.x1+0.5 + Math.random()*(cave2Interior.x2-cave2Interior.x1-1);
+    const z = cave2Interior.z1+0.5 + Math.random()*(cave2Interior.z2-cave2Interior.z1-1);
+    makeGlowMushroom(x,z, 0.8+Math.random()*0.8, i%4===0);
   }
 
   // ================= Scorpions (6, roam the desert) =================
@@ -4588,6 +4706,55 @@
 
   // ================= Player & input state =================
   const player = { x:0, y:EYE_HEIGHT, z:12, vy:0, yaw:Math.PI, pitch:0, grounded:true, flightTimer:0, transformed:false, transformedSword:false, transformedHybrid:false, transformedParty:false, transformedBlack:false, transformedBlob:false, transformedBoneThief:false, phaseTimer:0, trapTimer:0, hasClock:false, godMode:false, hasBlueClock:false, hasBottle:false, hasAxe:false, hasSword:false };
+
+  // ================= Third-person view: player avatar + camera toggle =================
+  let thirdPerson = false;
+  const avatarSkinMat = new THREE.MeshLambertMaterial({color:0xE0AC85});
+  const avatarShirtMat = new THREE.MeshLambertMaterial({color:0x4A90D9});
+  const avatarPantsMat = new THREE.MeshLambertMaterial({color:0x3A3A5A});
+  const playerAvatar = new THREE.Group();
+  {
+    const head = new THREE.Mesh(new THREE.BoxGeometry(0.34,0.34,0.34), avatarSkinMat);
+    head.position.y = 1.5; playerAvatar.add(head);
+    const torso = new THREE.Mesh(new THREE.BoxGeometry(0.42,0.5,0.24), avatarShirtMat);
+    torso.position.y = 1.1; playerAvatar.add(torso);
+    const armGeo = new THREE.BoxGeometry(0.14,0.46,0.16);
+    const armL = new THREE.Mesh(armGeo, avatarShirtMat); armL.position.set(0.28,1.1,0); playerAvatar.add(armL);
+    const armR = new THREE.Mesh(armGeo, avatarShirtMat); armR.position.set(-0.28,1.1,0); playerAvatar.add(armR);
+    const legGeo = new THREE.BoxGeometry(0.16,0.5,0.18);
+    const legL = new THREE.Mesh(legGeo, avatarPantsMat); legL.position.set(0.11,0.6,0); playerAvatar.add(legL);
+    const legR = new THREE.Mesh(legGeo, avatarPantsMat); legR.position.set(-0.11,0.6,0); playerAvatar.add(legR);
+    playerAvatar.userData.armL = armL; playerAvatar.userData.armR = armR;
+    playerAvatar.userData.legL = legL; playerAvatar.userData.legR = legR;
+  }
+  playerAvatar.visible = false;
+  scene.add(playerAvatar);
+  function toggleThirdPerson(){
+    thirdPerson = !thirdPerson;
+    playerAvatar.visible = thirdPerson;
+  }
+  function updatePlayerAvatar(dt, elapsed){
+    if(!thirdPerson) return;
+    playerAvatar.position.set(player.x, player.y-EYE_HEIGHT, player.z);
+    playerAvatar.rotation.y = player.yaw + Math.PI;
+    const moving = Math.hypot(player.x-(playerAvatar.userData.lastX??player.x), player.z-(playerAvatar.userData.lastZ??player.z)) > 0.001;
+    if(moving){
+      const swing = Math.sin(elapsed*10)*0.5;
+      playerAvatar.userData.armL.rotation.x = swing;
+      playerAvatar.userData.armR.rotation.x = -swing;
+      playerAvatar.userData.legL.rotation.x = -swing;
+      playerAvatar.userData.legR.rotation.x = swing;
+    } else {
+      playerAvatar.userData.armL.rotation.x = 0;
+      playerAvatar.userData.armR.rotation.x = 0;
+      playerAvatar.userData.legL.rotation.x = 0;
+      playerAvatar.userData.legR.rotation.x = 0;
+    }
+    playerAvatar.userData.lastX = player.x;
+    playerAvatar.userData.lastZ = player.z;
+    // hide the body model while any transformation is active (visuals don't have a matching avatar)
+    playerAvatar.visible = thirdPerson && !(player.transformed||player.transformedSword||player.transformedHybrid||player.transformedParty||player.transformedBlack||player.transformedBlob||player.transformedBoneThief);
+  }
   const keys = {};
   let active = false; // true once "start" pressed
   const stats = { wood:0, corn:0, gems:0, captured:0 };
@@ -5462,6 +5629,9 @@
   });
   shopCloseEl.addEventListener('click', ()=> shopPanelEl.classList.remove('show'));
 
+  const viewToggleBtnEl = document.getElementById('viewToggleBtn');
+  viewToggleBtnEl.addEventListener('click', toggleThirdPerson);
+
 
   function updateHUD(){
     woodEl.textContent = stats.wood;
@@ -5682,6 +5852,7 @@
     if(e.code==='Digit1') splitSelf();
     if(e.code==='Digit9'){ eatAnimal(); spitBone(); }
     if(e.code==='KeyU') shootGun();
+    if(e.code==='KeyI') toggleThirdPerson();
     if(e.code==='Space') wantJump = true;
     if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code)) e.preventDefault();
   });
@@ -5923,6 +6094,12 @@
     }
 
     camera.position.set(player.x, player.y, player.z);
+    if(thirdPerson){
+      const dist = 4.6;
+      const fwd = new THREE.Vector3(0,0,-1).applyEuler(new THREE.Euler(player.pitch, player.yaw, 0, 'YXZ'));
+      camera.position.set(player.x, player.y, player.z).addScaledVector(fwd, -dist);
+      camera.position.y += 0.7;
+    }
 
     const showFlyChip = player.flightTimer>0 || phasing;
     flyChip.style.display = showFlyChip ? 'flex' : 'none';
@@ -5994,6 +6171,7 @@
     if(!frozen) worldElapsed += dt;
 
     updatePlayer(dt);
+    updatePlayerAvatar(dt, timeAcc);
     updateClockItem(dt, timeAcc);
     updateToolItems(dt, timeAcc);
     updateSmiley(worldDt, worldElapsed);
@@ -6021,6 +6199,8 @@
     updateMonkeys(worldDt, worldElapsed);
     updateNewCritters(worldDt, worldElapsed);
     updateFans(worldDt);
+    updateWaterfall(worldDt);
+    updateGhosts(worldDt, worldElapsed);
     updateOctopuses(worldDt, worldElapsed);
     updateSeaMonsters(worldDt, worldElapsed);
     updateSeaFlyers(worldDt, worldElapsed);
