@@ -794,6 +794,7 @@
   waterfallTex.repeat.set(2,6);
   const waterfallMat = new THREE.MeshLambertMaterial({map:waterfallTex, transparent:true, opacity:0.85, side:THREE.DoubleSide});
   const cliffMat = new THREE.MeshLambertMaterial({color:0x7d7d6d});
+  const waterfallPoolMat = new THREE.MeshLambertMaterial({color:0x2f7fd1, transparent:true, opacity:0.82});
   function makeWaterfall(x,z){
     const g = new THREE.Group();
     const cliff = new THREE.Mesh(new THREE.BoxGeometry(6,10,3), cliffMat);
@@ -801,7 +802,7 @@
     const fall = new THREE.Mesh(new THREE.PlaneGeometry(2.2,9.5), waterfallMat);
     fall.position.set(0,4.7,0.3); g.add(fall);
     g.userData.fall = fall;
-    const pool = new THREE.Mesh(new THREE.CircleGeometry(3.2,20), waterMat);
+    const pool = new THREE.Mesh(new THREE.CircleGeometry(3.2,20), waterfallPoolMat);
     pool.rotation.x = -Math.PI/2; pool.position.set(0,0.05,1.6);
     g.add(pool);
     g.position.set(x,0,z);
