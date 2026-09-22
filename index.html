@@ -451,6 +451,7 @@
     <p>🟡 มีวงกลมสีเหลืองลึกลับซ่อนอยู่มุมหนึ่งของแผนที่ — ยืนอยู่ในวงกลมนั้นครบ 1 วินาทีแล้วจะร่วงตกลงไปใน<b>เขาวงกตสีเหลือง</b>ลับ ข้างในมี "ปีศาจดำ" (E กลายร่าง แล้วกด <span class="key">1</span> แยกร่างโคลนตัวเอง), "ก้อนมือสีไข่" (E กลายร่าง แล้วกด <span class="key">9</span> กินสัตว์), "ปีศาจโขมยกระดูก" หน้าดำตาขาวตัวเหลือง (E กลายร่าง แล้วกด <span class="key">9</span> พ่นกระดูกฆ่าสัตว์ระยะไกล และกด <span class="key">8</span> ค้างเพื่อปีนกำแพง) และปีศาจลูกโป่งอีกตัวก็ซ่อนอยู่ในนั้นด้วย!</p>
     <p>👁️ กลางทะเลทรายมี "อสูรหกแขน" (เลื่อยยนต์ x2, หัว, ดาบ, ปืน, มือ) กด E กินหัวใจแปลงร่างเป็นมันได้ อมตะเช่นกัน ใช้ <span class="key">B</span> ฟันดาบ และ <span class="key">U</span> ยิงปืนได้ทั้งคู่!</p>
     <p>🗺️ แผนที่ขยายกว้างขึ้นแล้ว! 💧⛰️ มี<b>น้ำตก</b>ไหลลงมาจากภูเขาทางทิศตะวันตกเฉียงเหนือ 🕳️ มี<b>ถ้ำแห่งที่สอง</b>ซ่อนอยู่ไกลสุดทางทิศตะวันออกเฉียงเหนือ (มีเห็ดเรืองแสงในถ้ำเหมือนกัน) และพอถึง<b>กลางคืน</b>จะมี<b>ผีตัวเรืองแสง</b> สีขาว ตาสีดำ ปากสีดำ ล่องลอยไปมาทั่วแผนที่ (ยังไม่ทำร้ายเรา แค่ล่องลอยผ่านไปมาให้เห็นบรรยากาศ)</p>
+    <p>🍄 ทางตะวันออกเฉียงใต้ไกลๆ มี<b>โซนเห็ด</b> เต็มไปด้วยเห็ดสีแดง ฟ้า เขียว และ<b>เห็ดยักษ์</b>ต้นใหญ่ยักษ์ ที่นั่นยังมี<b>เห็ดเดินได้</b> ตาสีดำ มีขาสี่ขา เดินไปมาในโซนนี้ด้วย (ฆ่า/แปลงร่างเป็นเพื่อนยิ้มสีฟ้าได้เหมือนสัตว์อื่น)</p>
     <p>🕷️🦂🍃🪲 ในถ้ำมีแมงมุมอาศัยอยู่ในรังของมัน ในทะเลทรายมีแมงป่อง 6 ตัวเดินเพ่นพ่าน และตามทุ่งหญ้าจะเจอตั๊กแตนใบไม้มาเลเซียสีเขียวกับด้วงงวงสีน้ำเงินเดินเล่นไปมา</p>
     <p>🕸️🏜️ ในทะเลทรายยังมี "แมงมุมทรายหกตา" ตัวจอมพรางตัวสีเดียวกับทราย มันเป็นแมงมุมพิษร้ายแรงที่สุดชนิดหนึ่งของโลก พบจริงในทะเลทรายทางภาคใต้ของแอฟริกา ปกติมันจะซุ่มนิ่งๆ แล้วพุ่งเข้าหาเหยื่ออย่างรวดเร็ว</p>
     <p>🍂🦗 ตามทุ่งหญ้ายังมี "ตั๊กแตนตำข้าวผี" ตัวเล็กจากแอฟริกา รูปร่างเหมือนใบไม้แห้งกรอบทั้งตัว มันจะยืนนิ่งๆ แกว่งตัวเบาๆ เหมือนใบไม้ต้องลม พรางตัวเก่งจนทั้งนักล่าและเหยื่อมองไม่เห็นมันเลย</p>
@@ -1221,6 +1222,97 @@
     const x = cave2Interior.x1+0.5 + Math.random()*(cave2Interior.x2-cave2Interior.x1-1);
     const z = cave2Interior.z1+0.5 + Math.random()*(cave2Interior.z2-cave2Interior.z1-1);
     makeGlowMushroom(x,z, 0.8+Math.random()*0.8, i%4===0);
+  }
+
+  // ================= Mushroom zone: red/blue/green mushrooms, giant mushrooms, walking mushroom creatures =================
+  const MUSHZONE = {x1:20, x2:50, z1:-95, z2:-65};
+  function inMushZone(x,z){ return x>=MUSHZONE.x1 && x<=MUSHZONE.x2 && z>=MUSHZONE.z1 && z<=MUSHZONE.z2; }
+  function randomMushTarget(){
+    return {
+      x: MUSHZONE.x1 + Math.random()*(MUSHZONE.x2-MUSHZONE.x1),
+      z: MUSHZONE.z1 + Math.random()*(MUSHZONE.z2-MUSHZONE.z1)
+    };
+  }
+  const mushCapRedMat = new THREE.MeshLambertMaterial({color:0xE53935});
+  const mushCapBlueMat = new THREE.MeshLambertMaterial({color:0x2196F3});
+  const mushCapGreenMat = new THREE.MeshLambertMaterial({color:0x43A047});
+  const mushSpotMat = new THREE.MeshLambertMaterial({color:0xffffff});
+  const mushStemMat2 = new THREE.MeshLambertMaterial({color:0xf3ecd9});
+  const mushCapMats = [mushCapRedMat, mushCapBlueMat, mushCapGreenMat];
+
+  function makeColorMushroom(x,z,capMat,scale){
+    const g = new THREE.Group();
+    const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.09,0.13,0.5,8), mushStemMat2);
+    stem.position.y = 0.25; g.add(stem);
+    const cap = new THREE.Mesh(new THREE.SphereGeometry(0.32,10,8,0,Math.PI*2,0,Math.PI/2), capMat);
+    cap.position.y = 0.5; g.add(cap);
+    for(let i=0;i<4;i++){
+      const spot = new THREE.Mesh(new THREE.SphereGeometry(0.05,6,6), mushSpotMat);
+      const a = (i/4)*Math.PI*2;
+      spot.position.set(Math.cos(a)*0.16, 0.56, Math.sin(a)*0.16);
+      g.add(spot);
+    }
+    g.scale.setScalar(scale||1);
+    g.position.set(x,0,z);
+    scene.add(g);
+    return g;
+  }
+  for(let i=0;i<10;i++){
+    const {x,z} = randomMushTarget();
+    makeColorMushroom(x,z, mushCapMats[i%3], 0.8+Math.random()*0.5);
+  }
+  for(let i=0;i<4;i++){ // giant mushrooms
+    const {x,z} = randomMushTarget();
+    makeColorMushroom(x,z, mushCapMats[i%3], 2.6+Math.random()*1.1);
+  }
+
+  // Walking mushroom creatures: black eyes, little legs
+  const mushWalkerEyeMat = new THREE.MeshLambertMaterial({color:0x0a0a0a});
+  const mushWalkers = [];
+  function makeMushroomWalker(capMat){
+    const g = new THREE.Group();
+    const legGeo = new THREE.CylinderGeometry(0.04,0.04,0.22,6);
+    [[0.12,0.12],[0.12,-0.12],[-0.12,0.12],[-0.12,-0.12]].forEach(([lx,lz])=>{
+      const leg = new THREE.Mesh(legGeo, mushStemMat2);
+      leg.position.set(lx,0.11,lz); g.add(leg);
+    });
+    const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.14,0.18,0.32,8), mushStemMat2);
+    stem.position.y = 0.38; g.add(stem);
+    const cap = new THREE.Mesh(new THREE.SphereGeometry(0.32,10,8,0,Math.PI*2,0,Math.PI/2), capMat);
+    cap.position.y = 0.56; g.add(cap);
+    [-0.1,0.1].forEach(ex=>{
+      const eye = new THREE.Mesh(new THREE.SphereGeometry(0.035,6,6), mushWalkerEyeMat);
+      eye.position.set(ex,0.4,0.16); g.add(eye);
+    });
+    g.userData.target = randomMushTarget();
+    g.userData.wait = Math.random()*2;
+    g.userData.speed = 0.7;
+    const start = randomMushTarget();
+    g.position.set(start.x,0,start.z);
+    scene.add(g);
+    mushWalkers.push(g);
+    return g;
+  }
+  for(let i=0;i<6;i++) makeMushroomWalker(mushCapMats[i%3]);
+  function updateMushWalkers(dt, elapsed){
+    mushWalkers.forEach((g,i)=>{
+      g.userData.wait -= dt;
+      if(g.userData.wait<=0){
+        g.userData.target = randomMushTarget();
+        g.userData.wait = 2+Math.random()*3;
+      }
+      const tgt = g.userData.target;
+      const dx = tgt.x-g.position.x, dz = tgt.z-g.position.z;
+      const d = Math.hypot(dx,dz);
+      if(d>0.2){
+        g.position.x += (dx/d)*g.userData.speed*dt;
+        g.position.z += (dz/d)*g.userData.speed*dt;
+        g.rotation.y = Math.atan2(dx,dz);
+        g.position.y = Math.abs(Math.sin(elapsed*6+i))*0.05;
+      } else {
+        g.position.y = 0;
+      }
+    });
   }
 
   // ================= Scorpions (6, roam the desert) =================
@@ -3297,6 +3389,7 @@
     bullets.push({mesh:b, vel:fwd.clone().multiplyScalar(46), life:1.6});
   }
   const animalArrays = [pigs, horses, deer, goats, monkeys, bats, snakes, octopuses];
+  animalArrays.push(mushWalkers);
 
   // ================= New critters: turtle, tiger, frog, rabbit, lizard, mouse =================
   const turtles=[], tigers=[], frogs=[], rabbits=[], lizards=[], mice=[];
@@ -6202,6 +6295,7 @@
     updateFans(worldDt);
     updateWaterfall(worldDt);
     updateGhosts(worldDt, worldElapsed);
+    updateMushWalkers(worldDt, worldElapsed);
     updateOctopuses(worldDt, worldElapsed);
     updateSeaMonsters(worldDt, worldElapsed);
     updateSeaFlyers(worldDt, worldElapsed);
