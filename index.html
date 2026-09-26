@@ -1315,6 +1315,39 @@
     });
   }
 
+  // ================= Wildflowers scattered across the grass =================
+  const wildflowerStemMat = new THREE.MeshLambertMaterial({color:0x3f7a35});
+  const wildflowerCenterMat = new THREE.MeshLambertMaterial({color:0xFFE066});
+  const wildflowerColors = [0xE53935,0xFFEB3B,0xEC407A,0xffffff,0x9C27B0,0xFF9800];
+  const wildflowerPetalMats = wildflowerColors.map(c=> new THREE.MeshLambertMaterial({color:c}));
+  function makeWildflower(x,z,petalMat){
+    const g = new THREE.Group();
+    const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.015,0.02,0.28,5), wildflowerStemMat);
+    stem.position.y = 0.14; g.add(stem);
+    const petGeo = new THREE.SphereGeometry(0.045,6,5);
+    for(let i=0;i<5;i++){
+      const a = (i/5)*Math.PI*2;
+      const pet = new THREE.Mesh(petGeo, petalMat);
+      pet.position.set(Math.cos(a)*0.06, 0.29, Math.sin(a)*0.06);
+      pet.scale.set(1,0.6,1);
+      g.add(pet);
+    }
+    const center = new THREE.Mesh(new THREE.SphereGeometry(0.03,6,6), wildflowerCenterMat);
+    center.position.y = 0.29; g.add(center);
+    g.position.set(x,0,z);
+    scene.add(g);
+    return g;
+  }
+  for(let i=0;i<90;i++){
+    let x,z, tries=0;
+    do{
+      x=(Math.random()-0.5)*(WORLD_BOUND*1.8);
+      z=(Math.random()-0.5)*(WORLD_BOUND*1.8);
+      tries++;
+    } while(tries<20 && (inDesert(x,z) || inCave(x,z) || inCave2(x,z) || inBlueField(x,z) || inLava(x,z) || inVillage(x,z) || inSeaMonster(x,z) || inMushZone(x,z)));
+    if(tries<20) makeWildflower(x,z, wildflowerPetalMats[Math.floor(Math.random()*wildflowerPetalMats.length)]);
+  }
+
   // ================= Scorpions (6, roam the desert) =================
   const scorpionMat = new THREE.MeshLambertMaterial({color:0xB9793A});
   const scorpionDarkMat = new THREE.MeshLambertMaterial({color:0x7a4a1f});
