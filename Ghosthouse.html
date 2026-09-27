@@ -1,0 +1,1792 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>โรงแรมร้าง – ไม้กางเขนกู้ภัย</title>
+<meta name="description" content="เกม 3 มิติ หนีซอมบี้ในโรงแรมร้าง เริ่มที่ทางเดินใหญ่กว้างขวาง เปิดประตูเข้าห้องพักหาไอเท็ม ใช้ไม้กางเขนศักดิ์สิทธิ์เป็นอาวุธ มุมมองบุคคลที่สาม">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@500;800&family=Sarabun:wght@400;700&display=swap" rel="stylesheet">
+<!--
+  โรงแรมร้าง – ไม้กางเขนกู้ภัย
+  ไฟล์เดียวจบ (index.html) ใช้ Three.js จาก CDN
+  เริ่มที่ทางเดินใหญ่กลางโรงแรม เปิดประตูห้องพักเข้าไปหาไอเท็ม
+  วิธีขึ้น GitHub Pages: อัปโหลดไฟล์นี้ชื่อ index.html ไปที่ repo → Settings → Pages → Deploy from branch (main / root)
+-->
+<style>
+:root{
+  --ink:#0b0f11;
+  --ink2:#141b1e;
+  --mold:#4d6656;
+  --amber:#ffb54a;
+  --gold:#ffd75e;
+  --alarm:#e5473c;
+  --bone:#efe6d2;
+  --mm:184px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:#000;overflow:hidden;color:var(--bone);
+  font-family:'Sarabun','Noto Sans Thai',Tahoma,sans-serif;font-size:17px;line-height:1.55;
+  touch-action:none;-webkit-user-select:none;user-select:none}
+.hidden{display:none!important}
+#game{position:fixed;inset:0}
+#game canvas{display:block;width:100%;height:100%}
+
+/* ---------- overlays ---------- */
+.overlay{position:fixed;inset:0;z-index:30;display:flex;align-items:center;
+  padding:24px clamp(16px,6vw,96px);overflow-y:auto}
+#menu{background:linear-gradient(90deg,rgba(5,7,8,.94) 0%,rgba(5,7,8,.8) 46%,rgba(5,7,8,.12) 100%)}
+#pause,#end{justify-content:center;background:rgba(4,6,7,.82)}
+.panel{max-width:560px;width:100%;margin:auto 0}
+#pause .panel,#end .panel{text-align:center;margin:auto}
+h1{font-family:'Kanit',sans-serif;font-weight:800;line-height:1.02;letter-spacing:.5px;
+  font-size:clamp(46px,8vw,92px);color:var(--bone);
+  text-shadow:0 0 18px rgba(255,181,74,.55),0 0 60px rgba(255,181,74,.25),0 4px 0 #000}
+.sub{font-family:'Kanit',sans-serif;font-weight:500;font-size:clamp(20px,3vw,28px);color:var(--gold);margin:6px 0 18px;
+  display:flex;align-items:center;gap:12px}
+.sub svg{width:22px;height:30px;flex:none;filter:drop-shadow(0 0 8px rgba(255,215,94,.7))}
+.story{max-width:52ch;color:#d9d1bd}
+.story + .story{margin-top:10px;color:#b9b29f;font-size:15.5px}
+.ctrls{margin:20px 0 6px;display:grid;grid-template-columns:auto 1fr;gap:8px 14px;align-items:center;font-size:15.5px;color:#cfc7b3}
+.ctrls div:nth-child(odd){text-align:right}
+kbd{display:inline-block;min-width:28px;padding:1px 8px;margin:0 2px;border-radius:6px;text-align:center;
+  font:700 13px/22px 'Sarabun',sans-serif;color:var(--bone);background:#222c2f;border:1px solid #3d4c50;border-bottom-width:3px}
+.lvl{margin:18px 0 20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.lvl span{color:#b9b29f;font-size:15.5px}
+.seg{display:inline-flex;border:1px solid #3d4c50;border-radius:10px;overflow:hidden}
+.seg button{background:transparent;color:var(--bone);border:0;padding:8px 18px;font:500 16px 'Kanit',sans-serif;cursor:pointer}
+.seg button + button{border-left:1px solid #3d4c50}
+.seg button.on{background:var(--amber);color:#1a1207}
+.seg button:focus-visible,.btn:focus-visible,#muteBtn:focus-visible,#pauseBtn:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.btn{font:800 22px 'Kanit',sans-serif;color:#1a1207;background:var(--gold);border:0;border-radius:12px;
+  padding:12px 34px;cursor:pointer;box-shadow:0 5px 0 #a07a12,0 0 30px rgba(255,215,94,.35)}
+.btn:active{transform:translateY(3px);box-shadow:0 2px 0 #a07a12}
+.btn.ghost{background:transparent;color:var(--bone);border:2px solid #3d4c50;box-shadow:none;font-size:18px;padding:10px 24px}
+.row{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-top:22px}
+#menu .row{justify-content:flex-start;margin-top:0}
+#end h2,#pause h2{font-family:'Kanit',sans-serif;font-weight:800;font-size:clamp(36px,6vw,58px);line-height:1.1}
+#end h2.win{color:var(--gold);text-shadow:0 0 30px rgba(255,215,94,.5)}
+#end h2.lose{color:var(--alarm);text-shadow:0 0 30px rgba(229,71,60,.45)}
+#end p,#pause p{margin-top:12px;color:#d9d1bd}
+#end .stats{margin-top:14px;font:500 22px 'Kanit',sans-serif;color:var(--bone)}
+
+/* ---------- HUD ---------- */
+#hud{position:fixed;inset:0;z-index:10;pointer-events:none}
+#stats{position:absolute;left:14px;top:14px;padding:10px 14px;border-radius:12px;background:rgba(6,9,10,.62);
+  border:1px solid rgba(255,255,255,.08);font:500 19px 'Kanit',sans-serif;display:grid;gap:4px}
+#hearts{font-size:26px;letter-spacing:3px;line-height:1.15}
+#stam{height:7px;width:150px;background:#1d2629;border-radius:5px;overflow:hidden}
+#stam i{display:block;height:100%;width:100%;background:linear-gradient(90deg,#4fd0a0,#b5f06a);transition:background .2s}
+#stam.low i{background:var(--alarm)}
+#minimap{position:absolute;right:14px;top:14px;width:var(--mm);height:var(--mm);border-radius:12px;
+  border:2px solid rgba(255,255,255,.14);background:rgba(6,9,10,.6)}
+#crosshair{position:absolute;left:50%;top:50%;width:6px;height:6px;margin:-3px 0 0 -3px;border-radius:50%;
+  background:rgba(255,235,180,.7);box-shadow:0 0 6px rgba(255,235,180,.6)}
+#toast{position:absolute;left:50%;bottom:17%;transform:translate(-50%,10px);max-width:min(88vw,640px);text-align:center;
+  padding:10px 22px;border-radius:999px;background:rgba(6,9,10,.82);border:1px solid rgba(255,215,94,.35);
+  font:500 20px/1.35 'Kanit',sans-serif;color:var(--bone);opacity:0;transition:opacity .25s,transform .25s}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+#hint{position:absolute;left:14px;bottom:14px;padding:8px 12px;border-radius:10px;background:rgba(6,9,10,.55);
+  font-size:14.5px;color:#cfc7b3;transition:opacity 1.2s}
+#hint.fade{opacity:0}
+#prompt{position:absolute;left:50%;bottom:27%;transform:translateX(-50%);padding:9px 20px;border-radius:999px;
+  background:rgba(6,9,10,.84);border:1px solid rgba(255,215,94,.5);font:500 19px 'Kanit',sans-serif;
+  color:var(--bone);white-space:nowrap;box-shadow:0 0 22px rgba(255,215,94,.18)}
+#prompt.hidden{display:none}
+#muteBtn,#pauseBtn{pointer-events:auto;position:absolute;width:44px;height:44px;border-radius:12px;border:1px solid rgba(255,255,255,.14);
+  background:rgba(6,9,10,.6);color:var(--bone);font-size:20px;cursor:pointer}
+#muteBtn{right:14px;top:calc(var(--mm) + 26px)}
+#pauseBtn{right:66px;top:calc(var(--mm) + 26px)}
+#hurt{position:fixed;inset:0;z-index:12;pointer-events:none;opacity:0;transition:opacity .45s;
+  background:radial-gradient(ellipse at center,rgba(229,71,60,0) 45%,rgba(229,71,60,.62) 100%)}
+#hurt.on{opacity:1;transition:opacity .04s}
+#vignette{position:fixed;inset:0;z-index:8;pointer-events:none;background:radial-gradient(ellipse at center,rgba(0,0,0,0) 52%,rgba(0,0,0,.5) 100%)}
+#fear{position:fixed;inset:0;z-index:11;pointer-events:none;opacity:0;background:radial-gradient(ellipse at center,rgba(0,0,0,0) 28%,rgba(14,0,0,.55) 62%,rgba(0,0,0,.94) 100%)}
+#loadError{position:fixed;inset:0;z-index:99;background:#0b0f11;align-items:center;justify-content:center;text-align:center;padding:30px;display:flex}
+#loadError.hidden{display:none!important}
+
+/* ---------- touch controls ---------- */
+#touch{position:fixed;inset:0;z-index:9}
+#joyZone,#lookZone{position:absolute;top:0;bottom:0}
+#joyZone{left:0;width:46%}
+#lookZone{right:0;width:54%}
+#joyBase{position:absolute;width:120px;height:120px;margin:-60px 0 0 -60px;border-radius:50%;
+  border:2px solid rgba(255,255,255,.25);background:rgba(255,255,255,.06);pointer-events:none}
+#joyKnob{position:absolute;left:34px;top:34px;width:52px;height:52px;border-radius:50%;background:rgba(255,235,180,.45)}
+#atkBtn{position:absolute;right:26px;bottom:34px;width:96px;height:96px;border-radius:50%;border:3px solid rgba(255,215,94,.85);
+  background:rgba(255,215,94,.22);color:var(--gold);font-size:46px;line-height:1;box-shadow:0 0 24px rgba(255,215,94,.35)}
+#atkBtn:active{background:rgba(255,215,94,.5)}
+#doorBtn{position:absolute;right:136px;bottom:46px;width:78px;height:78px;border-radius:50%;border:3px solid rgba(255,215,94,.6);
+  background:rgba(6,9,10,.62);color:var(--bone);font-size:34px;line-height:1}
+#doorBtn:active{background:rgba(255,215,94,.4)}
+
+@media (max-width:700px){
+  :root{--mm:120px}
+  body{font-size:16px}
+  .ctrls{display:none}
+  #hint{display:none}
+  #stam{width:110px}
+  #hearts{font-size:20px}
+  #stats{font-size:16px}
+  #muteBtn,#pauseBtn{width:38px;height:38px;font-size:17px}
+  #muteBtn{top:calc(var(--mm) + 24px)}
+  #pauseBtn{right:58px;top:calc(var(--mm) + 24px)}
+  #menu{background:linear-gradient(180deg,rgba(5,7,8,.88),rgba(5,7,8,.7))}
+}
+.touchhelp{display:none}
+@media (pointer:coarse){.touchhelp{display:block}.ctrls,#hint{display:none}}
+@media (prefers-reduced-motion:reduce){#hurt,#toast,#hint{transition:none}}
+</style>
+</head>
+<body>
+
+<div id="game"></div>
+<div id="vignette"></div>
+<div id="fear"></div>
+<div id="hurt"></div>
+
+<div id="hud" class="hidden">
+  <div id="stats">
+    <div id="hearts"></div>
+    <div id="stam"><i></i></div>
+    <div id="keys"></div>
+    <div id="kills"></div>
+    <div id="clock"></div>
+  </div>
+  <canvas id="minimap" width="184" height="184"></canvas>
+  <button id="muteBtn" aria-label="เปิดหรือปิดเสียง">🔊</button>
+  <button id="pauseBtn" class="hidden" aria-label="พักเกม">⏸</button>
+  <div id="crosshair"></div>
+  <div id="prompt" class="hidden"></div>
+  <div id="toast" role="status"></div>
+  <div id="hint"><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> เดิน &nbsp; <kbd>Shift</kbd> วิ่ง &nbsp; <kbd>E</kbd> เปิดประตูห้อง &nbsp; <kbd>คลิก</kbd> หรือ <kbd>Space</kbd> ฟาดไม้กางเขน &nbsp; <kbd>← →</kbd> หมุนตัว &nbsp; <kbd>M</kbd> แผนที่ &nbsp; <kbd>N</kbd> ปิดเสียง</div>
+</div>
+
+<div id="touch" class="hidden">
+  <div id="joyZone"></div>
+  <div id="lookZone"></div>
+  <div id="joyBase" class="hidden"><div id="joyKnob"></div></div>
+  <button id="atkBtn" aria-label="ฟาดไม้กางเขน">✝</button>
+  <button id="doorBtn" class="hidden" aria-label="เปิดประตูห้องพัก">🚪</button>
+</div>
+
+<div id="menu" class="overlay">
+  <div class="panel">
+    <h1>โรงแรม<br>ร้าง</h1>
+    <div class="sub">
+      <svg viewBox="0 0 22 30" aria-hidden="true"><path fill="#ffd75e" d="M8.5 0h5v8H22v5h-8.5v17h-5V13H0V8h8.5z"/></svg>
+      ไม้กางเขนกู้ภัย
+    </div>
+    <p class="story">คุณฟื้นกลางดึกในโรงแรมร้างที่ถูกทิ้งร้างมานาน ยืนอยู่กลาง<strong>ทางเดินใหญ่กว้างขวาง</strong>ที่ทอดยาวสุดลูกหูลูกตา ห้องพักสองฝั่งปิดตายเรียงราย เดินไปเปิดประตูห้องพักทีละห้อง แล้วเข้าไปค้น<strong>ไอเท็มที่วางอยู่ในห้อง</strong> เก็บกุญแจทอง 3 ดอก แล้วหนีออกทางประตูใหญ่ปลายทางเดิน!</p>
+    <p class="story">ระวัง! ซอมบี้บางตัวหลับอยู่ในห้องพัก ถ้าคุณเปิดประตูเข้าไปมันจะตื่นขึ้นมา และมีผีสาวลอยทะลุกำแพงตามหาคุณ ไม้กางเขนไล่ผีให้หายไปได้ชั่วคราว ส่วนซอมบี้ต้องฟาดหลายครั้งจึงจะสลายเป็นประกายแสง เก็บหัวใจสีชมพูเพื่อเติมพลัง</p>
+    <p class="story touchhelp">จอสัมผัส: แตะค้างครึ่งซ้ายเพื่อเดิน ลากนิ้วครึ่งขวาเพื่อหันมอง กดปุ่ม ✝ เพื่อฟาดไม้กางเขน และกด 🚪 เพื่อเปิดประตูห้อง</p>
+    <div class="ctrls">
+      <div><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd></div><div>เดิน (Shift เพื่อวิ่ง)</div>
+      <div><kbd>E</kbd></div><div>เปิด / ปิด ประตูห้องพัก</div>
+      <div>เมาส์ / <kbd>←</kbd> <kbd>→</kbd></div><div>หันมอง (ถ้าล็อกเมาส์ไม่ได้ ให้ลากเมาส์)</div>
+      <div><kbd>คลิกซ้าย</kbd> <kbd>Space</kbd></div><div>ฟาดไม้กางเขน</div>
+      <div><kbd>M</kbd> <kbd>Esc</kbd></div><div>ซ่อนแผนที่ / พักเกม</div>
+    </div>
+    <div class="lvl">
+      <span>ความยาก</span>
+      <div class="seg" id="diffSeg">
+        <button data-d="easy">ง่าย</button>
+        <button data-d="normal" class="on">ปกติ</button>
+        <button data-d="hard">ยาก</button>
+      </div>
+    </div>
+    <div class="row"><button class="btn" id="startBtn">เริ่มผจญภัย</button></div>
+  </div>
+</div>
+
+<div id="pause" class="overlay hidden">
+  <div class="panel">
+    <h2>พักเกมอยู่</h2>
+    <p>ซอมบี้รอคุณอยู่ในโรงแรมร้าง กลับมาสู้ต่อเมื่อพร้อม</p>
+    <div class="row"><button class="btn" id="resumeBtn">เล่นต่อ</button><button class="btn ghost" id="quitBtn">กลับเมนู</button></div>
+  </div>
+</div>
+
+<div id="end" class="overlay hidden">
+  <div class="panel">
+    <h2 id="endTitle"></h2>
+    <p id="endMsg"></p>
+    <div class="stats" id="endStats"></div>
+    <div class="row"><button class="btn" id="againBtn">เล่นอีกครั้ง</button><button class="btn ghost" id="menuBtn">กลับเมนู</button></div>
+  </div>
+</div>
+
+<div id="loadError" class="hidden">
+  <div>
+    <h2 style="font-family:Kanit,sans-serif;font-size:32px;margin-bottom:10px">โหลดเกมไม่สำเร็จ</h2>
+    <p>ต้องต่อเน็ตเพื่อโหลดไลบรารี Three.js และเบราว์เซอร์ต้องรองรับ WebGL<br>ลองรีเฟรชหน้านี้อีกครั้งนะ</p>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function () {
+'use strict';
+const $ = id => document.getElementById(id);
+
+/* =========================================================
+   ตั้งค่าพื้นฐาน
+   ========================================================= */
+const CS = 3;                 // ขนาดช่อง (หน่วยโลก)
+const WALL_H = 4.3;           // ความสูงกำแพง (เพดานสูงแบบโรงแรม)
+const N = 11;                 // จำนวนช่องของชั้นต่อด้าน
+const W = 2 * N + 1;          // ขนาดตาราง (23 x 23)
+const EYE = 1.55, PR = 0.42, ZR = 0.4;
+const ATK_DUR = 0.42, ATK_RANGE = 2.9;
+const KEYS_NEEDED = 3;
+
+// ---- ผังโรงแรมร้าง ----
+const COR_Y0 = 9, COR_Y1 = 13;        // ทางเดินใหญ่กลางชั้น (กว้าง 5 ช่อง = 15 ม.)
+const SPAWN_X = 3, SPAWN_Y = 11;      // จุดเริ่มต้นกลางทางเดิน (ฝั่งตะวันตก)
+const EXIT_X = W - 2, EXIT_Y = 11;    // ประตูใหญ่ปลายทางเดิน (ฝั่งตะวันออก)
+const ROOM_COLS = [[1, 5], [7, 11], [13, 17], [19, 21]];   // คอลัมน์ของห้องพักแต่ละห้อง
+const DOOR_W = 1.7, DOOR_H = 2.95;    // ความกว้าง/สูงของช่องประตูห้อง
+
+const DIFFS = {
+  easy:   { zombies: 5,  speed: 0.8, hp: 2, cap: 8,  aggro: 9,  ghosts: 1, ghost: 0.8,  ghostGone: 22 },
+  normal: { zombies: 8,  speed: 1.0, hp: 3, cap: 12, aggro: 12, ghosts: 1, ghost: 1.0,  ghostGone: 16 },
+  hard:   { zombies: 11, speed: 1.2, hp: 3, cap: 16, aggro: 15, ghosts: 2, ghost: 1.25, ghostGone: 12 }
+};
+let diff = DIFFS.normal;
+
+const isTouch = !!(window.matchMedia && matchMedia('(pointer: coarse)').matches);
+const D4 = [[1, 0], [-1, 0], [0, 1], [0, -1]];
+const rnd = (a, b) => a + Math.random() * (b - a);
+const irnd = n => Math.floor(Math.random() * n);
+const pick = a => a[irnd(a.length)];
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = irnd(i + 1); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+
+/* =========================================================
+   Three.js พื้นฐาน
+   ========================================================= */
+let renderer;
+try {
+  if (typeof THREE === 'undefined') throw new Error('no three');
+  renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
+} catch (e) {
+  $('loadError').classList.remove('hidden');
+  return;
+}
+renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+renderer.setSize(window.innerWidth, window.innerHeight);
+$('game').appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x030405);
+scene.fog = new THREE.FogExp2(0x030405, 0.064);
+
+const camera = new THREE.PerspectiveCamera(72, window.innerWidth / window.innerHeight, 0.08, 80);
+camera.rotation.order = 'YXZ';
+scene.add(camera);
+
+scene.add(new THREE.AmbientLight(0x5a6890, 0.3));
+const flash = new THREE.SpotLight(0xfff1d6, 1.6, 30, 0.62, 0.6, 1.5);   // ไฟฉาย (ติดตัวผู้เล่น)
+scene.add(flash); scene.add(flash.target);
+const glow = new THREE.PointLight(0xffd9a0, 0.55, 9, 1.6);               // แสงรอบตัว
+scene.add(glow);
+
+window.addEventListener('resize', () => {
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+});
+
+/* =========================================================
+   เท็กเจอร์ที่วาดเองด้วย canvas
+   ========================================================= */
+const maxAniso = (renderer.capabilities && renderer.capabilities.getMaxAnisotropy) ? renderer.capabilities.getMaxAnisotropy() : 1;
+function canvasTex(w, h, draw, rx, ry) {
+  const c = document.createElement('canvas'); c.width = w; c.height = h;
+  const g = c.getContext('2d'); draw(g, w, h);
+  const t = new THREE.CanvasTexture(c);
+  t.wrapS = t.wrapT = THREE.RepeatWrapping;
+  t.repeat.set(rx || 1, ry || 1);
+  t.anisotropy = Math.min(8, maxAniso);
+  return t;
+}
+function stains(g, s, n, rgb, a) {
+  for (let i = 0; i < n; i++) {
+    const x = rnd(0, s), y = rnd(0, s), r = rnd(s * .04, s * .18);
+    const gr = g.createRadialGradient(x, y, 0, x, y, r);
+    gr.addColorStop(0, 'rgba(' + rgb + ',' + a + ')'); gr.addColorStop(1, 'rgba(' + rgb + ',0)');
+    g.fillStyle = gr; g.fillRect(x - r, y - r, r * 2, r * 2);
+  }
+}
+
+const wallTex = canvasTex(256, 256, (g, s) => {
+  // กระดาษติดผนังโรงแรมเก่า สีเขียวหม่น ลอกเป็นจุด ๆ
+  g.fillStyle = '#5e6a55'; g.fillRect(0, 0, s, s);
+  for (let x = 0; x < s; x += 26) { g.fillStyle = 'rgba(255,255,255,0.05)'; g.fillRect(x, 0, 13, s); g.fillStyle = 'rgba(0,0,0,0.09)'; g.fillRect(x + 13, 0, 13, s); }
+  g.strokeStyle = 'rgba(220,210,170,0.13)'; g.lineWidth = 2;
+  for (let y = 30; y < s * 0.7; y += 60) for (let x = 13; x < s; x += 26) {
+    g.beginPath(); g.arc(x, y, 7, 0, 6.3); g.stroke();
+  }
+  // วอลเปเปอร์ลอก เผยให้เห็นปูนเก่าด้านใน
+  for (let i = 0; i < 7; i++) {
+    const x = rnd(0, s - 40), y = rnd(0, s * 0.66), w = rnd(22, 54), h = rnd(26, 66);
+    g.fillStyle = '#8d836c'; g.beginPath();
+    g.moveTo(x, y);
+    for (let k = 0; k < 6; k++) g.lineTo(x + w * (k / 5), y + rnd(-6, 6) + (k === 5 ? h : 0));
+    g.lineTo(x + w, y + h); g.lineTo(x, y + h); g.closePath(); g.fill();
+    g.strokeStyle = 'rgba(40,34,24,.5)'; g.lineWidth = 2; g.stroke();
+  }
+  // คราบน้ำไหลย้อย
+  for (let i = 0; i < 9; i++) {
+    const x = rnd(0, s), y0 = rnd(0, s * 0.35);
+    const gr = g.createLinearGradient(x, y0, x, y0 + rnd(60, 150));
+    gr.addColorStop(0, 'rgba(60,44,24,.30)'); gr.addColorStop(1, 'rgba(60,44,24,0)');
+    g.fillStyle = gr; g.fillRect(x - rnd(4, 14), y0, rnd(9, 26), 150);
+  }
+  // บัวผนังไม้ด้านล่าง
+  g.fillStyle = '#3a2a20'; g.fillRect(0, s * 0.74, s, s * 0.26);
+  g.fillStyle = '#2a1d16'; g.fillRect(0, s * 0.74, s, 6);
+  g.strokeStyle = 'rgba(0,0,0,.35)'; g.lineWidth = 2;
+  for (let x = 0; x < s; x += 64) g.strokeRect(x + 6, s * 0.74 + 14, 52, s * 0.26 - 24);
+  stains(g, s, 16, '28,24,14', 0.3); stains(g, s, 7, '10,10,10', 0.26);
+  // รอยร้าว
+  g.strokeStyle = 'rgba(0,0,0,.45)'; g.lineWidth = 1.5;
+  for (let i = 0; i < 5; i++) { let x = rnd(0, s), y = rnd(0, s * .5); g.beginPath(); g.moveTo(x, y); for (let k = 0; k < 8; k++) { x += rnd(-15, 15); y += rnd(6, 22); g.lineTo(x, y); } g.stroke(); }
+  for (let i = 0; i < 1800; i++) { g.fillStyle = 'rgba(0,0,0,' + rnd(0.02, 0.08) + ')'; g.fillRect(rnd(0, s), rnd(0, s), 2, 2); }
+});
+
+const floorTex = canvasTex(256, 256, (g, s) => {
+  // พื้นกระเบื้องหินอ่อนแบบโรงแรม เก่าสกปรกและแตกร้าว
+  const t = s / 2;
+  for (let i = 0; i < 2; i++) for (let j = 0; j < 2; j++) {
+    const light = (i + j) % 2 === 0;
+    g.fillStyle = light ? '#a99f88' : '#3f3f3d';
+    g.fillRect(i * t, j * t, t, t);
+    // เส้นลายหิน
+    g.strokeStyle = light ? 'rgba(255,255,255,.12)' : 'rgba(255,255,255,.05)';
+    g.lineWidth = 2;
+    for (let k = 0; k < 7; k++) {
+      const x0 = i * t + rnd(0, t), y0 = j * t + rnd(0, t);
+      g.beginPath(); g.moveTo(x0, y0);
+      g.bezierCurveTo(x0 + rnd(-40, 40), y0 + rnd(-25, 25), x0 + rnd(-40, 40), y0 + rnd(-25, 25), x0 + rnd(-55, 55), y0 + rnd(-40, 40));
+      g.stroke();
+    }
+    g.strokeStyle = 'rgba(0,0,0,.55)'; g.lineWidth = 4; g.strokeRect(i * t + 2, j * t + 2, t - 4, t - 4);
+  }
+  // กระเบื้องแตก
+  g.strokeStyle = 'rgba(20,16,10,.6)'; g.lineWidth = 2;
+  for (let i = 0; i < 6; i++) { let x = rnd(0, s), y = rnd(0, s); g.beginPath(); g.moveTo(x, y); for (let k = 0; k < 7; k++) { x += rnd(-24, 24); y += rnd(-24, 24); g.lineTo(x, y); } g.stroke(); }
+  stains(g, s, 16, '18,14,8', 0.34);
+  for (let i = 0; i < 1500; i++) { g.fillStyle = 'rgba(0,0,0,' + rnd(0.02, 0.07) + ')'; g.fillRect(rnd(0, s), rnd(0, s), 2, 2); }
+}, W * CS / 4, W * CS / 4);
+
+// พรมวิ่งยาวกลางทางเดินใหญ่
+const runnerTex = canvasTex(256, 256, (g, s) => {
+  g.fillStyle = '#6a2226'; g.fillRect(0, 0, s, s);
+  g.fillStyle = 'rgba(0,0,0,.22)'; g.fillRect(0, 0, s, 26); g.fillRect(0, s - 26, s, 26);
+  g.strokeStyle = 'rgba(216,168,74,.42)'; g.lineWidth = 5;
+  g.strokeRect(16, 34, s - 32, s - 68);
+  g.strokeStyle = 'rgba(216,168,74,.2)'; g.lineWidth = 3;
+  for (let x = 0; x < s; x += 64) for (let y = 0; y < s; y += 64) {
+    g.beginPath(); g.moveTo(x + 32, y + 6); g.lineTo(x + 58, y + 32); g.lineTo(x + 32, y + 58); g.lineTo(x + 6, y + 32); g.closePath(); g.stroke();
+    g.beginPath(); g.arc(x + 32, y + 32, 9, 0, 6.3); g.stroke();
+  }
+  stains(g, s, 14, '20,8,8', 0.4); stains(g, s, 6, '0,0,0', 0.3);
+  for (let i = 0; i < 1400; i++) { g.fillStyle = 'rgba(0,0,0,' + rnd(0.02, 0.08) + ')'; g.fillRect(rnd(0, s), rnd(0, s), 2, 2); }
+}, 16, 4);
+
+const ceilTex = canvasTex(256, 256, (g, s) => {
+  g.fillStyle = '#2b2925'; g.fillRect(0, 0, s, s);
+  g.fillStyle = 'rgba(0,0,0,.28)'; g.fillRect(0, s * .47, s, s * .06);
+  g.fillRect(s * .47, 0, s * .06, s);
+  stains(g, s, 12, '15,10,5', 0.35);
+  for (let i = 0; i < 1200; i++) { g.fillStyle = 'rgba(0,0,0,' + rnd(0.02, 0.07) + ')'; g.fillRect(rnd(0, s), rnd(0, s), 2, 2); }
+}, W * CS / 6, W * CS / 6);
+
+const crateTex = canvasTex(128, 128, (g, s) => {
+  g.fillStyle = '#6b4c2e'; g.fillRect(0, 0, s, s);
+  for (let y = 0; y < s; y += 32) { g.fillStyle = 'rgba(0,0,0,.28)'; g.fillRect(0, y, s, 3); }
+  g.strokeStyle = '#3d2a17'; g.lineWidth = 8; g.strokeRect(4, 4, s - 8, s - 8);
+  g.beginPath(); g.moveTo(8, 8); g.lineTo(s - 8, s - 8); g.stroke();
+  for (let i = 0; i < 400; i++) { g.fillStyle = 'rgba(0,0,0,' + rnd(0.03, 0.1) + ')'; g.fillRect(rnd(0, s), rnd(0, s), 2, 2); }
+});
+
+const luggageTex = canvasTex(128, 128, (g, s) => {
+  g.fillStyle = '#4a3524'; g.fillRect(0, 0, s, s);
+  g.fillStyle = 'rgba(255,255,255,.06)'; g.fillRect(0, 0, s, s * 0.35);
+  g.strokeStyle = '#2a1d13'; g.lineWidth = 6; g.strokeRect(3, 3, s - 6, s - 6);
+  g.fillStyle = '#8a6a34';
+  for (let y = 18; y < s; y += 34) g.fillRect(0, y, s, 7);
+  g.fillStyle = '#1d1510'; g.fillRect(s * 0.34, 0, s * 0.32, 10);
+  for (let i = 0; i < 500; i++) { g.fillStyle = 'rgba(0,0,0,' + rnd(0.03, 0.12) + ')'; g.fillRect(rnd(0, s), rnd(0, s), 2, 2); }
+});
+
+const paperTex = canvasTex(64, 64, (g, s) => {
+  g.fillStyle = '#b9b1a0'; g.fillRect(0, 0, s, s);
+  g.strokeStyle = 'rgba(50,45,35,.5)'; g.lineWidth = 2;
+  for (let y = 10; y < s; y += 9) { g.beginPath(); g.moveTo(6, y); g.lineTo(rnd(20, s - 6), y); g.stroke(); }
+  stains(g, s, 3, '70,60,40', 0.4);
+});
+
+const plaqueCache = {};
+function plaqueTex(no) {
+  if (plaqueCache[no]) return plaqueCache[no];
+  plaqueCache[no] = canvasTex(128, 72, (g, w, h) => {
+    g.fillStyle = '#241c14'; g.fillRect(0, 0, w, h);
+    g.strokeStyle = '#c9a24a'; g.lineWidth = 5; g.strokeRect(5, 5, w - 10, h - 10);
+    g.fillStyle = '#e8c86a'; g.font = '800 44px Kanit, Tahoma, sans-serif';
+    g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(no, w / 2, h / 2 + 3);
+    stains(g, 64, 3, '0,0,0', 0.35);
+  }, 1, 1);
+  return plaqueCache[no];
+}
+
+function makePaintingTex(kind) {
+  return canvasTex(128, 160, (g, w, h) => {
+    g.fillStyle = '#5a4020'; g.fillRect(0, 0, w, h);
+    g.fillStyle = '#8a6a34'; g.fillRect(6, 6, w - 12, h - 12);
+    g.fillStyle = '#5a4020'; g.fillRect(12, 12, w - 24, h - 24);
+    const bg = g.createLinearGradient(0, 0, 0, h);
+    if (kind === 0) { bg.addColorStop(0, '#3b4a55'); bg.addColorStop(1, '#1c2229'); }
+    else if (kind === 1) { bg.addColorStop(0, '#4b3a2a'); bg.addColorStop(1, '#201810'); }
+    else { bg.addColorStop(0, '#2a3a2e'); bg.addColorStop(1, '#10181a'); }
+    g.fillStyle = bg; g.fillRect(16, 16, w - 32, h - 32);
+    if (kind === 0) {            // ภาพบุคคล
+      g.fillStyle = '#b9a685'; g.beginPath(); g.arc(w / 2, 62, 20, 0, 6.3); g.fill();
+      g.fillStyle = '#20262c'; g.beginPath(); g.moveTo(24, h - 16); g.quadraticCurveTo(w / 2, 70, w - 24, h - 16); g.fill();
+    } else if (kind === 1) {     // ภูเขา
+      g.fillStyle = '#6d5a3f'; g.beginPath(); g.moveTo(16, h - 30); g.lineTo(50, 70); g.lineTo(78, 100); g.lineTo(100, 60); g.lineTo(w - 16, h - 30); g.fill();
+      g.fillStyle = '#c9b98a'; g.beginPath(); g.arc(96, 42, 9, 0, 6.3); g.fill();
+    } else {                     // ต้นไม้
+      g.fillStyle = '#1a120c'; g.fillRect(w / 2 - 4, 80, 8, 50);
+      g.fillStyle = '#41684a'; g.beginPath(); g.arc(w / 2, 66, 28, 0, 6.3); g.fill();
+    }
+    g.strokeStyle = 'rgba(0,0,0,.5)'; g.lineWidth = 1.5;
+    g.beginPath(); g.moveTo(40, 20); g.lineTo(58, 60); g.lineTo(50, 90); g.stroke();
+    stains(g, w, 4, '0,0,0', 0.3);
+  });
+}
+
+const glowTex = canvasTex(64, 64, (g, w) => {
+  const gr = g.createRadialGradient(w / 2, w / 2, 0, w / 2, w / 2, w / 2);
+  gr.addColorStop(0, 'rgba(255,255,255,1)'); gr.addColorStop(0.35, 'rgba(255,255,255,.45)'); gr.addColorStop(1, 'rgba(255,255,255,0)');
+  g.fillStyle = gr; g.fillRect(0, 0, w, w);
+});
+
+const signTex = canvasTex(256, 96, (g, w, h) => {
+  g.fillStyle = '#0b2a17'; g.fillRect(0, 0, w, h);
+  g.strokeStyle = '#7dffa8'; g.lineWidth = 6; g.strokeRect(5, 5, w - 10, h - 10);
+  g.fillStyle = '#b8ffcf'; g.font = '800 46px Kanit, Tahoma, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+  g.fillText('ทางออก', w / 2, h / 2 + 3);
+});
+
+// วัสดุที่ใช้ร่วมกัน (ไม่ทิ้งเมื่อสร้างด่านใหม่)
+const shared = new Set();
+function sharedMat(m) { shared.add(m); return m; }
+const wallMat  = sharedMat(new THREE.MeshPhongMaterial({ map: wallTex, shininess: 4, specular: 0x111111 }));
+const floorMat = sharedMat(new THREE.MeshPhongMaterial({ map: floorTex, shininess: 22, specular: 0x333333 }));
+const runMat   = sharedMat(new THREE.MeshPhongMaterial({ map: runnerTex, shininess: 3 }));
+const ceilMat  = sharedMat(new THREE.MeshPhongMaterial({ map: ceilTex, shininess: 2 }));
+const crateMat = sharedMat(new THREE.MeshPhongMaterial({ map: crateTex, shininess: 4 }));
+const lugMat   = sharedMat(new THREE.MeshPhongMaterial({ map: luggageTex, shininess: 8 }));
+const paperMat = sharedMat(new THREE.MeshPhongMaterial({ map: paperTex, shininess: 2 }));
+const woodMat  = sharedMat(new THREE.MeshPhongMaterial({ color: 0x4a3524, shininess: 6 }));
+const darkWood = sharedMat(new THREE.MeshPhongMaterial({ color: 0x33241a, shininess: 8 }));
+const plankMat = sharedMat(new THREE.MeshPhongMaterial({ color: 0x3a2a1c, shininess: 2 }));
+const sheetMat = sharedMat(new THREE.MeshPhongMaterial({ color: 0xb9b3a2, shininess: 4 }));
+const pilMat   = sharedMat(new THREE.MeshPhongMaterial({ color: 0xd8d2c0, shininess: 6 }));
+const blankMat = sharedMat(new THREE.MeshPhongMaterial({ color: 0x59404a, shininess: 3 }));
+const brassMat = sharedMat(new THREE.MeshPhongMaterial({ color: 0xc9a24a, shininess: 70, specular: 0xffffff }));
+const doorMat  = sharedMat(new THREE.MeshPhongMaterial({ color: 0x5a3a1f, shininess: 14 }));
+const paintMats = [0, 1, 2].map(k => sharedMat(new THREE.MeshPhongMaterial({ map: makePaintingTex(k), shininess: 6 })));
+const bulbMat  = sharedMat(new THREE.MeshBasicMaterial({ color: 0xffcf80 }));
+const cordMat  = sharedMat(new THREE.MeshBasicMaterial({ color: 0x141210 }));
+
+/* =========================================================
+   สถานะเกม
+   ========================================================= */
+let state = 'menu';            // menu | playing | paused | won | lost
+let level = null, grid = null;
+let distStart = new Int16Array(W * W);
+const distF = new Int16Array(W * W);   // ระยะทางจากผู้เล่น (ให้ซอมบี้เดินตามในเขาวงกต)
+let explored = new Uint8Array(W * W);
+let zombies = [], ghosts = [], items = [], lamps = [], particles = [], player = null;
+let roomDoors = [], chambers = [];
+const doorAt = new Map();             // ไทล์ประตูห้องพัก → ข้อมูลประตู (ใช้เช็กการชน)
+let fear = 0, beatT = 0, pulse = 0;
+let door = null, spawnT = 25, fieldT = 0;
+const P = { x: 0, z: 0, hp: 5, maxHp: 5, keys: 0, kills: 0, stam: 1, tired: false, inv: 0, time: 0, dead: false, moving: false };
+let yaw = 0, pitch = 0, bobT = 0, shake = 0, locked = false, mapOn = true;
+let noLock = false, hadLock = false, lockTimer = 0, dragging = false, dragMoved = 0, dragX = 0, dragY = 0;
+let holdAtk = false, msgDoor = 0;
+const atk = { t: -1, cd: 0, hit: false };
+const keysDown = {};
+const joy = { x: 0, y: 0 };
+
+const pGroup = new THREE.Group(); scene.add(pGroup);
+
+/* =========================================================
+   สร้างเขาวงกต
+   ========================================================= */
+function bfs(out, sx, sy, limit) {
+  out.fill(-1);
+  const q = [sy * W + sx]; out[q[0]] = 0;
+  for (let h = 0; h < q.length; h++) {
+    const i = q[h], x = i % W, y = (i / W) | 0, d = out[i];
+    if (d >= limit) continue;
+    for (const [dx, dy] of D4) {
+      const nx = x + dx, ny = y + dy;
+      if (nx < 0 || ny < 0 || nx >= W || ny >= W || grid[ny][nx] !== 0) continue;
+      const ni = ny * W + nx;
+      if (out[ni] !== -1) continue;
+      out[ni] = d + 1; q.push(ni);
+    }
+  }
+}
+
+let furniture = [], roomDoorSpecs = [];
+function blockTile(x, y) { if (grid[y] && grid[y][x] === 0) grid[y][x] = 2; }
+function placeF(type, tx, ty, rot, extra) {
+  furniture.push(Object.assign({ type, x: tx, y: ty, rot: rot || 0 }, extra || {}));
+  blockTile(tx, ty);
+}
+
+// สร้างผังโรงแรม: ทางเดินใหญ่กลางชั้น มีห้องพักเรียงสองฝั่ง
+// ห้องพักทุกห้องมีประตูเปิดรับจากทางเดิน และแบ่งเป็นโซนใน/โซนนอกผ่านซุ้มประตู
+function genHotel() {
+  grid = Array.from({ length: W }, () => new Array(W).fill(1));
+  furniture = []; chambers = []; roomDoorSpecs = [];
+
+  // ทางเดินใหญ่ (กว้าง 5 ช่อง ตลอดความยาวชั้น)
+  for (let y = COR_Y0; y <= COR_Y1; y++) for (let x = 1; x <= W - 2; x++) grid[y][x] = 0;
+
+  ROOM_COLS.forEach(([x0, x1], gi) => {
+    const dc = Math.floor((x0 + x1) / 2);                     // คอลัมน์ประตูห้อง (แนวตรงถึงซุ้ม)
+    for (const side of [-1, 1]) {
+      const wallY = side < 0 ? 8 : 14;                        // ผนังฝั่งทางเดิน
+      const divY = side < 0 ? 4 : 18;                         // ผนังกั้นห้องใน/ห้องนอก
+      const oY0 = side < 0 ? 1 : 19, oY1 = side < 0 ? 3 : 21; // ห้องนอก (ชิดผนังอาคาร)
+      const iY0 = side < 0 ? 5 : 15, iY1 = side < 0 ? 7 : 17; // ห้องใน (ติดทางเดิน)
+      const oWall = side < 0 ? oY0 : oY1;                     // แถวชิดผนังด้านนอก (หัวเตียง)
+      const oInner = side < 0 ? oY1 : oY0;                    // แถวติดซุ้มประตู
+      const divRow = side < 0 ? iY0 : iY1;                    // แถวติดผนังกั้น
+      const corRow = side < 0 ? iY1 : iY0;                    // แถวติดผนังทางเดิน
+      const no = side < 0 ? 301 + gi * 2 : 302 + gi * 2;
+
+      const yA = Math.min(oY0, iY0), yB = Math.max(oY1, iY1);
+      for (let y = yA; y <= yB; y++) for (let x = x0; x <= x1; x++) grid[y][x] = 0;
+      grid[divY][dc] = 0;                                     // ซุ้มประตูเชื่อมห้องในกับห้องนอก
+      grid[wallY][dc] = 0;                                    // ประตูห้องพัก
+
+      roomDoorSpecs.push({ col: dc, wallY, side, no, x: tileC(dc), z: tileC(wallY), cx: tileC(dc), k: 0, open: false, pivot: null });
+      doorAt.set(wallY * W + dc, roomDoorSpecs[roomDoorSpecs.length - 1]);
+      chambers.push({ x0, x1, y0: oY0, y1: oY1, side, gi, no, dx: tileC(dc), dz: tileC(wallY) });
+      chambers.push({ x0, x1, y0: iY0, y1: iY1, side, gi, no, dx: tileC(dc), dz: tileC(wallY) });
+
+      // เฟอร์นิเจอร์ในห้อง (ระวังอย่าปิดทางเข้า/ซุ้มประตู)
+      const head = side < 0 ? 0 : Math.PI;
+      if (x1 - x0 >= 4) {
+        placeF('bed', dc - 1, oWall, head);
+        placeF('bed', dc + 1, oWall, head);
+        placeF('nightstand', dc, oWall, 0);
+      } else {
+        placeF('bed', dc, oWall, head);
+        placeF('nightstand', dc === x0 ? x1 : x0, oWall, 0);
+      }
+      placeF('desk', x0, divRow, head);                       // โต๊ะทำงานชิดผนังกั้น
+      placeF('chair', x0, divRow + (side < 0 ? 1 : -1), head + Math.PI);
+      placeF('luggage', x1, oInner, rnd(0, 3), { big: 1 });
+      if (x1 - x0 >= 4) placeF('luggage', x0, corRow, rnd(-0.4, 0.4));
+    }
+  });
+
+  furnishCorridor();
+}
+
+// ของตกแต่ง/กีดขวางกลางทางเดินใหญ่
+function furnishCorridor() {
+  placeF('reception', 2, 13, 0);                              // เคาน์เตอร์ต้อนรับเก่า
+  placeF('luggage', 2, 12, 0.5, { big: 1 });
+  [[6, 9], [12, 9], [18, 9], [6, 13], [16, 13], [21, 13]].forEach(([x, y], i) => {
+    if (i % 3 !== 2) placeF('console', x, y, y === 9 ? 0 : Math.PI);
+    else placeF('luggage', x, y, rnd(-0.6, 0.6), { big: 1 });
+  });
+  [[1, 9], [10, 13], [14, 9]].forEach(([x, y]) => placeF('trolley', x, y, rnd(0, 3)));
+}
+
+const solid = (x, z) => {
+  const tx = Math.floor(x / CS), tz = Math.floor(z / CS);
+  if (tx < 0 || tz < 0 || tx >= W || tz >= W) return true;
+  if (grid[tz][tx] !== 0) return true;
+  const d = doorAt.get(tz * W + tx);
+  if (d) {
+    if (Math.abs(x - d.cx) > DOOR_W / 2 - 0.06) return true;   // วงกบ/ผนังข้างช่องประตู
+    if (d.k < 0.7) return true;                                // ประตูยังเปิดไม่พอให้ลอด
+  }
+  return false;
+};
+const blocked = (x, z, r) => solid(x - r, z - r) || solid(x + r, z - r) || solid(x - r, z + r) || solid(x + r, z + r);
+function moveEnt(e, dx, dz, r) {
+  if (dx !== 0) { const nx = e.x + dx; if (!blocked(nx, e.z, r)) e.x = nx; }
+  if (dz !== 0) { const nz = e.z + dz; if (!blocked(e.x, nz, r)) e.z = nz; }
+}
+function lineClear(x0, z0, x1, z1) {
+  for (let i = 1; i < 6; i++) { const t = i / 6; if (solid(x0 + (x1 - x0) * t, z0 + (z1 - z0) * t)) return false; }
+  return true;
+}
+const tileC = t => t * CS + CS / 2;
+
+/* =========================================================
+   โมเดลต่าง ๆ
+   ========================================================= */
+function makeGlow(color, size, opacity) {
+  const m = new THREE.SpriteMaterial({ map: glowTex, color: color, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true, fog: false, opacity: opacity || 0.85 });
+  const s = new THREE.Sprite(m); s.scale.set(size, size, 1); return s;
+}
+
+function makeKey() {
+  const g = new THREE.Group();
+  const m = new THREE.MeshPhongMaterial({ color: 0xffd23f, emissive: 0x7a5200, shininess: 80, specular: 0xffffff });
+  const ring = new THREE.Mesh(new THREE.TorusGeometry(0.2, 0.06, 8, 16), m); ring.position.y = 0.3; g.add(ring);
+  const shaft = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.55, 0.08), m); shaft.position.y = -0.15; g.add(shaft);
+  const t1 = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.08, 0.08), m); t1.position.set(0.12, -0.36, 0); g.add(t1);
+  const t2 = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.08, 0.08), m); t2.position.set(0.09, -0.22, 0); g.add(t2);
+  g.add(makeGlow(0xffd23f, 2.6));
+  return g;
+}
+let heartGeoCache = null;
+function makeHeart() {
+  if (!heartGeoCache) {
+    const s = new THREE.Shape();
+    s.moveTo(0.25, 0.25); s.bezierCurveTo(0.25, 0.25, 0.2, 0, 0, 0); s.bezierCurveTo(-0.3, 0, -0.3, 0.35, -0.3, 0.35);
+    s.bezierCurveTo(-0.3, 0.55, -0.1, 0.77, 0.25, 0.95); s.bezierCurveTo(0.6, 0.77, 0.8, 0.55, 0.8, 0.35);
+    s.bezierCurveTo(0.8, 0.35, 0.8, 0, 0.5, 0); s.bezierCurveTo(0.35, 0, 0.25, 0.25, 0.25, 0.25);
+    heartGeoCache = new THREE.ExtrudeGeometry(s, { depth: 0.25, bevelEnabled: true, bevelSize: 0.05, bevelThickness: 0.05, bevelSegments: 2, curveSegments: 10 });
+    heartGeoCache.center(); heartGeoCache.rotateZ(Math.PI); heartGeoCache.scale(0.5, 0.5, 0.5);
+  }
+  const g = new THREE.Group();
+  g.add(new THREE.Mesh(heartGeoCache, new THREE.MeshPhongMaterial({ color: 0xff3b6b, emissive: 0x66001f, shininess: 70, specular: 0xffffff })));
+  g.add(makeGlow(0xff5c8a, 2.2));
+  return g;
+}
+
+function makeZombie() {
+  const grp = new THREE.Group(), mats = [], extra = [];
+  const mk = c => { const m = new THREE.MeshPhongMaterial({ color: c, shininess: 4 }); mats.push(m); return m; };
+  const basic = c => { const m = new THREE.MeshBasicMaterial({ color: c }); extra.push(m); return m; };
+  const skin = mk(pick([0x8a9a78, 0x7d8f7a, 0x9aa38a, 0x6f8570])), dark = mk(0x3f4b3a);
+  const shirt = mk(pick([0x3a3340, 0x40352c, 0x2f3a3a, 0x4a3a38]));
+  const pants = mk(0x25272e), shoe = mk(0x161412), hair = mk(0x1c1712);
+  const boneM = new THREE.MeshPhongMaterial({ color: 0xd8d2bc, shininess: 10 }); extra.push(boneM);
+  const holeM = basic(0x0a0709), eyeM = basic(0xff3020), toothM = basic(0xe9e2c8);
+  const body = new THREE.Group(); grp.add(body);
+  const add = (parent, w, h, d, mat, x, y, z) => { const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat); m.position.set(x, y, z); parent.add(m); return m; };
+  const pivot = (parent, x, y, z) => { const g = new THREE.Group(); g.position.set(x, y, z); parent.add(g); return g; };
+
+  // ขา (ขาขวาสั้นกว่า เดินกะเผลก)
+  const legL = pivot(body, -0.17, 0.75, 0), legR = pivot(body, 0.17, 0.7, 0);
+  add(legL, 0.24, 0.75, 0.26, pants, 0, -0.375, 0); add(legL, 0.26, 0.1, 0.36, shoe, 0, -0.72, 0.05);
+  add(legR, 0.22, 0.68, 0.24, pants, 0, -0.34, 0);  add(legR, 0.24, 0.1, 0.34, shoe, 0, -0.66, 0.05);
+
+  // ลำตัวท่อนบน (โน้มไปข้างหน้า)
+  const upper = pivot(body, 0, 0.75, 0);
+  add(upper, 0.6, 0.72, 0.34, shirt, 0, 0.36, 0);
+  add(upper, 0.28, 0.34, 0.02, holeM, 0.08, 0.34, 0.175);                       // เสื้อขาดเป็นรู
+  [0.44, 0.34, 0.24].forEach((y, i) => add(upper, 0.3 - i * 0.02, 0.035, 0.02, boneM, 0.08, y, 0.19));   // ซี่โครง
+  [[-0.2, 0.32], [0, 0.42], [0.2, 0.28]].forEach(([x, l]) => { const t = add(upper, 0.12, l, 0.02, shirt, x, 0.02 - l / 2, 0.16); t.rotation.z = rnd(-0.15, 0.15); });   // ชายเสื้อฉีก
+
+  // หัว
+  const headG = pivot(upper, 0, 0.8, 0.05);
+  add(headG, 0.44, 0.48, 0.44, skin, 0, 0.26, 0);
+  for (const sx of [-1, 1]) {
+    add(headG, 0.13, 0.12, 0.03, holeM, sx * 0.11, 0.32, 0.225);                // เบ้าตาโหลลึก
+    add(headG, 0.05, 0.05, 0.03, eyeM, sx * 0.11, 0.32, 0.235);
+  }
+  const glowMats = [];
+  for (const sx of [-1, 1]) { const gl = makeGlow(0xff2a1a, 0.42, 0.9); gl.position.set(sx * 0.11, 0.32, 0.27); headG.add(gl); glowMats.push(gl.material); extra.push(gl.material); }
+  add(headG, 0.14, 0.1, 0.02, dark, 0.13, 0.16, 0.225);
+  add(headG, 0.3, 0.06, 0.3, holeM, 0, 0.0, 0.1);                               // ช่องปากดำ
+  add(headG, 0.28, 0.05, 0.02, toothM, 0, 0.12, 0.23);                          // ฟันบน
+  const jaw = pivot(headG, 0, 0.06, 0);
+  add(jaw, 0.34, 0.1, 0.32, skin, 0, -0.05, 0.14);
+  add(jaw, 0.26, 0.04, 0.02, toothM, 0, 0.01, 0.29);                            // ฟันล่าง
+  add(headG, 0.46, 0.06, 0.46, hair, 0, 0.52, 0); add(headG, 0.1, 0.22, 0.1, hair, -0.2, 0.4, -0.05); add(headG, 0.12, 0.16, 0.1, hair, 0.16, 0.5, -0.1);
+
+  // แขน (ข้างขวายาวกว่า) เล็บยาวซีด
+  const mkArm = (sx, L) => {
+    const a = pivot(upper, sx * 0.4, 0.66, 0);
+    add(a, 0.2, 0.3, 0.2, shirt, 0, -0.15, 0);
+    add(a, 0.14, L - 0.3, 0.14, skin, 0, -0.3 - (L - 0.3) / 2, 0);
+    add(a, 0.17, 0.13, 0.1, skin, 0, -L - 0.03, 0);
+    for (const fx of [-0.045, 0.045]) add(a, 0.03, 0.2, 0.03, boneM, fx, -L - 0.16, 0.02);
+    return a;
+  };
+  const armL = mkArm(-1, 0.78), armR = mkArm(1, 0.95);
+  return { grp, body, upper, headG, jaw, legL, legR, armL, armR, mats, extra, glowMats, eyeM, tilt: rnd(-0.3, 0.3) };
+}
+
+function makeGhost() {
+  const grp = new THREE.Group(), fades = [], extra = [];
+  const mk = (c, o, dbl) => { const m = new THREE.MeshBasicMaterial({ color: c, transparent: true, opacity: o, depthWrite: false, side: dbl ? THREE.DoubleSide : THREE.FrontSide }); extra.push(m); fades.push([m, o]); return m; };
+  const body = new THREE.Group(); grp.add(body);
+  const dress = new THREE.Mesh(new THREE.CylinderGeometry(0.17, 0.55, 1.45, 14, 1, true), mk(0xcfd8ea, 0.5, true)); dress.position.y = 0.95; body.add(dress);
+  const tail = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.25, 0.7, 10, 1, true), mk(0xcfd8ea, 0.22, true)); tail.position.y = 0.2; body.add(tail);
+  const head = new THREE.Mesh(new THREE.SphereGeometry(0.2, 14, 10), mk(0xe9edf6, 0.8)); head.position.y = 1.85; body.add(head);
+  const hairM = mk(0x040406, 0.92, true);
+  for (let i = 0; i < 10; i++) {                                                  // ผมยาวสยาย เว้นช่องหน้าไว้
+    const a = (i / 10) * Math.PI * 2; if (Math.sin(a) > 0.75 && Math.abs(Math.cos(a)) < 0.4) continue;
+    const len = rnd(1.0, 1.7), st = new THREE.Mesh(new THREE.BoxGeometry(0.07, len, 0.03), hairM);
+    st.position.set(Math.cos(a) * 0.21, 1.95 - len / 2, Math.sin(a) * 0.21); st.rotation.y = Math.PI / 2 - a; body.add(st);
+  }
+  const blackM = new THREE.MeshBasicMaterial({ color: 0x000000 }); extra.push(blackM);
+  for (const sx of [-1, 1]) { const e = new THREE.Mesh(new THREE.SphereGeometry(1, 8, 6), blackM); e.scale.set(0.05, 0.075, 0.02); e.position.set(sx * 0.075, 1.9, 0.185); body.add(e); }
+  const mouth = new THREE.Mesh(new THREE.SphereGeometry(1, 8, 6), blackM); mouth.scale.set(0.045, 0.11, 0.02); mouth.position.set(0, 1.75, 0.19); body.add(mouth);
+  const armM = mk(0xdfe6f2, 0.55);
+  const mkArm = sx => { const p = new THREE.Group(); p.position.set(sx * 0.2, 1.55, 0); const m = new THREE.Mesh(new THREE.BoxGeometry(0.06, 1.05, 0.06), armM); m.position.y = -0.5; p.add(m); body.add(p); return p; };
+  const armL = mkArm(-1), armR = mkArm(1);
+  const glow = makeGlow(0x9fc8ff, 3.4, 0.35); glow.position.y = 1.2; body.add(glow); extra.push(glow.material); fades.push([glow.material, 0.35]);
+  return { grp, body, armL, armR, fades, extra };
+}
+
+function makePlayerModel() {
+  const grp = new THREE.Group();
+  const skin = new THREE.MeshPhongMaterial({ color: 0xdfae82, shininess: 8 });
+  const shirt = new THREE.MeshPhongMaterial({ color: 0x2d5a8a, shininess: 10 });
+  const pants = new THREE.MeshPhongMaterial({ color: 0x332e28, shininess: 6 });
+  const shoe = new THREE.MeshPhongMaterial({ color: 0x181410 });
+  const hair = new THREE.MeshPhongMaterial({ color: 0x241a10 });
+  const body = new THREE.Group(); grp.add(body);
+  const add = (parent, w, h, d, mat, x, y, z) => { const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat); m.position.set(x, y, z); parent.add(m); return m; };
+  const pivot = (parent, x, y, z) => { const g = new THREE.Group(); g.position.set(x, y, z); parent.add(g); return g; };
+  const legL = pivot(body, -0.16, 0.85, 0), legR = pivot(body, 0.16, 0.85, 0);
+  add(legL, 0.22, 0.85, 0.24, pants, 0, -0.425, 0); add(legL, 0.24, 0.09, 0.32, shoe, 0, -0.86, 0.05);
+  add(legR, 0.22, 0.85, 0.24, pants, 0, -0.425, 0); add(legR, 0.24, 0.09, 0.32, shoe, 0, -0.86, 0.05);
+  const upper = pivot(body, 0, 0.85, 0);
+  add(upper, 0.56, 0.66, 0.32, shirt, 0, 0.33, 0);
+  const headG = pivot(upper, 0, 0.74, 0);
+  add(headG, 0.4, 0.42, 0.4, skin, 0, 0.2, 0);
+  add(headG, 0.42, 0.14, 0.42, hair, 0, 0.45, -0.02);
+  const armL = pivot(upper, -0.34, 0.6, 0), armR = pivot(upper, 0.34, 0.6, 0);
+  add(armL, 0.16, 0.58, 0.16, shirt, 0, -0.29, 0); add(armL, 0.15, 0.32, 0.15, skin, 0, -0.66, 0);
+  add(armR, 0.16, 0.4, 0.16, shirt, 0, -0.2, 0); add(armR, 0.15, 0.4, 0.15, skin, 0, -0.58, 0);
+  const hand = pivot(armR, 0, -0.78, 0);
+  return { grp, body, upper, headG, legL, legR, armL, armR, hand };
+}
+
+/* =========================================================
+   สร้างด่าน
+   ========================================================= */
+function clearLevel() {
+  if (level) {
+    scene.remove(level);
+    level.traverse(o => {
+      if (o.geometry && o.geometry !== heartGeoCache) o.geometry.dispose();
+      if (o.material && !shared.has(o.material)) o.material.dispose();
+    });
+  }
+  level = null; zombies = []; ghosts = []; items = []; lamps = []; door = null;
+  roomDoors = []; chambers = []; doorAt.clear();
+  for (const p of particles) { pGroup.remove(p.pts); p.pts.geometry.dispose(); p.pts.material.dispose(); }
+  particles = [];
+}
+
+// สร้างโมเดลเฟอร์นิเจอร์ตามรายการที่ genHotel กำหนด
+function buildFurniture() {
+  const bx = (w, h, d, mat, x, y, z) => { const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat); m.position.set(x, y, z); return m; };
+  for (const f of furniture) {
+    const g = new THREE.Group();
+    g.position.set(tileC(f.x), 0, tileC(f.y));
+    g.rotation.y = f.rot || 0;
+    if (f.type === 'bed') {                                  // เตียงนอน (หัวเตียงชิดผนังด้านนอก)
+      g.add(bx(1.75, 0.3, 2.35, darkWood, 0, 0.17, 0));
+      g.add(bx(1.75, 0.95, 0.14, darkWood, 0, 0.6, -1.12));
+      g.add(bx(1.6, 0.3, 2.15, sheetMat, 0, 0.47, 0.03));
+      g.add(bx(1.64, 0.14, 1.25, blankMat, 0, 0.64, 0.5));
+      g.add(bx(0.58, 0.16, 0.4, pilMat, -0.38, 0.66, -0.8));
+      g.add(bx(0.58, 0.16, 0.4, pilMat, 0.38, 0.66, -0.8));
+    } else if (f.type === 'nightstand') {                    // โต๊ะข้างเตียง + โคม
+      g.add(bx(0.6, 0.58, 0.52, woodMat, 0, 0.29, 0));
+      g.add(bx(0.66, 0.06, 0.58, darkWood, 0, 0.61, 0));
+      g.add(bx(0.5, 0.04, 0.38, brassMat, 0, 0.44, 0.27));
+      g.add(bx(0.14, 0.22, 0.14, bulbMat, 0, 0.75, 0));
+      const gl = makeGlow(0xffd9a0, 1.1, 0.4); gl.position.set(0, 0.8, 0); g.add(gl);
+    } else if (f.type === 'desk') {                          // โต๊ะทำงาน
+      g.add(bx(1.5, 0.08, 0.72, woodMat, 0, 0.76, 0));
+      g.add(bx(0.08, 0.72, 0.66, darkWood, -0.68, 0.38, 0));
+      g.add(bx(0.08, 0.72, 0.66, darkWood, 0.68, 0.38, 0));
+      g.add(bx(0.52, 0.34, 0.6, woodMat, 0.36, 0.56, 0));
+      g.add(bx(0.44, 0.03, 0.03, brassMat, 0.36, 0.56, 0.31));
+      g.add(bx(0.34, 0.03, 0.42, paperMat, -0.3, 0.81, 0));
+    } else if (f.type === 'chair') {                         // เก้าอี้
+      g.add(bx(0.5, 0.07, 0.5, woodMat, 0, 0.46, 0));
+      g.add(bx(0.5, 0.55, 0.07, woodMat, 0, 0.75, 0.21));
+      for (const [sx, sz] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) g.add(bx(0.07, 0.46, 0.07, darkWood, sx * 0.2, 0.23, sz * 0.2));
+    } else if (f.type === 'luggage') {                       // กระเป๋าเดินทาง
+      const s = f.big ? 1.3 : 1;
+      g.add(bx(1.0 * s, 0.9 * s, 0.45 * s, lugMat, 0, 0.45 * s, 0));
+      g.add(bx(1.04 * s, 0.1, 0.49 * s, darkWood, 0, 0.45 * s, 0));
+      g.add(bx(0.05, 0.3, 0.05, brassMat, -0.15, 0.9 * s + 0.12, 0));
+      g.add(bx(0.05, 0.3, 0.05, brassMat, 0.15, 0.9 * s + 0.12, 0));
+      g.add(bx(0.36, 0.06, 0.06, brassMat, 0, 0.9 * s + 0.26, 0));
+    } else if (f.type === 'console') {                       // โต๊ะยาวริมทางเดิน
+      g.add(bx(1.7, 0.08, 0.44, woodMat, 0, 0.84, 0));
+      g.add(bx(0.08, 0.84, 0.4, darkWood, -0.76, 0.42, 0));
+      g.add(bx(0.08, 0.84, 0.4, darkWood, 0.76, 0.42, 0));
+      g.add(bx(0.45, 0.4, 0.3, lugMat, 0.3, 1.08, 0));
+      g.add(bx(0.26, 0.3, 0.06, darkWood, -0.4, 1.03, 0));
+    } else if (f.type === 'reception') {                     // เคาน์เตอร์ต้อนรับ
+      g.add(bx(4.0, 1.0, 1.5, woodMat, 0, 0.5, 0.5));
+      g.add(bx(4.3, 0.1, 1.7, darkWood, 0, 1.05, 0.5));
+      g.add(bx(0.7, 0.5, 0.45, crateMat, -1.3, 1.35, 0.4));
+      g.add(bx(0.5, 0.14, 0.34, paperMat, -0.4, 1.17, 0.5));
+      g.add(bx(0.3, 0.1, 0.3, brassMat, 1.2, 1.15, 0.5));
+    } else if (f.type === 'trolley') {                       // รถเข็นกระเป๋า
+      g.add(bx(1.2, 0.06, 0.7, darkWood, 0, 0.3, 0));
+      g.add(bx(1.2, 0.06, 0.7, darkWood, 0, 1.1, 0));
+      g.add(bx(0.06, 1.3, 0.06, brassMat, -0.57, 0.7, -0.32));
+      g.add(bx(0.06, 1.3, 0.06, brassMat, 0.57, 0.7, -0.32));
+      g.add(bx(1.2, 0.06, 0.06, brassMat, 0, 1.34, -0.32));
+      g.add(bx(0.7, 0.5, 0.5, lugMat, 0.1, 0.58, 0));
+      for (const [sx, sz] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) g.add(bx(0.16, 0.16, 0.16, darkWood, sx * 0.5, 0.1, sz * 0.25));
+    }
+    level.add(g);
+  }
+}
+
+// วางไอเท็ม: กุญแจบนโต๊ะทำงานในห้องพัก หัวใจกระจายตามห้องอื่น
+function placeItems(open) {
+  const furnAt = new Map();
+  for (const f of furniture) if (Number.isInteger(f.x) && Number.isInteger(f.y)) furnAt.set(f.y * W + f.x, f);
+  const used = new Set();
+  const addItem = (tx, ty, type) => {
+    const i = ty * W + tx;
+    if (used.has(i)) return false;
+    const onF = furnAt.has(i);
+    const mesh = type === 'key' ? makeKey() : makeHeart();
+    const x = tileC(tx), z = tileC(ty), y = onF ? 1.05 : 1.1;
+    mesh.position.set(x, y, z); level.add(mesh);
+    items.push({ type, mesh, x, z, y, got: false, ph: rnd(0, 6), r: onF ? 2.5 : 1.25 });
+    used.add(i);
+    return true;
+  };
+  const openIn = ch => open.filter(t => t.x >= ch.x0 && t.x <= ch.x1 && t.y >= ch.y0 && t.y <= ch.y1 && !used.has(t.i));
+  const seen = new Set(), order = shuffle(chambers.slice()), keyCh = [];
+  const drOf = ch => ch.side < 0 ? 5 : 17;                        // แถวโต๊ะทำงานอยู่ในห้องในเท่านั้น
+  const usable = order.filter(ch => {
+    const dr = drOf(ch);
+    if (dr < ch.y0 || dr > ch.y1) return false;
+    const cx = Math.floor((ch.x0 + ch.x1) / 2), cy = Math.floor((ch.y0 + ch.y1) / 2);
+    return distStart[cy * W + cx] >= 6;
+  });
+  const take = ch => { const k = ch.gi + '_' + ch.side; if (seen.has(k)) return false; seen.add(k); keyCh.push(ch); return true; };
+  for (const s of (Math.random() < 0.5 ? [-1, 1] : [1, -1])) {   // กระจายกุญแจทั้งสองฝั่งทางเดิน
+    if (keyCh.length >= KEYS_NEEDED) break;
+    const c = usable.find(ch => ch.side === s);
+    if (c) take(c);
+  }
+  for (const ch of usable) { if (keyCh.length >= KEYS_NEEDED) break; take(ch); }
+  for (const ch of keyCh) {                                  // กุญแจทอง 3 ดอก
+    const dr = ch.side < 0 ? 5 : 17;                         // แถวที่มีโต๊ะทำงาน
+    let done = dr >= ch.y0 && dr <= ch.y1 && addItem(ch.x0, dr, 'key');
+    if (!done) { const ts = openIn(ch); if (ts.length) { const t = pick(ts); addItem(t.x, t.y, 'key'); } }
+  }
+  for (const ch of shuffle(chambers.slice())) {              // หัวใจฟื้นพลัง
+    if (items.filter(i => i.type === 'heart').length >= 3) break;
+    if (keyCh.includes(ch)) continue;
+    const ts = openIn(ch); if (ts.length) { const t = pick(ts); addItem(t.x, t.y, 'heart'); }
+  }
+}
+
+function buildLevel() {
+  clearLevel();
+  genHotel();
+  level = new THREE.Group(); scene.add(level);
+
+  // พื้น เพดาน
+  const floor = new THREE.Mesh(new THREE.PlaneGeometry(W * CS, W * CS), floorMat);
+  floor.rotation.x = -Math.PI / 2; floor.position.set(W * CS / 2, 0, W * CS / 2); level.add(floor);
+  const ceil = new THREE.Mesh(new THREE.PlaneGeometry(W * CS, W * CS), ceilMat);
+  ceil.rotation.x = Math.PI / 2; ceil.position.set(W * CS / 2, WALL_H, W * CS / 2); level.add(ceil);
+
+  // พรมวิ่งกลางทางเดินใหญ่
+  const runW = (W - 2) * CS, runD = (COR_Y1 - COR_Y0 + 1) * CS;
+  const runner = new THREE.Mesh(new THREE.PlaneGeometry(runW, runD), runMat);
+  runner.rotation.x = -Math.PI / 2;
+  runner.position.set(runW / 2 + CS / 2, 0.02, (COR_Y0 + COR_Y1 + 1) * CS / 2);
+  level.add(runner);
+
+  // กำแพง
+  const walls = [], open = [];
+  for (let y = 0; y < W; y++) for (let x = 0; x < W; x++) {
+    if (grid[y][x] === 1) walls.push([x, y]);
+    else if (grid[y][x] === 0 && !doorAt.has(y * W + x)) open.push({ x, y, i: y * W + x });
+  }
+  const im = new THREE.InstancedMesh(new THREE.BoxGeometry(CS, WALL_H, CS), wallMat, walls.length);
+  const m4 = new THREE.Matrix4(), col = new THREE.Color();
+  walls.forEach(([x, y], i) => {
+    m4.setPosition(tileC(x), WALL_H / 2, tileC(y)); im.setMatrixAt(i, m4);
+    if (im.setColorAt) { const v = rnd(0.72, 1.05); col.setRGB(v, v, v * rnd(0.95, 1)); im.setColorAt(i, col); }
+  });
+  im.instanceMatrix.needsUpdate = true; if (im.instanceColor) im.instanceColor.needsUpdate = true;
+  im.frustumCulled = false; level.add(im);
+
+  // เฟอร์นิเจอร์ในห้องพัก / ของตกแต่งทางเดิน
+  buildFurniture();
+
+  // ระยะจากจุดเริ่มต้น (กลางทางเดินฝั่งตะวันตก)
+  bfs(distStart, SPAWN_X, SPAWN_Y, 9999);
+
+  // โคมไฟเพดานเรียงตามทางเดินใหญ่
+  for (const lx of [2, 8, 14, 20]) {
+    const x = tileC(lx), z = tileC(11);
+    const bulb = new THREE.Mesh(new THREE.SphereGeometry(0.16, 10, 8), bulbMat); bulb.position.set(x, WALL_H - 0.7, z); level.add(bulb);
+    const cord = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.7, 4), cordMat); cord.position.set(x, WALL_H - 0.35, z); level.add(cord);
+    const shade = new THREE.Mesh(new THREE.ConeGeometry(0.42, 0.3, 12, 1, true), cordMat); shade.position.set(x, WALL_H - 0.72, z); level.add(shade);
+    const light = new THREE.PointLight(0xffb060, 0.95, 13, 1.5); light.position.set(x, WALL_H - 0.95, z); level.add(light);
+    const halo = makeGlow(0xffb060, 1.5, 0.5); halo.position.set(x, WALL_H - 0.75, z); level.add(halo);
+    lamps.push({ light, base: 0.95, ph: rnd(0, 6) });
+  }
+  // หลอดไฟตายในห้องพัก (มีแสงเรือง ๆ แต่ไม่ส่องจริง)
+  for (const ch of chambers) {
+    const x = tileC(Math.floor((ch.x0 + ch.x1) / 2)), z = tileC(Math.floor((ch.y0 + ch.y1) / 2));
+    const bulb = new THREE.Mesh(new THREE.SphereGeometry(0.13, 8, 6), cordMat); bulb.position.set(x, WALL_H - 0.5, z); level.add(bulb);
+    const halo = makeGlow(0x9fb0c8, 1.5, 0.16); halo.position.set(x, WALL_H - 0.6, z); level.add(halo);
+  }
+
+  // รูปภาพบนผนัง
+  let placed = 0;
+  const wallUsed = new Set();
+  for (const t of shuffle(open.slice())) {
+    if (placed >= 16) break;
+    const [dx, dz] = pick(D4);
+    const nx = t.x + dx, ny = t.y + dz;
+    if (grid[ny][nx] !== 1) continue;
+    if (doorAt.has(ny * W + nx)) continue;
+    const p = new THREE.Mesh(new THREE.PlaneGeometry(1, 1.25), pick(paintMats));
+    p.position.set(tileC(t.x) + dx * (CS / 2 - 0.03), 1.75, tileC(t.y) + dz * (CS / 2 - 0.03));
+    p.rotation.set(0, Math.atan2(-dx, -dz), rnd(-0.08, 0.08));
+    level.add(p); placed++; wallUsed.add(t.i + '_' + dx + '_' + dz);
+  }
+
+  // ประตูห้องพัก: กรอบ + บานประตู + ป้ายห้อง เปิดด้วยปุ่ม E (หรือเดินชน)
+  const frameMat = new THREE.MeshPhongMaterial({ color: 0x2f2118, shininess: 8 });
+  const knobMat2 = new THREE.MeshPhongMaterial({ color: 0xffd75e, shininess: 90 });
+  for (const d of roomDoorSpecs) {
+    const cx = d.cx, cz = tileC(d.wallY);
+    const sideW = (CS - DOOR_W) / 2;                                  // ความกว้างส่วนที่ปิดด้วยผนังข้างช่อง
+    for (const s of [-1, 1]) {
+      const f = new THREE.Mesh(new THREE.BoxGeometry(sideW, WALL_H, CS), wallMat);
+      f.position.set(cx + s * (DOOR_W / 2 + sideW / 2), WALL_H / 2, cz); level.add(f);
+    }
+    const lin = new THREE.Mesh(new THREE.BoxGeometry(DOOR_W, WALL_H - DOOR_H, CS), wallMat);
+    lin.position.set(cx, DOOR_H + (WALL_H - DOOR_H) / 2, cz); level.add(lin);
+    const trim = new THREE.Mesh(new THREE.BoxGeometry(DOOR_W + 0.3, 0.16, 0.14), frameMat);   // วงกบด้านบน
+    trim.position.set(cx, DOOR_H + 0.06, cz + (d.side < 0 ? 1 : -1) * (CS / 2 + 0.04)); level.add(trim);
+    for (const s of [-1, 1]) {
+      const post = new THREE.Mesh(new THREE.BoxGeometry(0.14, DOOR_H, 0.14), frameMat);
+      post.position.set(cx + s * (DOOR_W / 2 + 0.05), DOOR_H / 2, cz + (d.side < 0 ? 1 : -1) * (CS / 2 + 0.04)); level.add(post);
+    }
+    // บานประตู (แกว่งเข้าด้านในห้อง)
+    const pivot = new THREE.Group();
+    pivot.position.set(cx - DOOR_W / 2, 0, cz); level.add(pivot);
+    const leaf = new THREE.Mesh(new THREE.BoxGeometry(DOOR_W - 0.06, DOOR_H - 0.06, 0.09), doorMat);
+    leaf.position.set((DOOR_W - 0.06) / 2, (DOOR_H - 0.06) / 2, 0); pivot.add(leaf);
+    const panelIn = new THREE.Mesh(new THREE.BoxGeometry(DOOR_W - 0.5, DOOR_H - 0.7, 0.03), darkWood);
+    panelIn.position.set((DOOR_W - 0.06) / 2, DOOR_H * 0.42, -0.05); pivot.add(panelIn);
+    const knob = new THREE.Mesh(new THREE.SphereGeometry(0.07, 10, 8), knobMat2);
+    knob.position.set(DOOR_W - 0.2, 1.05, 0.04); pivot.add(knob);
+    d.pivot = pivot; d.k = 0; d.open = false;
+    // ป้ายเลขห้องบนผนังฝั่งทางเดิน
+    const sign = new THREE.Mesh(new THREE.PlaneGeometry(0.72, 0.4),
+      new THREE.MeshBasicMaterial({ map: plaqueTex(d.no), transparent: true }));
+    sign.position.set(cx + (DOOR_W / 2 + sideW / 2), 2.35, cz + (d.side < 0 ? 1 : -1) * (CS / 2 + 0.05));
+    if (d.side > 0) sign.rotation.y = Math.PI;
+    level.add(sign); d.sign = sign;
+    roomDoors.push(d);
+  }
+
+  // เศษกระดาษ/ขยะบนพื้น
+  for (let i = 0; i < 30; i++) {
+    const t = pick(open);
+    const isPaper = Math.random() < 0.7;
+    const m = new THREE.Mesh(new THREE.BoxGeometry(rnd(0.3, 0.7), 0.03, isPaper ? rnd(0.35, 0.6) : rnd(0.8, 1.6)),
+      isPaper ? paperMat : plankMat);
+    m.position.set(tileC(t.x) + rnd(-1.1, 1.1), 0.03, tileC(t.y) + rnd(-1.1, 1.1));
+    m.rotation.y = rnd(0, 3.14); level.add(m);
+  }
+
+  // ประตูใหญ่ปลายทางเดิน (ฝั่งตะวันออก)
+  const faceX = (W - 1) * CS, dz0 = tileC(EXIT_Y);
+  const panelM = new THREE.MeshPhongMaterial({ color: 0x5b3b22, emissive: 0x3a0e0a, shininess: 20 });
+  const panel = new THREE.Mesh(new THREE.BoxGeometry(0.12, 3.0, 3.3), panelM); panel.position.set(faceX - 0.06, 1.5, dz0); level.add(panel);
+  const frameM = new THREE.MeshPhongMaterial({ color: 0x2a1c12 });
+  for (const s of [-1, 1]) { const f = new THREE.Mesh(new THREE.BoxGeometry(0.26, 3.2, 0.22), frameM); f.position.set(faceX - 0.13, 1.6, dz0 + s * 1.86); level.add(f); }
+  const lintel = new THREE.Mesh(new THREE.BoxGeometry(0.26, 0.2, 3.94), frameM); lintel.position.set(faceX - 0.13, 3.1, dz0); level.add(lintel);
+  const knob = new THREE.Mesh(new THREE.SphereGeometry(0.09, 10, 8), new THREE.MeshPhongMaterial({ color: 0xffd23f, shininess: 90 })); knob.position.set(faceX - 0.2, 1.2, dz0 + 1.2); level.add(knob);
+  const seam = new THREE.Mesh(new THREE.BoxGeometry(0.06, 2.9, 0.06), frameM); seam.position.set(faceX - 0.14, 1.5, dz0); level.add(seam);
+  const sign = new THREE.Mesh(new THREE.PlaneGeometry(1.9, 0.66), new THREE.MeshBasicMaterial({ map: signTex, color: 0x555555 }));
+  sign.position.set(faceX - 0.05, 3.55, dz0); sign.rotation.y = -Math.PI / 2; level.add(sign);
+  const dLight = new THREE.PointLight(0xff5533, 0.9, 12, 1.5); dLight.position.set(faceX - 1.6, 2.0, dz0); level.add(dLight);
+  const dGlow = makeGlow(0xff5533, 5.0, 0.5); dGlow.position.set(faceX - 0.5, 1.5, dz0); level.add(dGlow);
+  door = { x: faceX, z: dz0, panelM, sign, light: dLight, glow: dGlow, open: false };
+
+  // ไอเท็ม: วางอยู่ภายในห้องพัก (กุญแจบนโต๊ะทำงาน หัวใจตามห้องอื่น)
+  placeItems(open);
+
+  // ซอมบี้: ส่วนใหญ่นอนหลับอยู่ในห้องพัก บางตัวเดินเพ่นพ่านกลางทางเดิน
+  let need = diff.zombies, guard = 0;
+  const spawnAt = (t, sleep) => { spawnZombie(tileC(t.x), tileC(t.y), sleep); need--; };
+  for (const ch of shuffle(chambers.slice())) {
+    if (need <= 0) break;
+    const ts = open.filter(t => t.x >= ch.x0 && t.x <= ch.x1 && t.y >= ch.y0 && t.y <= ch.y1 && distStart[t.i] >= 6);
+    if (!ts.length) continue;
+    spawnAt(pick(ts), Math.random() < 0.55);
+  }
+  for (const t of shuffle(open.filter(t => t.y >= COR_Y0 && t.y <= COR_Y1 && distStart[t.i] >= 8))) {
+    if (need <= 0 || guard++ > 30) break;
+    spawnAt(t, false);
+  }
+  while (need > 0 && guard++ < 300) { const t = pick(open); if (distStart[t.i] >= 8) spawnAt(t, false); }
+  spawnGhosts();
+
+  // ตัวละครผู้เล่น (มุมมองบุคคลที่ 3)
+  player = makePlayerModel();
+  player.grp.position.set(P.x, 0, P.z);
+  level.add(player.grp);
+  if (cross.parent) cross.parent.remove(cross);
+  player.hand.add(cross);
+}
+
+function spawnZombie(x, z, sleep) {
+  const m = makeZombie(), sy = rnd(0.95, 1.12), sxz = rnd(0.92, 1.05);
+  const zb = Object.assign(m, { x, z, hp: diff.hp, stun: 0, kx: 0, kz: 0, flash: 0, cd: rnd(0.3, 1), anim: rnd(0, 6), face: rnd(0, 6.28), ph: rnd(0, 6),
+    wt: null, prev: -1, chasing: false, dying: false, dieT: 0, dead: false, hold: rnd(0, 2), lunge: 0, roar: 0, tw: rnd(1, 3), twk: 0, twd: 0,
+    sleep: sleep === undefined ? Math.random() < 0.45 : sleep, bs: { x: 0.95 * sxz, y: 0.95 * sy, z: 0.95 * sxz } });
+  zb.grp.scale.set(zb.bs.x, zb.bs.y, zb.bs.z);
+  setEyes(zb, !zb.sleep);
+  m.grp.position.set(x, 0, z); level.add(m.grp); zombies.push(zb);
+}
+function setEyes(z, on) { z.eyeM.color.setHex(on ? 0xff3020 : 0x501010); z.glowMats.forEach(m => { m.opacity = on ? 0.9 : 0.12; }); }
+function spawnGhosts() {
+  for (let i = 0; i < diff.ghosts; i++) {
+    const m = makeGhost();
+    ghosts.push(Object.assign(m, { x: 0, z: 0, state: 'gone', timer: 35 + i * 25, vis: 0, cd: 0, anim: rnd(0, 6), face: 0, wh: 2, ph: rnd(0, 6) }));
+    m.grp.visible = false; level.add(m.grp);
+  }
+}
+function spawnFar() {
+  const px = Math.floor(P.x / CS), py = Math.floor(P.z / CS);
+  for (let k = 0; k < 80; k++) {
+    const x = 1 + irnd(W - 2), y = 1 + irnd(W - 2);
+    if (grid[y][x] !== 0) continue;
+    if (Math.hypot(x - px, y - py) < 10 || distF[y * W + x] >= 0) continue;
+    spawnZombie(tileC(x), tileC(y), false); return;
+  }
+}
+
+function resetPlayer() {
+  P.x = tileC(SPAWN_X); P.z = tileC(SPAWN_Y); P.hp = P.maxHp; P.keys = 0; P.kills = 0; P.stam = 1; P.tired = false; P.inv = 0; P.time = 0; P.dead = false;
+  yaw = -Math.PI / 2; pitch = 0; bobT = 0; shake = 0;                 // หันหน้าไปตามทางเดินใหญ่ (ทิศตะวันออก)
+  atk.t = -1; atk.cd = 0; holdAtk = false; spawnT = 25; fieldT = 0; msgDoor = 0;
+  explored = new Uint8Array(W * W);
+  bfs(distF, SPAWN_X, SPAWN_Y, diff.aggro);
+  hudCache.hearts = ''; hudCache.keys = -1; hudCache.kills = -1; hudCache.clock = '';
+  P.seenGhost = false; P.seenBanish = false; fear = 0; beatT = 0; pulse = 0; $('fear').style.opacity = '0';
+}
+
+/* =========================================================
+   เสียง (สังเคราะห์ด้วย WebAudio ไม่ต้องมีไฟล์เสียง)
+   ========================================================= */
+let AC = null, master = null, noiseBuf = null, muted = false, lastGroan = 0;
+function initAudio() {
+  if (AC) { if (AC.state === 'suspended') AC.resume(); return; }
+  const Ctx = window.AudioContext || window.webkitAudioContext; if (!Ctx) return;
+  try {
+    AC = new Ctx(); master = AC.createGain(); master.gain.value = muted ? 0 : 0.55; master.connect(AC.destination);
+    noiseBuf = AC.createBuffer(1, AC.sampleRate, AC.sampleRate);
+    const d = noiseBuf.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+    [[55, 'sine', 0.05], [82.4, 'triangle', 0.02], [110.6, 'sine', 0.012]].forEach(([f, t, v]) => {
+      const o = AC.createOscillator(), g = AC.createGain(); o.type = t; o.frequency.value = f; g.gain.value = v; o.connect(g); g.connect(master); o.start();
+    });
+  } catch (e) { AC = null; }
+}
+function tone(f, dur, type, vol, slide, delay) {
+  if (!AC) return;
+  const t = AC.currentTime + (delay || 0), o = AC.createOscillator(), g = AC.createGain();
+  o.type = type || 'sine'; o.frequency.setValueAtTime(f, t);
+  if (slide) o.frequency.exponentialRampToValueAtTime(Math.max(25, f + slide), t + dur);
+  g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + 0.012); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  o.connect(g); g.connect(master); o.start(t); o.stop(t + dur + 0.05);
+}
+function noiseBurst(dur, vol, f0, f1, q, type) {
+  if (!AC) return;
+  const t = AC.currentTime, src = AC.createBufferSource(), flt = AC.createBiquadFilter(), g = AC.createGain();
+  src.buffer = noiseBuf; src.loop = true; flt.type = type || 'bandpass'; flt.Q.value = q || 1;
+  flt.frequency.setValueAtTime(f0, t); flt.frequency.exponentialRampToValueAtTime(f1, t + dur);
+  g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  src.connect(flt); flt.connect(g); g.connect(master); src.start(t); src.stop(t + dur + 0.05);
+}
+const sfxSwing = () => noiseBurst(0.22, 0.3, 500, 2600, 0.9);
+const sfxHit = () => { tone(880, 0.28, 'sine', 0.16); tone(1320, 0.32, 'sine', 0.1, 0, 0.05); tone(150, 0.16, 'sawtooth', 0.18, -70); };
+const sfxPoof = () => { [1400, 1100, 900, 1600].forEach((f, i) => tone(f, 0.25, 'sine', 0.09, 500, i * 0.05)); noiseBurst(0.4, 0.15, 3000, 800, 0.6); };
+const sfxKey = () => [660, 880, 1320].forEach((f, i) => tone(f, 0.3, 'triangle', 0.16, 0, i * 0.09));
+const sfxHeal = () => { tone(520, 0.25, 'sine', 0.15, 260); tone(780, 0.3, 'sine', 0.12, 0, 0.1); };
+const sfxHurt = () => { tone(130, 0.3, 'sawtooth', 0.3, -70); noiseBurst(0.25, 0.25, 900, 200, 0.7, 'lowpass'); };
+const sfxWin = () => [523, 659, 784, 1047, 1319].forEach((f, i) => tone(f, 0.45, 'triangle', 0.16, 0, i * 0.13));
+const sfxLose = () => [392, 349, 311, 262].forEach((f, i) => tone(f, 0.5, 'sawtooth', 0.12, -10, i * 0.22));
+const sfxDoor = () => { tone(180, 0.25, 'square', 0.08, -60); };
+function sfxGroan(dist, pan) {
+  if (!AC) return;
+  const now = performance.now() / 1000;
+  if (now - lastGroan < 1.2) return; lastGroan = now;
+  const v = clamp(0.3 - dist * 0.011, 0.04, 0.3), t = AC.currentTime, dur = 1.35;
+  const out = AC.createGain();
+  if (AC.createStereoPanner) { const p = AC.createStereoPanner(); p.pan.value = clamp(pan || 0, -1, 1); out.connect(p); p.connect(master); } else out.connect(master);
+  const flt = AC.createBiquadFilter(); flt.type = 'lowpass'; flt.frequency.value = 560; flt.connect(out);
+  const g = AC.createGain(); g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(v, t + 0.25); g.gain.exponentialRampToValueAtTime(0.0001, t + dur); g.connect(flt);
+  const base = 78 + rnd(-10, 25);
+  [['sawtooth', base, 1], ['square', base * 1.5, 0.35]].forEach(([type, f, vol]) => {
+    const o = AC.createOscillator(), og = AC.createGain(), lfo = AC.createOscillator(), lg = AC.createGain();
+    o.type = type; o.frequency.setValueAtTime(f, t); o.frequency.exponentialRampToValueAtTime(f * 0.6, t + dur);
+    lfo.frequency.value = 5 + rnd(0, 3); lg.gain.value = f * 0.07; lfo.connect(lg); lg.connect(o.frequency);
+    og.gain.value = vol; o.connect(og); og.connect(g);
+    o.start(t); lfo.start(t); o.stop(t + dur + 0.05); lfo.stop(t + dur + 0.05);
+  });
+  noiseBurst(dur, v * 0.5, 480, 220, 2);
+}
+const sfxWake = () => { tone(300, 0.35, 'sawtooth', 0.13, 500); noiseBurst(0.3, 0.2, 2400, 600, 0.8); };
+const sfxThump = () => { tone(62, 0.13, 'sine', 0.42, -26); tone(52, 0.15, 'sine', 0.32, -20, 0.17); };
+function sfxWhisper(vol, pan) {
+  if (!AC) return;
+  noiseBurst(1.6, vol, 2400, 900, 10); tone(740, 1.5, 'sine', vol * 0.55, -60); tone(748, 1.5, 'sine', vol * 0.55, -60);
+}
+const sfxScream = () => { tone(600, 0.7, 'sawtooth', 0.14, 900); tone(900, 0.6, 'square', 0.05, -500, 0.1); noiseBurst(0.6, 0.2, 3000, 500, 3); };
+const sfxGhostTouch = () => { tone(210, 0.6, 'sawtooth', 0.25, -120); noiseBurst(0.5, 0.3, 1500, 200, 1, 'lowpass'); };
+setInterval(() => {
+  if (state !== 'playing' || !AC) return;
+  const r = Math.random();
+  if (r < 0.3) noiseBurst(0.8, 0.06, 350, 900, 6);                                   // ไม้กระดานลั่น
+  else if (r < 0.5) sfxGroan(rnd(24, 34), rnd(-1, 1));                              // เสียงครางไกล ๆ
+  else if (r < 0.65) { noiseBurst(0.18, 0.28, 180, 90, 1, 'lowpass'); setTimeout(() => noiseBurst(0.18, 0.22, 170, 80, 1, 'lowpass'), 260); }   // ตึง ตึง
+  else if (r < 0.8) sfxWhisper(0.05, 0);
+}, 7000);
+
+/* =========================================================
+   ผู้เล่น: เคลื่อนที่ ฟาดไม้กางเขน
+   ========================================================= */
+const cross = new THREE.Group();
+(function buildCross() {
+  const gold = new THREE.MeshPhongMaterial({ color: 0xffd75e, emissive: 0x6a4a00, shininess: 90, specular: 0xffffff });
+  const v = new THREE.Mesh(new THREE.BoxGeometry(0.085, 0.62, 0.05), gold); v.position.y = 0.31; cross.add(v);
+  const h = new THREE.Mesh(new THREE.BoxGeometry(0.34, 0.085, 0.05), gold); h.position.y = 0.46; cross.add(h);
+  const gem = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.06, 0.06), new THREE.MeshBasicMaterial({ color: 0xfff4c0 })); gem.position.y = 0.46; cross.add(gem);
+  cross.position.set(0, -0.05, 0.08);
+})();
+
+function tryAttack() {
+  if (state !== 'playing' || atk.t >= 0 || atk.cd > 0) return;
+  atk.t = 0; atk.hit = false; sfxSwing();
+}
+function doHit() {
+  const fx = -Math.sin(yaw), fz = -Math.cos(yaw);
+  for (const z of zombies) {
+    if (z.dying) continue;
+    const dx = z.x - P.x, dz = z.z - P.z, d = Math.hypot(dx, dz);
+    if (d > ATK_RANGE) continue;
+    if (d > 0.6 && (dx * fx + dz * fz) / d < 0.35) continue;
+    if (!lineClear(P.x, P.z, z.x, z.z)) continue;
+    hitZombie(z, dx / (d || 1), dz / (d || 1));
+  }
+  for (const g of ghosts) {                     // ไม้กางเขนไล่ผี (ผีทะลุกำแพงได้ จึงไม่เช็กกำแพง)
+    if (g.state === 'gone' || g.vis < 0.15) continue;
+    const dx = g.x - P.x, dz = g.z - P.z, d = Math.hypot(dx, dz);
+    if (d > ATK_RANGE + 0.8) continue;
+    if (d > 0.6 && (dx * fx + dz * fz) / d < 0.2) continue;
+    banishGhost(g);
+  }
+}
+function banishGhost(g) {
+  g.state = 'gone'; g.timer = diff.ghostGone;
+  sparkle(g.x, 1.3, g.z, 0xbfdcff, 32, 4.2); sparkle(g.x, 1.0, g.z, 0xffffff, 14, 2.5); sfxScream();
+  if (!P.seenBanish) { P.seenBanish = true; toast('ผีกลัวไม้กางเขน! มันหายไปชั่วคราว แต่เดี๋ยวก็กลับมา', 3800); }
+}
+function setFlash(z, on) { z.mats.forEach(m => m.emissive.setHex(on ? 0x9a9a80 : 0x000000)); }
+function hitZombie(z, nx, nz) {
+  if (z.sleep) { z.sleep = false; setEyes(z, true); }
+  z.hp--; z.stun = 0.5; z.kx = nx * 8; z.kz = nz * 8; z.flash = 0.18; setFlash(z, true);
+  sparkle(z.x, 1.3, z.z, 0xfff0a0, 14, 3); sfxHit();
+  if (z.hp <= 0) { z.dying = true; z.dieT = 0; P.kills++; sparkle(z.x, 1.2, z.z, 0xffd75e, 34, 4.5); sparkle(z.x, 1.0, z.z, 0xffffff, 16, 2.5); sfxPoof(); }
+}
+
+function sparkle(x, y, z, color, n, speed) {
+  const geo = new THREE.BufferGeometry(), pos = new Float32Array(n * 3), vel = new Float32Array(n * 3);
+  for (let i = 0; i < n; i++) {
+    pos[i * 3] = x; pos[i * 3 + 1] = y; pos[i * 3 + 2] = z;
+    const a = rnd(0, 6.283), u = rnd(-0.3, 1), sp = rnd(speed * 0.4, speed), k = 1 - Math.abs(u) * 0.3;
+    vel[i * 3] = Math.cos(a) * sp * k; vel[i * 3 + 1] = u * sp + 1; vel[i * 3 + 2] = Math.sin(a) * sp * k;
+  }
+  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  const mat = new THREE.PointsMaterial({ color, size: 0.17, transparent: true, opacity: 1, blending: THREE.AdditiveBlending, depthWrite: false, fog: false });
+  const pts = new THREE.Points(geo, mat); pts.frustumCulled = false; pGroup.add(pts);
+  particles.push({ pts, pos, vel, life: 0, max: 0.9 });
+}
+function updateParticles(dt) {
+  for (let i = particles.length - 1; i >= 0; i--) {
+    const p = particles[i]; p.life += dt;
+    if (p.life >= p.max) { pGroup.remove(p.pts); p.pts.geometry.dispose(); p.pts.material.dispose(); particles.splice(i, 1); continue; }
+    for (let k = 0; k < p.pos.length; k += 3) { p.pos[k] += p.vel[k] * dt; p.pos[k + 1] += p.vel[k + 1] * dt; p.pos[k + 2] += p.vel[k + 2] * dt; p.vel[k + 1] -= 4 * dt; }
+    p.pts.geometry.attributes.position.needsUpdate = true;
+    p.pts.material.opacity = 1 - p.life / p.max;
+  }
+}
+
+function hurtPlayer() {
+  P.hp--; P.inv = 1.0; shake = 0.35; sfxHurt();
+  const h = $('hurt'); h.classList.add('on'); setTimeout(() => h.classList.remove('on'), 90);
+  if (P.hp <= 0) { P.dead = true; endGame(false); }
+}
+
+function updatePlayer(dt) {
+  let f = 0, s = 0;
+  if (keysDown.KeyW || keysDown.ArrowUp) f += 1;
+  if (keysDown.KeyS || keysDown.ArrowDown) f -= 1;
+  if (keysDown.KeyD) s += 1;
+  if (keysDown.KeyA) s -= 1;
+  const turn = (keysDown.ArrowLeft || keysDown.KeyQ ? 1 : 0) - (keysDown.ArrowRight || keysDown.KeyE ? 1 : 0);
+  if (turn) yaw += turn * 2.3 * dt;
+  f += -joy.y; s += joy.x;
+  const len = Math.hypot(f, s); if (len > 1) { f /= len; s /= len; }
+  const moving = len > 0.08;
+  const wantSprint = (keysDown.ShiftLeft || keysDown.ShiftRight) && moving && !P.tired;
+  if (wantSprint) { P.stam = Math.max(0, P.stam - dt * 0.3); if (P.stam <= 0.01) P.tired = true; }
+  else { P.stam = Math.min(1, P.stam + dt * 0.2); if (P.tired && P.stam > 0.3) P.tired = false; }
+  const speed = wantSprint ? 5.7 : 3.7;
+  const fx = -Math.sin(yaw), fz = -Math.cos(yaw), rx = Math.cos(yaw), rz = -Math.sin(yaw);
+  moveEnt(P, (fx * f + rx * s) * speed * dt, (fz * f + rz * s) * speed * dt, PR);
+  P.moving = moving;
+  if (moving) bobT += dt * (wantSprint ? 12 : 8.5);
+  P.inv = Math.max(0, P.inv - dt);
+}
+
+/* =========================================================
+   ซอมบี้
+   ========================================================= */
+const panTo = (x, z) => { const dx = x - P.x, dz = z - P.z, d = Math.hypot(dx, dz) || 1; return clamp((Math.cos(yaw) * dx - Math.sin(yaw) * dz) / d, -1, 1); };
+function poseSleep(z) {
+  const b = Math.sin(z.anim * 1.6) * 0.02;
+  z.upper.rotation.x = 0.7 + b; z.headG.rotation.x = 0.55; z.headG.rotation.z = z.tilt; z.jaw.rotation.x = 0.1;
+  z.armL.rotation.x = -0.62; z.armR.rotation.x = -0.68; z.legL.rotation.x = 0; z.legR.rotation.x = 0;
+  z.body.position.y = 0; z.body.rotation.z = 0;
+  z.grp.position.x = z.x; z.grp.position.z = z.z; z.grp.rotation.y = z.face;
+}
+function updateZombie(z, dt) {
+  if (z.dying) {
+    z.dieT += dt; const k = Math.min(1, z.dieT / 0.55), sc = 1 - k * k;
+    z.grp.scale.set(z.bs.x * sc, z.bs.y * sc, z.bs.z * sc); z.grp.position.y = k * 1.2; z.grp.rotation.y += dt * 10;
+    if (k >= 1) { level.remove(z.grp); z.mats.forEach(m => m.dispose()); z.extra.forEach(m => m.dispose()); z.dead = true; }
+    return;
+  }
+  z.anim += dt; z.cd -= dt; z.lunge = Math.max(0, z.lunge - dt); z.roar = Math.max(0, z.roar - dt);
+  const dxp = P.x - z.x, dzp = P.z - z.z, dp = Math.hypot(dxp, dzp);
+  z.grp.visible = dp < 42;
+  if (z.flash > 0) { z.flash -= dt; if (z.flash <= 0) setFlash(z, false); }
+  if (Math.abs(z.kx) + Math.abs(z.kz) > 0.05) { moveEnt(z, z.kx * dt, z.kz * dt, ZR); const f = Math.exp(-7 * dt); z.kx *= f; z.kz *= f; }
+
+  // ซอมบี้ที่หลับอยู่ จะสะดุ้งตื่นเมื่อคุณเดินเข้าใกล้
+  if (z.sleep) {
+    if (!P.dead && (dp < 4 || (dp < 8 && lineClear(z.x, z.z, P.x, P.z)))) {
+      z.sleep = false; setEyes(z, true); z.stun = 0.6; z.roar = 0.7; sfxWake(); sfxGroan(dp, panTo(z.x, z.z));
+    } else { poseSleep(z); return; }
+  }
+
+  let speed = 0, tx = null, tz = null;
+  if (z.stun > 0) { z.stun -= dt; }
+  else {
+    const ti = Math.floor(z.z / CS) * W + Math.floor(z.x / CS);
+    const d = distF[ti];
+    if (d >= 0 && !P.dead) {
+      if (!z.chasing) { z.chasing = true; z.wt = null; if (dp < 22) sfxGroan(dp, panTo(z.x, z.z)); }
+      speed = 1.6 * diff.speed * (1 + 0.55 * Math.max(0, Math.sin(z.anim * 1.7 + z.ph)));   // พุ่งเป็นช่วง ๆ
+      if (d === 0 || dp < 1.7) { tx = P.x; tz = P.z; }
+      else {
+        const cx = ti % W, cy = (ti / W) | 0;
+        for (const [dx, dy] of D4) {
+          const nx = cx + dx, ny = cy + dy;
+          if (nx < 0 || ny < 0 || nx >= W || ny >= W) continue;
+          if (distF[ny * W + nx] === d - 1) { tx = tileC(nx); tz = tileC(ny); break; }
+        }
+      }
+      if (dp < 0.9) speed = 0;
+    } else {
+      if (z.chasing) { z.chasing = false; z.wt = null; }
+      speed = 0.85 * diff.speed;
+      if (z.wt === null || Math.hypot(z.wt.x - z.x, z.wt.z - z.z) < 0.25) {
+        if (z.hold > 0) { z.hold -= dt; speed = 0; z.wt = null; }
+        else {
+          const cx = ti % W, cy = (ti / W) | 0, opts = [];
+          for (const [dx, dy] of D4) { const nx = cx + dx, ny = cy + dy; if (grid[ny] && grid[ny][nx] === 0 && ny * W + nx !== z.prev) opts.push([nx, ny]); }
+          if (!opts.length) { const px = z.prev % W, py = (z.prev / W) | 0; if (z.prev >= 0 && grid[py][px] === 0) opts.push([px, py]); }
+          if (opts.length) { const [nx, ny] = pick(opts); z.prev = ti; z.wt = { x: tileC(nx), z: tileC(ny) }; z.hold = Math.random() < 0.3 ? rnd(0.5, 2.5) : 0; }
+        }
+      }
+      if (z.wt) { tx = z.wt.x; tz = z.wt.z; }
+    }
+    // โจมตีผู้เล่น
+    if (dp < 1.25 && z.cd <= 0 && !P.dead && P.inv <= 0 && state === 'playing') { z.cd = 1.3; z.lunge = 0.3; hurtPlayer(); }
+  }
+  let moving = false;
+  if (tx !== null && speed > 0) {
+    const dx = tx - z.x, dz = tz - z.z, d = Math.hypot(dx, dz);
+    if (d > 0.02) {
+      const st = Math.min(speed * dt, d); moveEnt(z, dx / d * st, dz / d * st, ZR); moving = true;
+      const want = Math.atan2(dx, dz); let df = want - z.face; df = Math.atan2(Math.sin(df), Math.cos(df)); z.face += df * Math.min(1, dt * 8);
+    }
+  } else if (dp < 6) {
+    const want = Math.atan2(dxp, dzp); let df = want - z.face; df = Math.atan2(Math.sin(df), Math.cos(df)); z.face += df * Math.min(1, dt * 6);
+  }
+
+  // ท่าทาง: หลังค่อม เดินกะเผลก หัวกระตุก ขากรรไกรงับ
+  const rate = z.chasing ? 8 : 4.5, sw = moving ? Math.sin(z.anim * rate) * 0.7 : 0;
+  z.legL.rotation.x = sw; z.legR.rotation.x = -sw * 0.55 - (moving ? 0.18 : 0);
+  const lean = (z.chasing ? 0.45 : 0.3) + (z.lunge > 0 ? 0.3 * Math.sin(Math.PI * (1 - z.lunge / 0.3)) : 0) - (z.roar > 0 ? 0.75 : 0) - (z.stun > 0 && z.roar <= 0 ? 0.5 : 0);
+  z.upper.rotation.x = lean;
+  const raise = (z.chasing ? -1.95 : -1.3) + Math.sin(z.anim * 3 + z.ph) * 0.09 - (z.lunge > 0 ? 0.35 : 0);
+  z.armL.rotation.x = raise; z.armR.rotation.x = raise - 0.12 + Math.sin(z.anim * 2.3) * 0.08;
+  z.armL.rotation.z = 0.12; z.armR.rotation.z = -0.1;
+  z.tw -= dt; if (z.tw <= 0) { z.tw = rnd(1.2, 3.5); z.twk = 0.25; z.twd = rnd(-0.55, 0.55); }
+  z.twk = Math.max(0, z.twk - dt);
+  z.headG.rotation.z = z.tilt + (z.twk > 0 ? z.twd * Math.sin(Math.PI * z.twk / 0.25) : 0);
+  z.headG.rotation.x = 0.12 - lean * 0.35 - (z.roar > 0 ? 0.5 : 0);
+  z.jaw.rotation.x = z.roar > 0 || z.lunge > 0 ? 0.95 : (z.chasing ? 0.5 + 0.28 * Math.sin(z.anim * 11) : 0.2 + 0.1 * Math.sin(z.anim * 2 + z.ph));
+  z.body.position.y = moving ? Math.abs(Math.sin(z.anim * rate)) * 0.06 : 0;
+  z.body.rotation.z = moving ? Math.sin(z.anim * rate * 0.5) * 0.1 : 0;
+  z.grp.position.x = z.x; z.grp.position.z = z.z; z.grp.rotation.y = z.face;
+}
+
+// ผีสาว: ลอยทะลุกำแพง ตามหาผู้เล่นไม่หยุด ฆ่าไม่ได้ แต่ไม้กางเขนไล่ให้หายไปชั่วคราว
+function updateGhost(g, dt, t) {
+  g.anim += dt; g.cd -= dt;
+  const dxp = P.x - g.x, dzp = P.z - g.z, dp = Math.hypot(dxp, dzp);
+  if (g.state === 'gone') {
+    g.vis = Math.max(0, g.vis - dt * 3);
+    g.timer -= dt;
+    if (g.timer <= 0 && !P.dead) {
+      const a = rnd(0, 6.283), r = rnd(17, 24);
+      g.x = clamp(P.x + Math.cos(a) * r, 2, W * CS - 2); g.z = clamp(P.z + Math.sin(a) * r, 2, W * CS - 2);
+      g.state = 'haunt'; g.vis = 0; g.wh = 1.5;
+    }
+  } else {
+    g.vis = Math.min(1, g.vis + dt * 0.7);
+    const sp = (dp < 20 ? 2.0 : 1.0) * diff.ghost;
+    if (dp > 0.5) { g.x += dxp / dp * sp * dt; g.z += dzp / dp * sp * dt; }
+    g.face = Math.atan2(dxp, dzp);
+    if (dp < 1.05 && g.cd <= 0 && !P.dead && P.inv <= 0 && state === 'playing') { g.cd = 2; g.state = 'gone'; g.timer = 10; hurtPlayer(); sfxGhostTouch(); }
+    g.wh -= dt;
+    if (dp < 16 && g.wh <= 0) { g.wh = rnd(3.5, 6); sfxWhisper(clamp(0.15 - dp * 0.006, 0.03, 0.13), panTo(g.x, g.z)); }
+    if (!P.seenGhost && dp < 16 && g.vis > 0.5) { P.seenGhost = true; toast('เย็นวาบ! มีผีลอยมาหาคุณ ฟาดไม้กางเขนไล่มันไป!', 4200); }
+  }
+  const flick = 0.7 + 0.3 * Math.sin(t * 11 + g.ph) * Math.sin(t * 4.3 + g.ph), a = g.vis * flick * (dp < 9 ? 1 : 0.7);
+  for (const [m, base] of g.fades) m.opacity = base * a;
+  g.grp.visible = a > 0.02;
+  g.grp.position.set(g.x, 0.12 + Math.sin(g.anim * 1.7) * 0.12, g.z); g.grp.rotation.y = g.face;
+  g.body.rotation.z = Math.sin(g.anim * 1.3) * 0.08;
+  g.armL.rotation.x = -1.25 + Math.sin(g.anim * 2) * 0.15; g.armR.rotation.x = -1.25 + Math.sin(g.anim * 2 + 1.5) * 0.15;
+}
+function updateFear(dt) {
+  let near = 99;
+  for (const z of zombies) if (!z.dying && !z.sleep && z.chasing) near = Math.min(near, Math.hypot(z.x - P.x, z.z - P.z));
+  for (const g of ghosts) if (g.state !== 'gone' && g.vis > 0.3) near = Math.min(near, Math.hypot(g.x - P.x, g.z - P.z) * 0.85);
+  fear = clamp((12 - near) / 12, 0, 1);
+  beatT -= dt;
+  if (fear > 0.05 && beatT <= 0) { sfxThump(); beatT = 0.42 + (1 - fear) * 0.75; pulse = 1; }
+  pulse = Math.max(0, pulse - dt * 3);
+  $('fear').style.opacity = String(clamp(fear * 0.75 * (0.55 + 0.45 * pulse), 0, 0.88));
+}
+function clearFear() { fear = 0; $('fear').style.opacity = '0'; }
+function separateZombies() {
+  for (let i = 0; i < zombies.length; i++) for (let j = i + 1; j < zombies.length; j++) {
+    const a = zombies[i], b = zombies[j]; if (a.dying || b.dying) continue;
+    const dx = b.x - a.x, dz = b.z - a.z, d = Math.hypot(dx, dz);
+    if (d < 0.85) {
+      const nx = d > 0.001 ? dx / d : 1, nz = d > 0.001 ? dz / d : 0, push = (0.85 - d) / 2;
+      moveEnt(a, -nx * push, -nz * push, ZR); moveEnt(b, nx * push, nz * push, ZR);
+    }
+  }
+}
+
+/* =========================================================
+   HUD + แผนที่ย่อ
+   ========================================================= */
+const hudCache = { hearts: '', keys: -1, kills: -1, clock: '' };
+const mm = $('minimap'), mg = mm.getContext('2d');
+let toastTimer = 0;
+function toast(msg, ms) {
+  const t = $('toast'); t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), ms || 2600);
+}
+function updateHud() {
+  const h = '❤️'.repeat(Math.max(0, P.hp)) + '🖤'.repeat(Math.max(0, P.maxHp - P.hp));
+  if (h !== hudCache.hearts) { $('hearts').textContent = h; hudCache.hearts = h; }
+  if (P.keys !== hudCache.keys) { $('keys').textContent = '🔑 กุญแจ ' + P.keys + '/' + KEYS_NEEDED; hudCache.keys = P.keys; }
+  if (P.kills !== hudCache.kills) { $('kills').textContent = '🧟 ปราบแล้ว ' + P.kills; hudCache.kills = P.kills; }
+  const sec = Math.floor(P.time), c = String(Math.floor(sec / 60)).padStart(2, '0') + ':' + String(sec % 60).padStart(2, '0');
+  if (c !== hudCache.clock) { $('clock').textContent = '⏱ ' + c; hudCache.clock = c; }
+  const st = $('stam'); st.firstElementChild.style.width = (P.stam * 100).toFixed(0) + '%'; st.classList.toggle('low', P.tired);
+}
+let mmT = 0;
+function drawMinimap(dt) {
+  mmT -= dt; if (mmT > 0) return; mmT = 0.1;
+  if (!mapOn) { mm.style.display = 'none'; return; } mm.style.display = 'block';
+  const s = mm.width / W;
+  const px = P.x / CS, py = P.z / CS;
+  for (let y = Math.floor(py) - 2; y <= Math.floor(py) + 2; y++) for (let x = Math.floor(px) - 2; x <= Math.floor(px) + 2; x++) if (x >= 0 && y >= 0 && x < W && y < W) explored[y * W + x] = 1;
+  mg.clearRect(0, 0, mm.width, mm.height);
+  mg.fillStyle = 'rgba(8,12,12,0.72)'; mg.fillRect(0, 0, mm.width, mm.height);
+  for (let y = 0; y < W; y++) for (let x = 0; x < W; x++) {
+    if (!explored[y * W + x]) continue;
+    const g = grid[y][x];
+    mg.fillStyle = g === 0 ? (y >= COR_Y0 && y <= COR_Y1 ? '#9d6055' : '#8fa79a') : (g === 2 ? '#b08a5a' : '#2c3833');
+    mg.fillRect(x * s, y * s, s + 0.5, s + 0.5);
+  }
+  for (const it of items) {
+    if (it.got) continue;
+    const tx = it.x / CS, ty = it.z / CS;
+    if (!explored[(ty | 0) * W + (tx | 0)]) continue;
+    mg.fillStyle = it.type === 'key' ? '#ffd23f' : '#ff5c8a';
+    mg.beginPath(); mg.arc(tx * s, ty * s, s * 0.6, 0, 6.29); mg.fill();
+  }
+  if (P.keys >= KEYS_NEEDED || explored[EXIT_Y * W + EXIT_X]) {
+    mg.fillStyle = P.keys >= KEYS_NEEDED ? '#5dff95' : '#ff6a4d';
+    mg.fillRect(EXIT_X * s - 1, EXIT_Y * s - 1, s + 2, s + 2);
+  }
+  mg.fillStyle = '#ff4d4d';
+  for (const z of zombies) {
+    if (z.dying) continue;
+    const tx = z.x / CS, ty = z.z / CS;
+    if (Math.hypot(tx - px, ty - py) > 6) continue;
+    mg.beginPath(); mg.arc(tx * s, ty * s, s * 0.5, 0, 6.29); mg.fill();
+  }
+  mg.save(); mg.translate(px * s, py * s); mg.rotate(Math.atan2(-Math.cos(yaw), -Math.sin(yaw)));
+  mg.fillStyle = '#fff6cf'; mg.beginPath(); mg.moveTo(s * 0.9, 0); mg.lineTo(-s * 0.6, s * 0.55); mg.lineTo(-s * 0.6, -s * 0.55); mg.closePath(); mg.fill();
+  mg.restore();
+}
+
+/* =========================================================
+   อัปเดตทุกเฟรม
+   ========================================================= */
+let flickT = 0, flickNext = 6;
+function updateAmbient(dt, t) {
+  for (const l of lamps) {
+    l.light.intensity = l.base * (0.82 + 0.18 * Math.sin(t * 9 + l.ph) * Math.sin(t * 3.7 + l.ph * 2)) * (fear > 0.4 && Math.random() < fear * 0.22 ? 0.15 : 1);
+  }
+  flickNext -= dt;
+  if (flickNext <= 0) { const scared = fear > 0.2; flickNext = scared ? rnd(0.4, 2.2) : rnd(5, 12); flickT = scared ? rnd(0.1, 0.35) : 0.18; }
+  if (flickT > 0) { flickT -= dt; flash.intensity = rnd(0.05, 0.9); } else flash.intensity = 1.6;
+  if (door && door.open) door.light.intensity = 0.9 + Math.sin(t * 4) * 0.25;
+}
+
+function animateCross() {
+  let rx = -0.15, ry = 0, pz = 0;
+  if (atk.t >= 0) {
+    const k = atk.t / ATK_DUR;
+    if (k < 0.3) { const u = k / 0.3; rx = -0.15 + u * 0.9; pz = u * 0.08; }
+    else if (k < 0.62) { const u = (k - 0.3) / 0.32, e = u * u * (3 - 2 * u); rx = 0.75 - e * 2.2; pz = 0.08 - e * 0.45; ry = -e * 0.25; }
+    else { const u = (k - 0.62) / 0.38, e = u * u * (3 - 2 * u); rx = -1.45 + e * 1.3; pz = -0.37 + e * 0.37; ry = -0.25 * (1 - e); }
+  }
+  if (player) {
+    player.armR.rotation.x = -1.0 + rx;
+    player.armR.rotation.z = ry * 0.5;
+    const bob = P.moving ? Math.sin(bobT) * 0.5 : 0;
+    player.legL.rotation.x = bob; player.legR.rotation.x = -bob;
+    player.armL.rotation.x = -bob * 0.7;
+  }
+  cross.position.set(0, -0.05, 0.08 + pz * 0.4);
+}
+
+function placeCamera(dt) {
+  let sx = 0, sy = 0, roll = 0;
+  if (shake > 0) { shake = Math.max(0, shake - dt); sx = rnd(-1, 1) * shake * 0.1; sy = rnd(-1, 1) * shake * 0.1; roll = rnd(-1, 1) * shake * 0.05; }
+  if (player) { player.grp.position.set(P.x, 0, P.z); player.grp.rotation.y = yaw + Math.PI; }
+  const fx = -Math.sin(yaw), fz = -Math.cos(yaw);
+  flash.position.set(P.x, 1.75, P.z);
+  flash.target.position.set(P.x + fx * 6, 1.2, P.z + fz * 6);
+  glow.position.set(P.x, 1.2, P.z);
+  const desiredBack = 4.4;
+  let back = desiredBack;
+  for (let i = 6; i >= 1; i--) {
+    const t = i / 6, tx = P.x - fx * desiredBack * t, tz = P.z - fz * desiredBack * t;
+    if (!solid(tx, tz)) { back = desiredBack * t; break; }
+    back = 0.8;
+  }
+  const height = clamp(2.5 - pitch * 1.5, 1.1, 3.6);
+  camera.position.set(P.x - fx * back + sx, height + sy, P.z - fz * back);
+  const lookY = clamp(EYE + 0.35 - pitch * 2.0, 0.4, 3.0);
+  camera.lookAt(P.x, lookY, P.z);
+  if (roll) camera.rotation.z += roll;
+}
+
+function update(dt, t) {
+  P.time += dt;
+  updatePlayer(dt);
+  if (holdAtk) tryAttack();
+  if (atk.t >= 0) {
+    atk.t += dt;
+    if (!atk.hit && atk.t >= 0.13) { atk.hit = true; doHit(); }
+    if (atk.t >= ATK_DUR) { atk.t = -1; atk.cd = 0.12; }
+  } else atk.cd = Math.max(0, atk.cd - dt);
+
+  fieldT -= dt;
+  if (fieldT <= 0) { fieldT = 0.3; bfs(distF, clamp(Math.floor(P.x / CS), 0, W - 1), clamp(Math.floor(P.z / CS), 0, W - 1), diff.aggro); }
+  for (const z of zombies) updateZombie(z, dt);
+  separateZombies();
+  zombies = zombies.filter(z => !z.dead);
+  for (const g of ghosts) updateGhost(g, dt, t);
+  updateFear(dt);
+  spawnT -= dt;
+  if (spawnT <= 0) { spawnT = 28; if (zombies.filter(z => !z.dying).length < diff.cap) spawnFar(); }
+
+  // ไอเท็ม (อยู่ในห้องพัก กดเดินเข้าใกล้เพื่อเก็บ)
+  for (const it of items) {
+    if (it.got) continue;
+    it.mesh.rotation.y += dt * 1.8; it.mesh.position.y = it.y + Math.sin(t * 2.4 + it.ph) * 0.12;
+    if (Math.hypot(it.x - P.x, it.z - P.z) < it.r) {
+      if (it.type === 'key') {
+        it.got = true; level.remove(it.mesh); P.keys++; sfxKey(); sparkle(it.x, it.y, it.z, 0xffd23f, 26, 3);
+        if (P.keys >= KEYS_NEEDED) { openDoor(); toast('ได้กุญแจครบแล้ว! รีบไปที่ประตูใหญ่ปลายทางเดิน (ฝั่งตะวันออกของแผนที่)', 5200); }
+        else toast('ได้กุญแจทอง ' + P.keys + ' จาก ' + KEYS_NEEDED + ' ดอก – เปิดประตูห้องอื่น ๆ ให้ครบ!', 3000);
+      } else if (P.hp < P.maxHp) {
+        it.got = true; level.remove(it.mesh); P.hp++; sfxHeal(); sparkle(it.x, it.y, it.z, 0xff5c8a, 20, 2.5); toast('เติมพลังแล้ว +1 หัวใจ', 2000);
+      }
+    }
+  }
+  // ประตูใหญ่
+  if (door) {
+    const dd = Math.hypot(door.x - P.x, door.z - P.z);
+    if (dd < 2.1) {
+      if (door.open) { endGame(true); return; }
+      msgDoor -= dt; if (msgDoor <= 0) { msgDoor = 3; toast('ประตูล็อกอยู่! ต้องมีกุญแจทองครบ ' + KEYS_NEEDED + ' ดอก (ตอนนี้ ' + P.keys + ')', 2800); }
+    }
+  }
+  updateParticles(dt);
+  updateAmbient(dt, t);
+  updateDoors(dt);
+  animateCross();
+  placeCamera(dt);
+  updateHud();
+  drawMinimap(dt);
+}
+
+// เปิด/ปิดประตูห้องพัก
+function setDoor(d, open) {
+  if (d.open === open) return;
+  d.open = open;
+  if (open) { noiseBurst(0.55, 0.1, 300, 950, 4); noiseBurst(0.12, 0.12, 1800, 2600, 3); }
+  else { noiseBurst(0.35, 0.13, 700, 220, 4); tone(84, 0.16, 'sine', 0.3, -20); }
+}
+function nearestDoor(maxDist) {
+  let best = null, bd = maxDist || 3.0;
+  for (const d of roomDoors) {
+    const dist = Math.hypot(d.x - P.x, d.z - P.z);
+    if (dist < bd) { bd = dist; best = d; }
+  }
+  return best;
+}
+function tryInteract() {
+  if (state !== 'playing') return;
+  const d = nearestDoor(3.1);
+  if (!d) return;
+  if (!d.open) { setDoor(d, true); toast('เปิดประตูห้อง ' + d.no, 1500); }
+  else if (Math.hypot(d.x - P.x, d.z - P.z) > 2.6) setDoor(d, false);
+}
+function updateDoors(dt) {
+  let near = null;
+  for (const d of roomDoors) {
+    d.k += ((d.open ? 1 : 0) - d.k) * Math.min(1, dt * 3.4);
+    d.pivot.rotation.y = (d.side < 0 ? 1 : -1) * d.k * 1.75;
+    const dist = Math.hypot(d.x - P.x, d.z - P.z);
+    if (dist < 3.1 && (!near || dist < near.dist)) near = { d, dist };
+    if (!d.open && !P.dead) {                                   // ผู้เล่น/ซอมบี้เดินชนแล้วประตูเปิดเอง
+      if (dist < 2.05) setDoor(d, true);
+      else { for (const z of zombies) if (!z.dying && Math.hypot(d.x - z.x, d.z - z.z) < 2.15) { setDoor(d, true); break; } }
+    }
+  }
+  const pr = $('prompt'), db = $('doorBtn');
+  if (near && state === 'playing') {
+    const txt = (near.d.open ? 'ปิด' : 'เปิด') + 'ประตูห้อง ' + near.d.no;
+    const html = isTouch ? '🚪 ' + txt : '<kbd>E</kbd> ' + txt;
+    if (pr.dataset.k !== html) { pr.innerHTML = html; pr.dataset.k = html; }
+    pr.classList.remove('hidden');
+    db.classList.remove('hidden');
+  } else {
+    pr.classList.add('hidden');
+    db.classList.add('hidden');
+  }
+}
+function openDoor() {
+  door.open = true; door.panelM.emissive.setHex(0x0c5a2a); door.panelM.color.setHex(0x3f7a52);
+  door.sign.material.color.setHex(0xffffff); door.light.color.setHex(0x55ff88); door.glow.material.color.setHex(0x55ff88); door.glow.material.opacity = 0.8;
+  sfxDoor();
+}
+
+let last = performance.now();
+function frame(now) {
+  requestAnimationFrame(frame);
+  const dt = Math.min(0.05, (now - last) / 1000); last = now;
+  if (state === 'playing') update(dt, now / 1000);
+  else if (state === 'menu') { yaw += dt * 0.12; placeCamera(0); updateAmbient(dt, now / 1000); animateCross(); }
+  renderer.render(scene, camera);
+}
+
+/* =========================================================
+   ควบคุมเกม / หน้าจอ
+   ========================================================= */
+// ล็อกเมาส์ไม่ได้ (เช่น เปิดในหน้าต่างพรีวิว/iframe) → เล่นต่อได้เลยโดยลากเมาส์เพื่อหันมอง
+function setNoLock() {
+  if (noLock || locked || isTouch) return;
+  noLock = true;
+  toast('ล็อกเมาส์ไม่ได้ในหน้าต่างนี้ ให้ลากเมาส์บนจอเพื่อหันมอง หรือใช้ปุ่ม ← → (หรือ Q E) ถ้าเปิดไฟล์ในแท็บใหม่จะล็อกเมาส์ได้', 8000);
+}
+function lockPointer() {
+  if (isTouch) return;
+  const el = renderer.domElement;
+  if (!el.requestPointerLock) { setNoLock(); return; }
+  try { const p = el.requestPointerLock(); if (p && p.catch) p.catch(setNoLock); } catch (e) { setNoLock(); }
+  clearTimeout(lockTimer);
+  lockTimer = setTimeout(() => { if (state === 'playing' && !locked) setNoLock(); }, 800);
+}
+function show(id, on) { $(id).classList.toggle('hidden', !on); }
+
+function startGame() {
+  initAudio();
+  buildLevel(); resetPlayer();
+  show('menu', false); show('pause', false); show('end', false); show('hud', true);
+  show('touch', isTouch); show('pauseBtn', isTouch);
+  $('hint').classList.remove('fade'); setTimeout(() => $('hint').classList.add('fade'), 20000);
+  state = 'playing'; last = performance.now();
+  lockPointer();
+  toast('อยู่กลางทางเดินใหญ่ของโรงแรมร้าง – เปิดประตูห้องพักด้วย E เข้าไปเก็บกุญแจทอง ' + KEYS_NEEDED + ' ดอก แล้วหนีออกทางประตูใหญ่ที่ปลายทางเดิน!', 6500);
+}
+function pauseGame() {
+  if (state !== 'playing') return;
+  state = 'paused'; joy.x = joy.y = 0; holdAtk = false; clearFear(); show('pause', true);
+  if (document.exitPointerLock && document.pointerLockElement) document.exitPointerLock();
+}
+function resumeGame() {
+  show('pause', false); state = 'playing'; last = performance.now(); lockPointer();
+}
+function toMenu() {
+  state = 'menu'; clearFear(); show('pause', false); show('end', false); show('hud', false); show('touch', false); show('menu', true);
+  if (document.pointerLockElement) document.exitPointerLock();
+  buildLevel(); resetPlayer();
+}
+function endGame(win) {
+  if (state !== 'playing') return;
+  state = win ? 'won' : 'lost'; holdAtk = false; joy.x = joy.y = 0; clearFear();
+  if (document.pointerLockElement) document.exitPointerLock();
+  win ? sfxWin() : sfxLose();
+  const sec = Math.floor(P.time), c = String(Math.floor(sec / 60)).padStart(2, '0') + ':' + String(sec % 60).padStart(2, '0');
+  const t = $('endTitle'); t.textContent = win ? 'หนีออกมาได้แล้ว!' : 'พลังหมดแล้ว'; t.className = win ? 'win' : 'lose';
+  $('endMsg').textContent = win ? 'คุณเปิดประตูห้องพักครบทุกห้อง ได้กุญแจครบ และหนีออกจากโรงแรมร้างมาได้สำเร็จ เก่งมาก!' : 'ซอมบี้ในโรงแรมร้างจับคุณไว้ได้ ลองใหม่อีกครั้ง แล้วจำทางที่เคยผ่านไว้นะ';
+  $('endStats').textContent = 'เวลา ' + c + ' – ปราบซอมบี้ ' + P.kills + ' ตัว – กุญแจ ' + P.keys + '/' + KEYS_NEEDED;
+  setTimeout(() => show('end', true), win ? 300 : 700);
+}
+
+// ปุ่มต่าง ๆ
+$('startBtn').addEventListener('click', startGame);
+$('againBtn').addEventListener('click', startGame);
+$('resumeBtn').addEventListener('click', resumeGame);
+$('quitBtn').addEventListener('click', toMenu);
+$('menuBtn').addEventListener('click', toMenu);
+$('pauseBtn').addEventListener('click', pauseGame);
+function toggleMute() { muted = !muted; if (master) master.gain.value = muted ? 0 : 0.55; $('muteBtn').textContent = muted ? '🔇' : '🔊'; }
+$('muteBtn').addEventListener('click', toggleMute);
+document.querySelectorAll('#diffSeg button').forEach(b => b.addEventListener('click', () => {
+  document.querySelectorAll('#diffSeg button').forEach(x => x.classList.remove('on')); b.classList.add('on'); diff = DIFFS[b.dataset.d];
+}));
+
+// คีย์บอร์ด / เมาส์
+document.addEventListener('keydown', e => {
+  keysDown[e.code] = true;
+  if (['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code)) e.preventDefault();
+  if (state !== 'playing') return;
+  if (e.code === 'Space' && !e.repeat) tryAttack();
+  if (e.code === 'KeyE' && !e.repeat) tryInteract();
+  if (e.code === 'KeyM' && !e.repeat) mapOn = !mapOn;
+  if (e.code === 'KeyP' && !e.repeat) pauseGame();
+  if (e.code === 'KeyN' && !e.repeat) toggleMute();
+});
+document.addEventListener('keyup', e => { keysDown[e.code] = false; });
+window.addEventListener('blur', () => { for (const k in keysDown) keysDown[k] = false; });
+document.addEventListener('visibilitychange', () => { if (document.hidden) pauseGame(); });
+document.addEventListener('pointerlockchange', () => {
+  locked = document.pointerLockElement === renderer.domElement;
+  if (locked) { hadLock = true; noLock = false; dragging = false; }
+  else { const was = hadLock; hadLock = false; if (was && state === 'playing' && !isTouch) pauseGame(); }
+});
+document.addEventListener('pointerlockerror', () => { if (state === 'playing' || state === 'paused') setNoLock(); });
+document.addEventListener('mousemove', e => {
+  if (state !== 'playing') return;
+  if (locked) { yaw -= e.movementX * 0.0022; pitch = clamp(pitch - e.movementY * 0.0022, -1.25, 1.25); }
+  else if (dragging) {
+    const dx = e.clientX - dragX, dy = e.clientY - dragY; dragX = e.clientX; dragY = e.clientY; dragMoved += Math.abs(dx) + Math.abs(dy);
+    yaw -= dx * 0.0035; pitch = clamp(pitch - dy * 0.0035, -1.25, 1.25);
+  }
+});
+document.addEventListener('mousedown', e => {
+  if (e.button !== 0 || state !== 'playing' || isTouch) return;
+  if (e.target && e.target.closest && e.target.closest('button')) return;
+  if (locked) { holdAtk = true; tryAttack(); }
+  else { dragging = true; dragMoved = 0; dragX = e.clientX; dragY = e.clientY; }
+});
+document.addEventListener('mouseup', () => {
+  holdAtk = false;
+  if (dragging) { dragging = false; if (dragMoved < 6) tryAttack(); }   // คลิกเฉย ๆ = ฟาด, ลาก = หันมอง
+});
+window.addEventListener('contextmenu', e => e.preventDefault());
+
+// จอสัมผัส
+(function touchControls() {
+  const joyZone = $('joyZone'), lookZone = $('lookZone'), base = $('joyBase'), knob = $('joyKnob'), atkBtn = $('atkBtn');
+  let joyId = null, ox = 0, oy = 0, lookId = null, lx = 0, ly = 0;
+  const R = 55;
+  joyZone.addEventListener('touchstart', e => {
+    e.preventDefault(); if (joyId !== null) return;
+    const t = e.changedTouches[0]; joyId = t.identifier; ox = t.clientX; oy = t.clientY;
+    base.style.left = ox + 'px'; base.style.top = oy + 'px'; base.classList.remove('hidden'); knob.style.transform = 'translate(0,0)';
+  }, { passive: false });
+  joyZone.addEventListener('touchmove', e => {
+    e.preventDefault();
+    for (const t of e.changedTouches) if (t.identifier === joyId) {
+      let dx = t.clientX - ox, dy = t.clientY - oy; const d = Math.hypot(dx, dy);
+      if (d > R) { dx = dx / d * R; dy = dy / d * R; }
+      joy.x = dx / R; joy.y = dy / R; knob.style.transform = 'translate(' + dx + 'px,' + dy + 'px)';
+    }
+  }, { passive: false });
+  const joyEnd = e => { for (const t of e.changedTouches) if (t.identifier === joyId) { joyId = null; joy.x = joy.y = 0; base.classList.add('hidden'); } };
+  joyZone.addEventListener('touchend', joyEnd); joyZone.addEventListener('touchcancel', joyEnd);
+  lookZone.addEventListener('touchstart', e => { e.preventDefault(); if (lookId !== null) return; const t = e.changedTouches[0]; lookId = t.identifier; lx = t.clientX; ly = t.clientY; }, { passive: false });
+  lookZone.addEventListener('touchmove', e => {
+    e.preventDefault();
+    for (const t of e.changedTouches) if (t.identifier === lookId) {
+      yaw -= (t.clientX - lx) * 0.0055; pitch = clamp(pitch - (t.clientY - ly) * 0.0055, -1.25, 1.25); lx = t.clientX; ly = t.clientY;
+    }
+  }, { passive: false });
+  const lookEnd = e => { for (const t of e.changedTouches) if (t.identifier === lookId) lookId = null; };
+  lookZone.addEventListener('touchend', lookEnd); lookZone.addEventListener('touchcancel', lookEnd);
+  atkBtn.addEventListener('touchstart', e => { e.preventDefault(); e.stopPropagation(); holdAtk = true; tryAttack(); }, { passive: false });
+  atkBtn.addEventListener('touchend', e => { e.preventDefault(); holdAtk = false; }, { passive: false });
+  atkBtn.addEventListener('touchcancel', () => { holdAtk = false; });
+  $('doorBtn').addEventListener('touchstart', e => { e.preventDefault(); e.stopPropagation(); tryInteract(); }, { passive: false });
+})();
+
+/* =========================================================
+   เริ่มต้น: โชว์บ้านร้างเป็นฉากหลังเมนู
+   ========================================================= */
+buildLevel(); resetPlayer();
+placeCamera(0);
+requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
