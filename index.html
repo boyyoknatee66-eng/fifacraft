@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>GAMEFRAME — ศูนย์รวมเกมที่เราทำเอง</title>
+<title>พี่ฟีฟ่าน้องพีน่า — หมู่บ้านแห่งกมส์</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -205,7 +205,7 @@
 
 <header>
   <div class="wrap bar">
-    <a class="logo" href="#"><span class="cube"></span><span>GAMEFRAME</span></a>
+    <a class="logo" href="#"><span class="cube"></span><span>พี่ฟีฟ่าน้องพีน่า</span></a>
     <div class="search"><input id="q" type="search" placeholder="ค้นหาเกม..." autocomplete="off"></div>
     <nav class="tabs" id="tabs">
       <button class="on" data-f="all">เกมทั้งหมด</button>
@@ -245,7 +245,7 @@
   <section>
     <div class="head">
       <div>
-        <h2>เกมใน <i>GAMEFRAME</i></h2>
+        <h2>เกมใน <i>พี่ฟีฟ่าน้องพีน่า หมู่บ้านแห่งกมส์</i></h2>
         <div class="sub" id="cnt">—</div>
       </div>
       <div class="sub">คลิกการ์ดเพื่อดูรายละเอียด แล้วกดเล่นได้ทันที</div>
@@ -253,24 +253,9 @@
     <div class="grid" id="grid"></div>
   </section>
 
-  <!-- ============ วิธีเพิ่มเกม ============ -->
-  <section>
-    <div class="head"><h2>เพิ่มเกมใหม่ทีละเกม</h2><div class="sub">โครงสร้างพร้อมรองรับ ไม่ต้องแก้ UI</div></div>
-    <div class="how">
-      <div class="box"><div class="n">1</div><h4>ใส่ข้อมูลเกม</h4>
-        <p>เพิ่ม object ใหม่ใน array <b>GAMES</b> ของไฟล์ index.html — ชื่อ คำอธิบาย แท็ก รูปปก ลิงก์ไฟล์เกม</p></div>
-      <div class="box"><div class="n">2</div><h4>วางไฟล์เกม</h4>
-        <p>วางไฟล์เกม (เช่น <b>xxx.html</b>) ไว้โฟลเดอร์เดียวกัน แล้วใส่ชื่อไฟล์ใน <b>url</b></p></div>
-      <div class="box"><div class="n">3</div><h4>เพิ่มรูป</h4>
-        <p>วางภาพปก 16:9 <b>คู่กับ index.html</b> แล้วใส่ชื่อไฟล์ใน <b>cover</b>/<b>thumb</b> — ภาพหน้าจอจริงโชว์ได้สวยกว่าภาพวาด</p></div>
-      <div class="box"><div class="n">4</div><h4>ประกาศสถานะ</h4>
-        <p>เปลี่ยน <b>status</b> เป็น playable / soon — การ์ดและแท็บกรองจะอัปเดตเองอัตโนมัติ</p></div>
-    </div>
-  </section>
-
   <footer>
     <div class="fin">
-      <div>© 2026 GAMEFRAME — รวมเกมที่เราทำเอง เพิ่มทีละเกม</div>
+      <div>© 2026 พี่ฟีฟ่าน้องพีน่า — หมู่บ้านแห่งกมส์</div>
       <div>ทำด้วย HTML/CSS/JS ล้วน · ไม่มีเฟรมเวิร์ก</div>
     </div>
   </footer>
@@ -309,7 +294,7 @@ const GAMES = [
     id:'ghosthouse',
     title:'โรงแรมร้าง',
     sub:'Abandoned Hotel',
-    by:'GAMEFRAME Studio',
+    by:'พี่ฟีฟ่าน้องพีน่า',
     url:'Ghosthouse.html',
     cover:'ghosthouse-cover.png',
     thumb:'ghosthouse-thumb.png',
@@ -331,7 +316,7 @@ const GAMES = [
     id:'golem',
     title:'โกเลมผจญภัย',
     sub:'Voxel Pig Farm',
-    by:'GAMEFRAME Studio',
+    by:'พี่ฟีฟ่าน้องพีน่า',
     url:'golem.html',
     cover:'golem-cover.png',
     thumb:'golem-thumb.png',
@@ -349,6 +334,33 @@ const GAMES = [
       'บนมือถือ: ปุ่มทิศทาง + ปุ่ม 🔥/E ตามจอ'
     ],
     features:['โลกเปิดบล็อกสไตล์ Minecraft มุมมอง FPS','ฟาร์ม: เก็บไม้/ข้าวโพด เลี้ยงหมู ซื้อของด้วยเพชร 💎','เห็ดบิน, หยุดเวลา, แปลงร่างเป็นตัวละครต่าง ๆ','กลางคืนมีโครงกระดูก + มนุษย์เหล็กช่วยสู้, มีร้านค้า/แผนที่ใหญ่']
+  },
+  {
+    id:'melonsandbox',
+    title:'เมลอนแซนด์บ๊อก',
+    sub:'Physics Sandbox',
+    by:'พี่ฟีฟ่าน้องพีน่า',
+    url:'melon_sandbox.html',
+    cover:'melon-cover.png',
+    thumb:'melon-thumb.png',
+    tags:['ฟิสิกส์','แซนด์บ็อกซ์','จำลอง','สร้างสรรค์'],
+    status:'playable',
+    badge:'มาใหม่', badgeType:'hot',
+    plays:'—', likes:'100%', rating:'4.9',
+    size:'1 แผนที่ · ฟิสิกส์แซนด์บ็อกซ์',
+    desc:'สนามเด็กเล่นฟิสิกส์ (Physics Sandbox) สไตล์เมลอน เสกวัตถุหลากหลาย เช่น เมลอน, ลูกบอล, เนื้อ, ตัวละครเดินได้ (Wobbler), กำแพงไม้ และระเบิดพ่นไฟ ลากวัตถุด้วยเมาส์หรือนิ้ว ชนกันกระเด็น ปรับแรงโน้มถ่วงได้อิสระ สนุกกับการทดลองฟิสิกส์แบบเรียลไทม์',
+    controls:[
+      '<kbd>คลิก/ลาก</kbd> หยิบและเหวี่ยงวัตถุ',
+      '<kbd>เลือกเครื่องมือ</kbd> จากแถบด้านซ้าย',
+      '<kbd>แรงโน้มถ่วง</kbd> ปรับแต่งค่าความโน้มถ่วงได้',
+      '<kbd>Touch</kbd> รองรับมือถือและเมาส์'
+    ],
+    features:[
+      'Matter.js 2D Physics Engine',
+      'เสกเมลอน, ลูกบอล, เนื้อ, ตัวละคร (Wobbler), กำแพงไม้, ระเบิด',
+      'ระบบแรงโน้มถ่วงปรับทิศทางได้',
+      'ปฏิสัมพันธ์สมจริง ชน กระเด็น ระเบิด แตกย่อย'
+    ]
   },
   /* --- เกมถัดไป ใส่ที่นี่ --- */
 ];

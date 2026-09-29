@@ -1,0 +1,1341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+<title>Melon Yard — a physics playground</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Inter:wght@400;500;600;700&display=swap');
+
+  :root{
+    --rind-dark:   #1F4D36;
+    --rind-mid:    #2F6E4C;
+    --rind-light:  #4C8F68;
+    --flesh:       #F2545B;
+    --flesh-deep:  #B23A41;
+    --cream:       #FBF4E6;
+    --cream-dim:   #EFE6D3;
+    --seed:        #1B1B1B;
+    --pop:         #C4E86B;
+    --pop-deep:    #8FB94B;
+    --wood:        #A9713C;
+    --wood-deep:   #7A4E27;
+  }
+
+  *{ box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
+
+  html,body{
+    margin:0; padding:0; height:100%; overflow:hidden;
+    font-family:'Inter',sans-serif;
+    background:var(--rind-dark);
+    color:var(--cream);
+  }
+
+  #app{
+    display:flex;
+    flex-direction:column;
+    height:100vh;
+    height:100dvh;
+  }
+
+  /* ---------- Header ---------- */
+  header{
+    flex:0 0 auto;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    padding:10px 18px;
+    background:var(--rind-dark);
+    border-bottom:3px solid var(--rind-light);
+    z-index:5;
+  }
+  .brand{ display:flex; align-items:baseline; gap:10px; }
+  .brand h1{
+    font-family:'Baloo 2',cursive;
+    font-weight:800;
+    font-size:22px;
+    margin:0;
+    letter-spacing:0.3px;
+    color:var(--cream);
+  }
+  .brand span.tag{
+    font-size:12px;
+    color:var(--pop);
+    font-weight:600;
+  }
+
+  .header-actions{ display:flex; gap:8px; }
+  .chip-btn{
+    display:flex; align-items:center; gap:6px;
+    background:var(--rind-mid);
+    border:2px solid var(--rind-light);
+    color:var(--cream);
+    font-family:'Inter',sans-serif;
+    font-weight:600;
+    font-size:13px;
+    padding:7px 12px;
+    border-radius:999px;
+    cursor:pointer;
+    transition:transform .12s ease, background .12s ease;
+    white-space:nowrap;
+  }
+  .chip-btn:hover{ background:var(--rind-light); }
+  .chip-btn:active{ transform:scale(0.94); }
+  .chip-btn .dot{
+    width:9px; height:9px; border-radius:50%;
+    background:var(--pop);
+    flex:0 0 auto;
+  }
+  .chip-btn.warn{ background:var(--flesh); border-color:var(--flesh-deep); }
+  .chip-btn.warn:hover{ background:var(--flesh-deep); }
+
+  /* ---------- Body layout ---------- */
+  #main{
+    flex:1 1 auto;
+    display:flex;
+    min-height:0;
+  }
+
+  /* ---------- Toolbar ---------- */
+  #toolbar{
+    flex:0 0 128px;
+    background:var(--rind-mid);
+    display:flex;
+    flex-direction:column;
+    align-items:stretch;
+    gap:8px;
+    padding:12px 10px;
+    overflow-y:auto;
+    border-right:3px solid var(--rind-dark);
+  }
+  .tool-btn{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:6px;
+    background:rgba(251,244,230,0.08);
+    border:2px solid rgba(251,244,230,0.16);
+    border-radius:14px;
+    padding:9px 6px 8px;
+    cursor:pointer;
+    color:var(--cream);
+    font-family:'Inter',sans-serif;
+    font-size:11.5px;
+    font-weight:600;
+    transition:background .12s ease, border-color .12s ease, transform .1s ease;
+  }
+  .tool-btn:hover{ background:rgba(251,244,230,0.16); }
+  .tool-btn:active{ transform:scale(0.95); }
+  .tool-btn.active{
+    background:var(--pop);
+    border-color:var(--pop-deep);
+    color:var(--rind-dark);
+  }
+  .tool-icon{
+    width:34px; height:34px;
+    display:flex; align-items:center; justify-content:center;
+    position:relative;
+  }
+
+  /* icon shapes */
+  .ic-seed{ width:13px; height:13px; border-radius:50%; background:var(--seed); box-shadow:0 0 0 3px rgba(251,244,230,0.15); }
+  .tool-btn.active .ic-seed{ box-shadow:0 0 0 3px rgba(31,77,54,0.18); }
+
+  .ic-ball{
+    width:26px; height:26px; border-radius:50%;
+    background:conic-gradient(from 200deg, var(--rind-light), var(--flesh) 55%, var(--pop) 100%);
+    border:2px solid rgba(27,27,27,0.5);
+  }
+
+  .ic-chunk{
+    width:30px; height:20px; border-radius:5px;
+    background:var(--flesh);
+    border:2px solid var(--flesh-deep);
+    position:relative;
+  }
+  .ic-chunk::before, .ic-chunk::after{
+    content:''; position:absolute; width:3px; height:3px; border-radius:50%;
+    background:var(--seed); top:7px;
+  }
+  .ic-chunk::before{ left:8px; }
+  .ic-chunk::after{ left:17px; top:11px; }
+
+  .ic-wobbler{ width:22px; height:32px; position:relative; }
+  .ic-wobbler .w-head{
+    width:13px; height:13px; border-radius:50%;
+    background:var(--cream); border:2px solid var(--seed);
+    position:absolute; top:0; left:50%; transform:translateX(-50%);
+  }
+  .ic-wobbler .w-body{
+    width:12px; height:14px; border-radius:4px;
+    background:var(--flesh); border:2px solid var(--flesh-deep);
+    position:absolute; top:12px; left:50%; transform:translateX(-50%);
+  }
+  .ic-wobbler .w-leg{
+    width:3px; height:9px; background:var(--seed);
+    position:absolute; top:25px; border-radius:2px;
+  }
+  .ic-wobbler .w-leg.l{ left:6px; transform:rotate(8deg); }
+  .ic-wobbler .w-leg.r{ right:6px; transform:rotate(-8deg); }
+
+  .ic-wall{
+    width:32px; height:12px; border-radius:3px;
+    background:repeating-linear-gradient(90deg, var(--wood) 0 8px, var(--wood-deep) 8px 9px);
+    border:2px solid var(--wood-deep);
+  }
+
+  .ic-pop{
+    width:26px; height:26px; border-radius:50%;
+    background:radial-gradient(circle, #fff 0%, var(--pop) 45%, var(--pop-deep) 100%);
+    display:flex; align-items:center; justify-content:center;
+    position:relative;
+  }
+  .ic-pop .bar{
+    position:absolute; width:3px; height:32px; background:var(--rind-dark);
+    border-radius:2px; opacity:0.85;
+  }
+  .ic-pop .bar:nth-child(1){ transform:rotate(0deg); }
+  .ic-pop .bar:nth-child(2){ transform:rotate(60deg); }
+  .ic-pop .bar:nth-child(3){ transform:rotate(120deg); }
+
+  .ic-storm{ width:34px; height:30px; position:relative; }
+  .ic-storm::before{
+    content:''; position:absolute; left:2px; top:3px; width:30px; height:17px;
+    border-radius:12px; background:#607D9D; box-shadow:-6px 5px 0 -2px #7894B0;
+  }
+  .ic-storm::after{
+    content:'⚡'; position:absolute; left:12px; top:9px; color:#FFE26A;
+    font-size:20px; line-height:20px; text-shadow:0 1px 0 #8a6612;
+  }
+
+  .ic-tree{ width:30px; height:34px; position:relative; }
+  .ic-tree::before{ content:''; position:absolute; left:12px; bottom:1px; width:8px; height:17px; background:#7A4E27; border-radius:4px; }
+  .ic-tree::after{ content:'🌳'; position:absolute; inset:-7px -4px auto; font-size:31px; line-height:31px; filter:saturate(1.25); }
+
+  .ic-robot{ width:22px; height:32px; position:relative; background:#0D6D68; border:3px solid #123F43; border-radius:8px 8px 4px 4px; }
+  .ic-robot::before{ content:''; position:absolute; left:-2px; top:-12px; width:20px; height:15px; border-radius:7px 7px 3px 3px; background:#147D78; border:3px solid #123F43; }
+  .ic-robot::after{ content:''; position:absolute; right:-3px; top:-7px; width:11px; height:5px; background:#FFD23F; box-shadow:0 0 0 2px #A76E16; }
+
+  .ic-spider{ width:28px; height:22px; position:relative; border-radius:50%; background:#281B35; }
+  .ic-spider::before,.ic-spider::after{ content:''; position:absolute; width:19px; height:14px; top:5px; border-top:3px solid #281B35; border-bottom:3px solid #281B35; }
+  .ic-spider::before{ right:19px; transform:skewY(-28deg); } .ic-spider::after{ left:19px; transform:skewY(28deg); }
+
+  .ic-eraser{
+    width:28px; height:18px; border-radius:4px 8px 8px 4px;
+    background:var(--cream); border:2px solid var(--seed);
+    position:relative; transform:rotate(-8deg);
+  }
+  .ic-eraser::after{
+    content:''; position:absolute; right:3px; top:2px; bottom:2px; width:7px;
+    background:rgba(27,27,27,0.18); border-radius:2px;
+  }
+
+  .ic-guy{ width:20px; height:34px; position:relative; }
+  .ic-guy .g-leaf{
+    width:9px; height:5px; background:#4B6B2E; position:absolute;
+    top:-2px; left:11px; border-radius:0 8px 0 8px; transform:rotate(-15deg);
+  }
+  .ic-guy .g-head{
+    width:15px; height:14px; border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, #E9645F, #B23A41 80%);
+    position:absolute; top:2px; left:2px; border:1.5px solid #7c1f24;
+  }
+  .ic-guy .g-eye{
+    width:2.5px; height:2.5px; background:#1B1B1B; position:absolute; top:8px; left:11px;
+  }
+  .ic-guy .g-body{
+    width:11px; height:15px; border-radius:4px;
+    background:linear-gradient(180deg,#E9645F,#B23A41);
+    position:absolute; top:16px; left:4.5px; border:1.5px solid #7c1f24;
+  }
+
+  /* ---------- Floating command panel for a selected character ---------- */
+  #cmdPanel{
+    position:absolute;
+    display:none;
+    gap:4px;
+    padding:5px 6px;
+    background:var(--rind-dark);
+    border:2px solid var(--rind-light);
+    border-radius:999px;
+    transform:translate(-50%,-100%);
+    z-index:6;
+    box-shadow:0 4px 10px rgba(0,0,0,0.25);
+  }
+  #cmdPanel button{
+    border:none; cursor:pointer;
+    font-family:'Inter',sans-serif;
+    font-weight:700;
+    font-size:11px;
+    padding:6px 9px;
+    border-radius:999px;
+    background:rgba(251,244,230,0.12);
+    color:var(--cream);
+    transition:background .12s ease, transform .1s ease;
+    white-space:nowrap;
+  }
+  #cmdPanel button:hover{ background:rgba(251,244,230,0.22); }
+  #cmdPanel button:active{ transform:scale(0.93); }
+  #cmdPanel button.active{ background:var(--pop); color:var(--rind-dark); }
+  #cmdPanel button.die-btn{ background:var(--flesh); color:#fff; }
+  #cmdPanel button.die-btn.active{ background:#7a1f24; color:#fff; }
+
+  .toolbar-divider{
+    height:2px; background:rgba(251,244,230,0.14); margin:2px 4px; border-radius:2px;
+  }
+
+  /* ---------- Canvas area ---------- */
+  #stage{
+    flex:1 1 auto;
+    position:relative;
+    background:
+      radial-gradient(circle, rgba(27,27,27,0.05) 1.6px, transparent 1.6px) 0 0/26px 26px,
+      linear-gradient(180deg, var(--cream) 0%, var(--cream-dim) 100%);
+    overflow:hidden;
+  }
+  #world{ position:absolute; inset:0; display:block; touch-action:none; }
+
+  #hint{
+    position:absolute;
+    left:50%; top:16px; transform:translateX(-50%);
+    background:rgba(31,77,54,0.92);
+    color:var(--cream);
+    font-size:13px;
+    font-weight:600;
+    padding:8px 16px;
+    border-radius:999px;
+    pointer-events:none;
+    transition:opacity .4s ease;
+    white-space:nowrap;
+  }
+
+  #count{
+    position:absolute;
+    right:14px; bottom:12px;
+    background:rgba(31,77,54,0.85);
+    color:var(--cream);
+    font-size:12px;
+    font-weight:600;
+    padding:5px 11px;
+    border-radius:999px;
+    pointer-events:none;
+  }
+
+  /* ---------- Responsive: narrow screens ---------- */
+  @media (max-width: 700px){
+    header{ padding:8px 12px; }
+    .brand h1{ font-size:18px; }
+    .brand span.tag{ display:none; }
+    .chip-btn span.label{ display:none; }
+    .chip-btn{ padding:8px; }
+    #main{ flex-direction:column-reverse; }
+    #toolbar{
+      flex:0 0 auto;
+      flex-direction:row;
+      overflow-x:auto;
+      overflow-y:hidden;
+      border-right:none;
+      border-top:3px solid var(--rind-dark);
+      padding:8px 8px;
+    }
+    .tool-btn{ flex:0 0 auto; min-width:64px; }
+    .toolbar-divider{ width:2px; height:auto; align-self:stretch; margin:0 2px; }
+  }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <header>
+    <div class="brand">
+      <h1>Melon Yard</h1>
+      <span class="tag">a physics playground</span>
+    </div>
+    <div class="header-actions">
+      <button class="chip-btn" id="gravityBtn"><span class="dot"></span><span class="label" id="gravityLabel">Gravity: Down</span></button>
+      <button class="chip-btn warn" id="clearBtn"><span class="label">Fresh melon</span></button>
+    </div>
+  </header>
+
+  <div id="main">
+    <div id="toolbar">
+      <button class="tool-btn active" data-tool="seed">
+        <div class="tool-icon"><div class="ic-seed"></div></div>
+        Seed
+      </button>
+      <button class="tool-btn" data-tool="melonball">
+        <div class="tool-icon"><div class="ic-ball"></div></div>
+        Melon ball
+      </button>
+      <button class="tool-btn" data-tool="chunk">
+        <div class="tool-icon"><div class="ic-chunk"></div></div>
+        Chunk
+      </button>
+      <button class="tool-btn" data-tool="wobbler">
+        <div class="tool-icon"><div class="ic-wobbler">
+          <div class="w-leg l"></div><div class="w-leg r"></div>
+          <div class="w-body"></div><div class="w-head"></div>
+        </div></div>
+        Wobbler
+      </button>
+      <button class="tool-btn" data-tool="appleguy">
+        <div class="tool-icon"><div class="ic-guy">
+          <div class="g-leaf"></div><div class="g-head"></div><div class="g-eye"></div><div class="g-body"></div>
+        </div></div>
+        Apple Guy
+      </button>
+      <button class="tool-btn" data-tool="robot">
+        <div class="tool-icon"><div class="ic-robot"></div></div>
+        Pixel bot
+      </button>
+      <button class="tool-btn" data-tool="spider">
+        <div class="tool-icon"><div class="ic-spider"></div></div>
+        Spider
+      </button>
+      <div class="toolbar-divider"></div>
+      <button class="tool-btn" data-tool="wall">
+        <div class="tool-icon"><div class="ic-wall"></div></div>
+        Plank
+      </button>
+      <button class="tool-btn" data-tool="pop">
+        <div class="tool-icon"><div class="ic-pop"><div class="bar"></div><div class="bar"></div><div class="bar"></div></div></div>
+        Pop!
+      </button>
+      <button class="tool-btn" data-tool="storm">
+        <div class="tool-icon"><div class="ic-storm"></div></div>
+        Storm
+      </button>
+      <button class="tool-btn" data-tool="tree">
+        <div class="tool-icon"><div class="ic-tree"></div></div>
+        Hungry tree
+      </button>
+      <button class="tool-btn" data-tool="eraser">
+        <div class="tool-icon"><div class="ic-eraser"></div></div>
+        Scoop
+      </button>
+    </div>
+
+    <div id="stage">
+      <canvas id="world"></canvas>
+      <div id="hint">Pick a tool, then tap the yard. Tap an Apple Guy to command it.</div>
+      <div id="count">0 things in the yard</div>
+      <div id="cmdPanel">
+        <button data-state="stand">ยืน</button>
+        <button data-state="walk">เดิน</button>
+        <button data-state="sit">นั่ง</button>
+        <button data-state="lie">นอน</button>
+        <button data-state="die" class="die-btn">ตาย</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  const { Engine, World, Bodies, Body, Composite, Constraint, Mouse, MouseConstraint,
+          Events, Query, Vector, Common } = Matter;
+
+  // ---------------- Setup ----------------
+  const stage = document.getElementById('stage');
+  const canvas = document.getElementById('world');
+  const ctx = canvas.getContext('2d');
+  const hint = document.getElementById('hint');
+  const countLabel = document.getElementById('count');
+  const cmdPanel = document.getElementById('cmdPanel');
+
+  const engine = Engine.create();
+  engine.gravity.y = 1;
+  const world = engine.world;
+  world.bodies = [];
+
+  let W = 0, H = 0;
+  function resize(){
+    W = stage.clientWidth;
+    H = stage.clientHeight;
+    canvas.width = W;
+    canvas.height = H;
+    rebuildBoundaries();
+  }
+
+  // ---------------- Boundaries ----------------
+  let floor, wallL, wallR;
+  function rebuildBoundaries(){
+    [floor, wallL, wallR].forEach(b => { if(b) Composite.remove(world, b); });
+    const thick = 44;
+    floor = Bodies.rectangle(W/2, H + thick/2 - 10, W + 200, thick, { isStatic:true });
+    wallL = Bodies.rectangle(-16, H/2, 32, H*3, { isStatic:true });
+    wallR = Bodies.rectangle(W+16, H/2, 32, H*3, { isStatic:true });
+    [floor, wallL, wallR].forEach(b => { b.isBoundary = true; b.friction = 0.9; });
+    Composite.add(world, [floor, wallL, wallR]);
+  }
+
+  window.addEventListener('resize', resize);
+
+  // ---------------- Helpers ----------------
+  function rand(min, max){ return min + Math.random()*(max-min); }
+  function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+
+  const BALL_COLORS = [
+    { fill:'#2F6E4C', stroke:'#1F4D36' },
+    { fill:'#F2545B', stroke:'#B23A41' },
+    { fill:'#C4E86B', stroke:'#8FB94B' },
+    { fill:'#4C8F68', stroke:'#1F4D36' }
+  ];
+
+  let spawnOrder = [];
+  const MAX_BODIES = 140;
+  let appleGuys = [];
+  let pixelBots = [];
+  let spiders = [];
+  let hungryTrees = [];
+  let selectedGuy = null;
+
+  function trackSpawn(body){
+    spawnOrder.push(body);
+    enforceCap();
+  }
+  function enforceCap(){
+    while(spawnOrder.length > MAX_BODIES){
+      const oldest = spawnOrder.shift();
+      removeAnything(oldest, true);
+    }
+  }
+
+  // ---------------- Spawners ----------------
+  function spawnSeed(pos){
+    const b = Bodies.circle(pos.x, pos.y, rand(5,7), {
+      restitution:0.55, friction:0.3, density:0.0015,
+      render:{ fillStyle:'#1B1B1B', strokeStyle:'#000', lineWidth:0 }
+    });
+    Composite.add(world, b);
+    trackSpawn(b);
+  }
+
+  function spawnBall(pos){
+    const r = rand(20, 34);
+    const c = pick(BALL_COLORS);
+    const b = Bodies.circle(pos.x, pos.y, r, {
+      restitution:0.7, friction:0.15, density:0.0016,
+      render:{ fillStyle:c.fill, strokeStyle:c.stroke, lineWidth:3 }
+    });
+    Composite.add(world, b);
+    trackSpawn(b);
+  }
+
+  function spawnChunk(pos){
+    const w = rand(46, 74), h = rand(30, 46);
+    const b = Bodies.rectangle(pos.x, pos.y, w, h, {
+      chamfer:{ radius:6 },
+      restitution:0.25, friction:0.5, density:0.0018,
+      render:{ fillStyle:'#F2545B', strokeStyle:'#B23A41', lineWidth:3 }
+    });
+    // decorative seed dots baked into local space
+    b.seedDots = [];
+    const n = 2 + Math.floor(Math.random()*3);
+    for(let i=0;i<n;i++){
+      b.seedDots.push({ dx: rand(-w/2+8, w/2-8), dy: rand(-h/2+7, h/2-7) });
+    }
+    Composite.add(world, b);
+    trackSpawn(b);
+  }
+
+  function spawnWall(pos){
+    const w = 150, h = 20;
+    const b = Bodies.rectangle(pos.x, pos.y, w, h, {
+      isStatic:true,
+      friction:0.9,
+      render:{ fillStyle:'#A9713C', strokeStyle:'#7A4E27', lineWidth:3 }
+    });
+    Composite.add(world, b);
+    trackSpawn(b);
+  }
+
+  function spawnHungryTree(pos){
+    const body = Bodies.circle(pos.x, pos.y + 24, 40, {
+      isStatic:true,
+      isSensor:true,
+      render:{ fillStyle:'transparent', lineWidth:0 }
+    });
+    body.isHungryTree = true;
+    body.treeStart = performance.now();
+    body.biteUntil = 0;
+    Composite.add(world, body);
+    hungryTrees.push(body);
+    trackSpawn(body);
+    beep(180, 0.12, 'sawtooth');
+  }
+
+  function spawnWobbler(pos){
+    const group = Body.nextGroup(true);
+    const opts = { collisionFilter:{ group }, friction:0.6, restitution:0.15, density:0.0018 };
+
+    const head  = Bodies.circle(pos.x, pos.y - 44, 15, { ...opts, render:{ fillStyle:'#FBF4E6', strokeStyle:'#1B1B1B', lineWidth:3 } });
+    const torso = Bodies.rectangle(pos.x, pos.y - 14, 26, 46, { ...opts, chamfer:{radius:6}, render:{ fillStyle:'#F2545B', strokeStyle:'#B23A41', lineWidth:3 } });
+    const armL  = Bodies.rectangle(pos.x - 22, pos.y - 18, 12, 34, { ...opts, chamfer:{radius:5}, render:{ fillStyle:'#4C8F68', strokeStyle:'#1F4D36', lineWidth:3 } });
+    const armR  = Bodies.rectangle(pos.x + 22, pos.y - 18, 12, 34, { ...opts, chamfer:{radius:5}, render:{ fillStyle:'#4C8F68', strokeStyle:'#1F4D36', lineWidth:3 } });
+    const legL  = Bodies.rectangle(pos.x - 8, pos.y + 26, 13, 38, { ...opts, chamfer:{radius:5}, render:{ fillStyle:'#1B1B1B', strokeStyle:'#000', lineWidth:2 } });
+    const legR  = Bodies.rectangle(pos.x + 8, pos.y + 26, 13, 38, { ...opts, chamfer:{radius:5}, render:{ fillStyle:'#1B1B1B', strokeStyle:'#000', lineWidth:2 } });
+
+    const parts = [head, torso, armL, armR, legL, legR];
+
+    const cOpts = { stiffness:0.75, damping:0.15, render:{ visible:false } };
+    const constraints = [
+      Constraint.create({ bodyA:head,  bodyB:torso, pointA:{x:0,y:14},  pointB:{x:0,y:-24}, ...cOpts }),
+      Constraint.create({ bodyA:torso, bodyB:armL,  pointA:{x:-11,y:-18}, pointB:{x:0,y:-15}, ...cOpts }),
+      Constraint.create({ bodyA:torso, bodyB:armR,  pointA:{x:11,y:-18},  pointB:{x:0,y:-15}, ...cOpts }),
+      Constraint.create({ bodyA:torso, bodyB:legL,  pointA:{x:-7,y:22},  pointB:{x:0,y:-17}, ...cOpts }),
+      Constraint.create({ bodyA:torso, bodyB:legR,  pointA:{x:7,y:22},   pointB:{x:0,y:-17}, ...cOpts })
+    ];
+
+    const ragdollId = Common.nextId();
+    parts.forEach(p => { p.ragdollId = ragdollId; });
+
+    Composite.add(world, parts);
+    Composite.add(world, constraints);
+
+    // track as one unit: push a proxy entry that expands on cleanup
+    trackSpawn(head);
+    head.ragdollParts = parts;
+    head.ragdollConstraints = constraints;
+  }
+
+  // ---------------- Apple Guy: a commandable character ----------------
+  const GUY_STATES = {
+    stand: { scaleY:1,    angle:0 },
+    walk:  { scaleY:1,    angle:0 },
+    sit:   { scaleY:0.55, angle:0 },
+    lie:   { scaleY:1,    angle:Math.PI/2 },
+    dead:  { scaleY:0.26, angle:0 }
+  };
+
+  function spawnAppleGuy(pos){
+    const w = 34, h = 92;
+    const body = Bodies.rectangle(pos.x, pos.y, w, h, {
+      chamfer:{ radius:10 },
+      friction:0.7, frictionAir:0.012, restitution:0.05, density:0.0022,
+      render:{ fillStyle:'transparent', lineWidth:0 }
+    });
+    body.isAppleGuy = true;
+    body.baseW = w; body.baseH = h;
+    Composite.add(world, body);
+    const guy = { body, state:'stand', scaleY:1, walkDir: Math.random()<0.5?-1:1, walkTimer:0 };
+    appleGuys.push(guy);
+    trackSpawn(body);
+    beep(480,0.08,'triangle');
+    selectGuy(body);
+  }
+
+  function spawnPixelBot(pos){
+    const group = Body.nextGroup(true);
+    const opts = { collisionFilter:{ group }, friction:0.65, frictionAir:0.012, restitution:0.04, density:0.0028,
+      render:{ fillStyle:'transparent', lineWidth:0 } };
+    const torso = Bodies.rectangle(pos.x, pos.y, 25, 52, { ...opts, chamfer:{ radius:3 } });
+    const head = Bodies.rectangle(pos.x, pos.y - 43, 31, 38, { ...opts, chamfer:{ radius:4 } });
+    const arm = Bodies.rectangle(pos.x + 19, pos.y + 2, 8, 42, { ...opts, chamfer:{ radius:2 } });
+    const legL = Bodies.rectangle(pos.x - 7, pos.y + 54, 8, 54, { ...opts, chamfer:{ radius:2 } });
+    const legR = Bodies.rectangle(pos.x + 7, pos.y + 54, 8, 54, { ...opts, chamfer:{ radius:2 } });
+    const parts = [torso, head, arm, legL, legR];
+    const botId = Common.nextId();
+    parts.forEach(part => { part.isPixelBot = true; part.pixelBotId = botId; });
+    const joint = { stiffness:0.72, damping:0.14, render:{ visible:false } };
+    const constraints = [
+      Constraint.create({ bodyA:torso, bodyB:head, pointA:{x:0,y:-25}, pointB:{x:0,y:19}, ...joint }),
+      Constraint.create({ bodyA:torso, bodyB:arm, pointA:{x:12,y:-16}, pointB:{x:0,y:-19}, ...joint }),
+      Constraint.create({ bodyA:torso, bodyB:legL, pointA:{x:-7,y:25}, pointB:{x:0,y:-25}, ...joint }),
+      Constraint.create({ bodyA:torso, bodyB:legR, pointA:{x:7,y:25}, pointB:{x:0,y:-25}, ...joint })
+    ];
+    Composite.add(world, parts);
+    Composite.add(world, constraints);
+    pixelBots.push({ torso, head, arm, legL, legR, parts, constraints, pixelBotId:botId });
+    trackSpawn(torso);
+    beep(260, 0.09, 'square');
+  }
+
+  function spawnSpider(pos){
+    const body = Bodies.circle(pos.x, pos.y, 24, {
+      isStatic:true, isSensor:true, render:{ fillStyle:'transparent', lineWidth:0 }
+    });
+    body.isSpider = true;
+    body.spiderStart = performance.now();
+    body.biteUntil = 0;
+    Composite.add(world, body);
+    spiders.push(body);
+    trackSpawn(body);
+    beep(145, 0.1, 'sawtooth');
+  }
+
+  function setGuyState(guy, newState){
+    const body = guy.body;
+    const target = GUY_STATES[newState];
+    if(!target) return;
+    const prevBottom = body.bounds.max.y;
+    const scaleFactor = target.scaleY / guy.scaleY;
+    if(Math.abs(scaleFactor - 1) > 0.001){
+      Body.scale(body, 1, scaleFactor);
+      guy.scaleY = target.scaleY;
+    }
+    Body.setAngle(body, target.angle);
+    const newBottom = body.bounds.max.y;
+    Body.translate(body, { x:0, y: prevBottom - newBottom });
+    Body.setVelocity(body, { x:0, y:0 });
+    Body.setAngularVelocity(body, 0);
+    guy.state = newState;
+    beep(newState==='dead' ? 110 : 380, 0.08, newState==='dead' ? 'sawtooth' : 'triangle');
+  }
+
+  function selectGuy(body){
+    const guy = appleGuys.find(g => g.body === body);
+    if(!guy) return;
+    selectedGuy = guy;
+    cmdPanel.style.display = 'flex';
+    updatePanelActiveState();
+  }
+  function deselectGuy(){
+    selectedGuy = null;
+    cmdPanel.style.display = 'none';
+  }
+  function updatePanelActiveState(){
+    if(!selectedGuy) return;
+    cmdPanel.querySelectorAll('button').forEach(btn => {
+      const s = btn.dataset.state;
+      if(s === 'die'){
+        btn.textContent = selectedGuy.state === 'dead' ? 'ชุบชีวิต' : 'ตาย';
+        btn.classList.toggle('active', selectedGuy.state === 'dead');
+      } else {
+        btn.classList.toggle('active', selectedGuy.state === s);
+      }
+    });
+  }
+
+  function drawApplePixel(c, w, h, facing){
+    const headR = w*0.52;
+    const headCY = -h/2 + headR;
+    const bodyTopY = headCY + headR*0.85;
+    const bodyBotY = h/2;
+    const bodyW = w*0.82;
+
+    // leaf
+    c.save();
+    c.translate(headR*0.35, headCY - headR*0.75);
+    c.rotate(-0.4);
+    c.fillStyle = '#4B6B2E';
+    c.fillRect(-3, -8, 6, 10);
+    c.restore();
+
+    // body (segmented)
+    const bh = bodyBotY - bodyTopY;
+    const grad = c.createLinearGradient(-bodyW/2,0,bodyW/2,0);
+    grad.addColorStop(0, '#B23A41');
+    grad.addColorStop(0.5, '#F2545B');
+    grad.addColorStop(1, '#B23A41');
+    c.fillStyle = grad;
+    roundRectPath(c, -bodyW/2, bodyTopY, bodyW, bh, 8);
+    c.fill();
+    c.strokeStyle = '#7c1f24'; c.lineWidth = 2.5; c.stroke();
+    // highlight stripe
+    c.fillStyle = 'rgba(255,255,255,0.18)';
+    c.fillRect(-bodyW*0.08, bodyTopY+4, bodyW*0.16, bh-8);
+    // segment bands
+    c.strokeStyle = 'rgba(122,31,36,0.55)'; c.lineWidth = 1.5;
+    const bands = Math.max(2, Math.round(bh/22));
+    for(let i=1;i<bands;i++){
+      const y = bodyTopY + (bh/bands)*i;
+      c.beginPath(); c.moveTo(-bodyW/2+3,y); c.lineTo(bodyW/2-3,y); c.stroke();
+    }
+
+    // head
+    const hg = c.createRadialGradient(-headR*0.3, headCY-headR*0.3, headR*0.2, 0, headCY, headR);
+    hg.addColorStop(0, '#EF6E68');
+    hg.addColorStop(1, '#B23A41');
+    c.beginPath();
+    c.arc(0, headCY, headR, 0, Math.PI*2);
+    c.fillStyle = hg;
+    c.fill();
+    c.strokeStyle = '#7c1f24'; c.lineWidth = 2.5; c.stroke();
+    // eye
+    c.fillStyle = '#1B1B1B';
+    c.fillRect(headR*0.22*facing - 3, headCY - 2, 6, 6);
+  }
+
+  function drawBonePile(c, size){
+    c.save();
+    c.fillStyle = 'rgba(0,0,0,0.12)';
+    c.beginPath();
+    c.ellipse(0, size*0.22, size*0.55, size*0.16, 0, 0, Math.PI*2);
+    c.fill();
+    c.strokeStyle = '#e9e2cf'; c.lineWidth = 6; c.lineCap = 'round';
+    c.fillStyle = '#FBF4E6';
+    [[-0.5,-0.15,0.5,0.15],[-0.5,0.15,0.5,-0.15]].forEach(([x1,y1,x2,y2]) => {
+      c.beginPath();
+      c.moveTo(x1*size, y1*size); c.lineTo(x2*size, y2*size);
+      c.stroke();
+      [[x1,y1],[x2,y2]].forEach(([bx,by]) => {
+        c.beginPath(); c.arc(bx*size, by*size, size*0.09, 0, Math.PI*2); c.fill();
+      });
+    });
+    c.beginPath();
+    c.arc(0, -size*0.18, size*0.22, 0, Math.PI*2);
+    c.fillStyle = '#FBF4E6';
+    c.fill();
+    c.strokeStyle = '#cfc6ab'; c.lineWidth = 1.5; c.stroke();
+    c.fillStyle = '#1B1B1B';
+    c.fillRect(-size*0.11, -size*0.22, size*0.06, size*0.06);
+    c.fillRect(size*0.05, -size*0.22, size*0.06, size*0.06);
+    c.restore();
+  }
+
+  function roundRectPath(c, x, y, w, h, r){
+    c.beginPath();
+    c.moveTo(x+r, y);
+    c.arcTo(x+w, y, x+w, y+h, r);
+    c.arcTo(x+w, y+h, x, y+h, r);
+    c.arcTo(x, y+h, x, y, r);
+    c.arcTo(x, y, x+w, y, r);
+    c.closePath();
+  }
+
+  function drawGuySprite(guy){
+    const b = guy.body;
+    const w = b.baseW, h = b.baseH * guy.scaleY;
+    ctx.save();
+    ctx.translate(b.position.x, b.position.y);
+    ctx.rotate(b.angle);
+    if(guy.state === 'dead'){
+      drawBonePile(ctx, w*1.5);
+    } else {
+      if(guy.state === 'walk'){ ctx.rotate(Math.sin(performance.now()/130)*0.08); }
+      drawApplePixel(ctx, w, h, guy.facing || guy.walkDir || 1);
+    }
+    ctx.restore();
+  }
+
+  function drawHungryTree(tree, now){
+    const x = tree.position.x, y = tree.position.y;
+    const biting = now < tree.biteUntil;
+    const bob = Math.sin((now - tree.treeStart) / 500) * 2;
+    ctx.save();
+    ctx.translate(x, y + bob);
+    ctx.fillStyle = '#7A4E27';
+    ctx.fillRect(-9, -2, 18, 48);
+    ctx.strokeStyle = '#5c3a1c'; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.moveTo(-4, 37); ctx.lineTo(-19, 45); ctx.moveTo(4, 37); ctx.lineTo(18, 45); ctx.stroke();
+    ctx.fillStyle = '#2F6E4C';
+    [[-22,-31,23],[0,-47,27],[24,-29,22],[-3,-20,30]].forEach(([cx,cy,r]) => {
+      ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI*2); ctx.fill();
+    });
+    ctx.strokeStyle = '#1F4D36'; ctx.lineWidth = 3; ctx.stroke();
+    ctx.fillStyle = '#FBF4E6';
+    ctx.fillRect(-19, -33, 7, 7); ctx.fillRect(12, -33, 7, 7);
+    ctx.fillStyle = '#1B1B1B';
+    ctx.fillRect(-17, -31, 3, 3); ctx.fillRect(14, -31, 3, 3);
+    const mouthH = biting ? 23 : 13;
+    ctx.fillStyle = '#1B1B1B';
+    roundRectPath(ctx, -20, -17, 40, mouthH, 8); ctx.fill();
+    ctx.fillStyle = '#FBF4E6';
+    for(let tooth=-14; tooth<=14; tooth+=9){
+      ctx.beginPath(); ctx.moveTo(tooth, -16); ctx.lineTo(tooth+4, -10); ctx.lineTo(tooth+8, -16); ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  function drawPixelBot(bot){
+    function piece(body, width, height, paint){
+      ctx.save();
+      ctx.translate(body.position.x, body.position.y);
+      ctx.rotate(body.angle);
+      paint(width, height);
+      ctx.restore();
+    }
+    piece(bot.head, 31, 38, (w,h) => {
+      ctx.fillStyle='#123F43'; ctx.fillRect(-w/2,-h/2,w,h);
+      ctx.fillStyle='#0A5A59'; ctx.fillRect(-w/2+4,-h/2+4,w-8,h-9);
+      ctx.fillStyle='#147D78'; ctx.fillRect(-w/2+6,-h/2+5,w-12,7);
+      ctx.fillStyle='#0B3F45'; ctx.fillRect(2,-4,15,8);
+      ctx.fillStyle='#FFD23F'; ctx.fillRect(3,-6,12,5);
+      ctx.fillStyle='#FFE971'; ctx.fillRect(5,-5,7,2);
+    });
+    piece(bot.torso, 25, 52, (w,h) => {
+      ctx.fillStyle='#123F43'; ctx.fillRect(-w/2,-h/2,w,h);
+      ctx.fillStyle='#0A5A59'; ctx.fillRect(-w/2+4,-h/2+3,w-8,h-7);
+      ctx.fillStyle='#147D78'; ctx.fillRect(-w/2+6,-h/2+5,5,h-13);
+      ctx.fillStyle='#0E9991'; ctx.fillRect(-3,-h/2+8,4,h-19);
+    });
+    piece(bot.arm, 8, 42, (w,h) => {
+      ctx.fillStyle='#123F43'; ctx.fillRect(-w/2,-h/2,w,h);
+      ctx.fillStyle='#0D6D68'; ctx.fillRect(-1,-h/2+4,4,h-9);
+    });
+    [bot.legL, bot.legR].forEach(leg => piece(leg, 8, 54, (w,h) => {
+      ctx.fillStyle='#123F43'; ctx.fillRect(-w/2,-h/2,w,h+5);
+      ctx.fillStyle='#0A5A59'; ctx.fillRect(-1,-h/2+3,4,h-7);
+      ctx.fillStyle='#0E9991'; ctx.fillRect(-1,-h/2+7,2,h-16);
+    }));
+  }
+
+  function drawSpider(spider, now){
+    const wobble = Math.sin((now - spider.spiderStart) / 120) * 3;
+    ctx.save();
+    ctx.translate(spider.position.x, spider.position.y);
+    ctx.strokeStyle = '#281B35'; ctx.lineWidth = 4; ctx.lineCap = 'round';
+    for(let side of [-1, 1]){
+      [-12,-4,4,12].forEach((offset, i) => {
+        ctx.beginPath();
+        ctx.moveTo(side * 12, offset);
+        ctx.lineTo(side * (28 + (i % 2) * 5), offset + wobble);
+        ctx.lineTo(side * (35 + (i % 2) * 4), offset + 10);
+        ctx.stroke();
+      });
+    }
+    ctx.fillStyle = '#281B35';
+    ctx.beginPath(); ctx.ellipse(0, 3, 22, 18, 0, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#5A3C70';
+    ctx.beginPath(); ctx.ellipse(-8, -7, 11, 10, 0, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#FF5F73';
+    ctx.fillRect(-12, -5, 4, 4); ctx.fillRect(4, -5, 4, 4);
+    if(now < spider.biteUntil){
+      ctx.fillStyle = '#FBF4E6';
+      ctx.fillRect(-5, 9, 3, 5); ctx.fillRect(2, 9, 3, 5);
+    }
+    ctx.restore();
+  }
+
+  function updateSpiders(now){
+    spiders = spiders.filter(spider => Composite.allBodies(world).includes(spider));
+    spiders.forEach(spider => {
+      const victim = pixelBots.find(bot => Vector.magnitude(Vector.sub(bot.torso.position, spider.position)) < 66);
+      if(!victim) return;
+      spider.biteUntil = now + 420;
+      effects.push({ x:victim.torso.position.x, y:victim.torso.position.y, start:now, duration:420, color:'#8F6BB4' });
+      removeAnything(victim.torso);
+      beep(70, 0.18, 'square');
+    });
+  }
+
+  function updateHungryTrees(now){
+    hungryTrees = hungryTrees.filter(tree => Composite.allBodies(world).includes(tree));
+    hungryTrees.forEach(tree => {
+      const victim = appleGuys.find(guy => Vector.magnitude(Vector.sub(guy.body.position, tree.position)) < 58);
+      if(!victim) return;
+      tree.biteUntil = now + 360;
+      effects.push({ x:victim.body.position.x, y:victim.body.position.y, start:now, duration:360, color:'#F2545B' });
+      removeAnything(victim.body);
+      beep(80, 0.16, 'square');
+    });
+  }
+
+  function updateAppleGuys(){
+    appleGuys.forEach(guy => {
+      if(guy.state === 'dead') return;
+      if(mouseConstraint.body === guy.body) return;
+      if(guy.state === 'walk'){
+        const b = guy.body;
+        if(b.position.x < 46) guy.walkDir = 1;
+        if(b.position.x > W-46) guy.walkDir = -1;
+        guy.facing = guy.walkDir;
+        Body.setVelocity(b, { x: guy.walkDir*1.8, y: b.velocity.y });
+        guy.walkTimer = (guy.walkTimer||0) + 1;
+        if(guy.walkTimer > 200 && Math.random() < 0.012){ guy.walkDir *= -1; guy.walkTimer = 0; }
+      }
+    });
+    if(selectedGuy){
+      if(!Composite.allBodies(world).includes(selectedGuy.body)){
+        deselectGuy();
+      } else {
+        const b = selectedGuy.body;
+        const left = Math.min(Math.max(b.position.x, 60), W-60);
+        cmdPanel.style.left = left + 'px';
+        cmdPanel.style.top = Math.max(8, b.bounds.min.y - 12) + 'px';
+      }
+    }
+  }
+
+  function removeAnything(body, silent){
+    if(!body || body.isBoundary) return;
+    if(body.pixelBotId !== undefined){
+      const bot = pixelBots.find(item => item.pixelBotId === body.pixelBotId);
+      if(bot){
+        Composite.remove(world, bot.parts);
+        Composite.remove(world, bot.constraints);
+        spawnOrder = spawnOrder.filter(entry => entry.pixelBotId !== body.pixelBotId);
+        pixelBots = pixelBots.filter(item => item !== bot);
+      }
+    } else if(body.ragdollId !== undefined){
+      const parts = Composite.allBodies(world).filter(b => b.ragdollId === body.ragdollId);
+      const consts = Composite.allConstraints(world).filter(c =>
+        (c.bodyA && c.bodyA.ragdollId === body.ragdollId) || (c.bodyB && c.bodyB.ragdollId === body.ragdollId));
+      Composite.remove(world, parts);
+      Composite.remove(world, consts);
+      spawnOrder = spawnOrder.filter(b => b.ragdollId !== body.ragdollId);
+    } else {
+      Composite.remove(world, body);
+      spawnOrder = spawnOrder.filter(b => b !== body);
+      if(body.isAppleGuy){
+        appleGuys = appleGuys.filter(g => g.body !== body);
+        if(selectedGuy && selectedGuy.body === body) deselectGuy();
+      }
+      if(body.isHungryTree) hungryTrees = hungryTrees.filter(tree => tree !== body);
+      if(body.isSpider) spiders = spiders.filter(spider => spider !== body);
+    }
+  }
+
+  // ---------------- Explosion ----------------
+  let effects = [];
+  let storms = [];
+  function summonStorm(pos){
+    const now = performance.now();
+    storms.push({ x:pos.x, y:Math.max(54, pos.y - 150), start:now, duration:4200, nextBolt:now + 250 });
+    effects.push({ x:pos.x, y:pos.y, start:now, duration:300, color:'#9DD7FF' });
+    beep(95, 0.22, 'sawtooth');
+  }
+
+  function updateStorms(now){
+    storms = storms.filter(storm => now - storm.start < storm.duration);
+    storms.forEach(storm => {
+      const age = now - storm.start;
+      const intensity = Math.min(1, age / 450, (storm.duration - age) / 500);
+      Composite.allBodies(world).forEach(b => {
+        if(b.isStatic || b.isBoundary) return;
+        const dx = b.position.x - storm.x;
+        if(Math.abs(dx) < 260) Body.applyForce(b, b.position, { x:Math.sign(dx || 1) * 0.000035 * b.mass * intensity, y:0 });
+      });
+      if(now >= storm.nextBolt){
+        storm.nextBolt = now + rand(650, 1200);
+        const target = { x:storm.x + rand(-130,130), y:H - 55 };
+        effects.push({ x:target.x, y:target.y, start:now, duration:180, boltFromY:storm.y, color:'#FFF3A0' });
+        explode(target);
+      }
+    });
+  }
+
+  function drawStorms(now){
+    storms.forEach(storm => {
+      const t = (now - storm.start) / storm.duration;
+      const alpha = Math.min(0.8, Math.min(1, t*4, (1-t)*5));
+      ctx.fillStyle = `rgba(65, 83, 112, ${alpha})`;
+      ctx.beginPath();
+      ctx.arc(storm.x - 38, storm.y + 10, 25, 0, Math.PI*2);
+      ctx.arc(storm.x, storm.y, 34, 0, Math.PI*2);
+      ctx.arc(storm.x + 38, storm.y + 12, 24, 0, Math.PI*2);
+      ctx.fill();
+      ctx.strokeStyle = `rgba(157,215,255,${alpha*0.75})`;
+      ctx.lineWidth = 2;
+      for(let x = storm.x - 55; x <= storm.x + 55; x += 14){
+        const drop = ((now / 4 + x * 7) % 45);
+        ctx.beginPath(); ctx.moveTo(x, storm.y + 30 + drop); ctx.lineTo(x - 5, storm.y + 42 + drop); ctx.stroke();
+      }
+    });
+  }
+
+  function explode(pos){
+    const radius = 230;
+    const strength = 0.045;
+    Composite.allBodies(world).forEach(b => {
+      if(b.isStatic || b.isBoundary) return;
+      const d = Vector.sub(b.position, pos);
+      const dist = Math.max(Vector.magnitude(d), 1);
+      if(dist < radius){
+        const falloff = 1 - dist/radius;
+        const dir = Vector.normalise(d);
+        const mag = strength * falloff * b.mass;
+        Body.applyForce(b, b.position, Vector.mult(dir, mag));
+      }
+    });
+    effects.push({ x:pos.x, y:pos.y, start:performance.now(), duration:420, color:'#C4E86B' });
+    beep(120, 0.09, 'square');
+  }
+
+  // ---------------- Sound (tiny synth, optional) ----------------
+  let actx;
+  function beep(freq, dur, type){
+    try{
+      actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+      const o = actx.createOscillator();
+      const g = actx.createGain();
+      o.type = type || 'sine';
+      o.frequency.value = freq;
+      g.gain.value = 0.06;
+      g.gain.exponentialRampToValueAtTime(0.001, actx.currentTime + dur);
+      o.connect(g); g.connect(actx.destination);
+      o.start();
+      o.stop(actx.currentTime + dur);
+    }catch(e){ /* audio not available, silently ignore */ }
+  }
+
+  // ---------------- Tool state ----------------
+  let currentTool = 'seed';
+  const toolButtons = document.querySelectorAll('.tool-btn');
+  toolButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      toolButtons.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentTool = btn.dataset.tool;
+      dismissHint();
+    });
+  });
+
+  let hintDismissed = false;
+  function dismissHint(){
+    if(hintDismissed) return;
+    hintDismissed = true;
+    hint.style.opacity = '0';
+  }
+  function hideHintAfterFirstUse(){
+    if(hintDismissed) return;
+    hintDismissed = true;
+    hint.style.opacity = '0';
+  }
+
+  // ---------------- Mouse / touch interaction ----------------
+  const mouse = Mouse.create(canvas);
+  mouse.pixelRatio = 1;
+  const mouseConstraint = MouseConstraint.create(engine, {
+    mouse,
+    constraint: { stiffness:0.18, damping:0.1, length:0, render:{ visible:false } }
+  });
+  Composite.add(world, mouseConstraint);
+  // prevent page scroll on touch drag inside canvas
+  canvas.addEventListener('touchstart', e => e.preventDefault(), { passive:false });
+  canvas.addEventListener('touchmove', e => e.preventDefault(), { passive:false });
+
+  Events.on(mouseConstraint, 'mousedown', (e) => {
+    hideHintAfterFirstUse();
+    if(!mouseConstraint.body){
+      const p = e.mouse.position;
+      handleEmptyClick(p);
+      deselectGuy();
+    }
+  });
+
+  Events.on(mouseConstraint, 'startdrag', (e) => {
+    if(currentTool === 'eraser'){
+      removeAnything(e.body);
+      mouseConstraint.constraint.bodyB = null;
+      mouseConstraint.body = null;
+    } else if (currentTool === 'pop'){
+      // pop tool always explodes rather than dragging
+      const p = e.mouse.position;
+      mouseConstraint.constraint.bodyB = null;
+      mouseConstraint.body = null;
+      explode(p);
+    } else if (e.body.isAppleGuy){
+      selectGuy(e.body);
+    } else {
+      deselectGuy();
+    }
+  });
+
+  cmdPanel.querySelectorAll('button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if(!selectedGuy) return;
+      const s = btn.dataset.state;
+      if(s === 'die'){
+        setGuyState(selectedGuy, selectedGuy.state === 'dead' ? 'stand' : 'dead');
+      } else {
+        setGuyState(selectedGuy, s);
+      }
+      updatePanelActiveState();
+    });
+  });
+
+  function handleEmptyClick(p){
+    switch(currentTool){
+      case 'seed': spawnSeed(p); beep(700,0.05,'triangle'); break;
+      case 'melonball': spawnBall(p); beep(320,0.07,'sine'); break;
+      case 'chunk': spawnChunk(p); beep(220,0.07,'sine'); break;
+      case 'wobbler': spawnWobbler(p); beep(500,0.09,'triangle'); break;
+      case 'appleguy': spawnAppleGuy(p); break;
+      case 'robot': spawnPixelBot(p); break;
+      case 'spider': spawnSpider(p); break;
+      case 'wall': spawnWall(p); beep(150,0.06,'square'); break;
+      case 'pop': explode(p); break;
+      case 'storm': summonStorm(p); break;
+      case 'tree': spawnHungryTree(p); break;
+      case 'eraser': break; // nothing to erase in empty space
+    }
+  }
+
+  // ---------------- Gravity control ----------------
+  const gravityStates = [
+    { y:1, x:0, label:'Gravity: Down' },
+    { y:-1, x:0, label:'Gravity: Up' },
+    { y:0, x:0, label:'Gravity: None' }
+  ];
+  let gravityIdx = 0;
+  document.getElementById('gravityBtn').addEventListener('click', () => {
+    gravityIdx = (gravityIdx + 1) % gravityStates.length;
+    const g = gravityStates[gravityIdx];
+    engine.gravity.x = g.x; engine.gravity.y = g.y;
+    document.getElementById('gravityLabel').textContent = g.label;
+  });
+
+  document.getElementById('clearBtn').addEventListener('click', () => {
+    const dynamic = Composite.allBodies(world).filter(b => !b.isBoundary);
+    Composite.remove(world, dynamic);
+    Composite.remove(world, Composite.allConstraints(world));
+    spawnOrder = [];
+    beep(400,0.12,'sine');
+  });
+
+  // ---------------- Render ----------------
+  function drawBody(b){
+    if(b.isBoundary) return; // floor/walls drawn separately
+    if(b.isAppleGuy) return; // drawn separately with custom sprite
+    if(b.isHungryTree) return; // drawn separately with custom sprite
+    if(b.isPixelBot) return; // drawn separately with custom sprite
+    if(b.isSpider) return; // drawn separately with custom sprite
+    const r = b.render || {};
+    ctx.lineWidth = r.lineWidth || 2;
+    ctx.strokeStyle = r.strokeStyle || '#333';
+    ctx.fillStyle = r.fillStyle || '#999';
+
+    if(b.circleRadius){
+      ctx.beginPath();
+      ctx.arc(b.position.x, b.position.y, b.circleRadius, 0, Math.PI*2);
+      ctx.fill();
+      if(ctx.lineWidth > 0) ctx.stroke();
+      // spin indicator
+      ctx.beginPath();
+      ctx.moveTo(b.position.x, b.position.y);
+      ctx.lineTo(
+        b.position.x + b.circleRadius*0.75*Math.cos(b.angle),
+        b.position.y + b.circleRadius*0.75*Math.sin(b.angle)
+      );
+      ctx.strokeStyle = 'rgba(0,0,0,0.25)';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    } else {
+      const verts = b.vertices;
+      ctx.beginPath();
+      ctx.moveTo(verts[0].x, verts[0].y);
+      for(let i=1;i<verts.length;i++) ctx.lineTo(verts[i].x, verts[i].y);
+      ctx.closePath();
+      ctx.fill();
+      if((r.lineWidth||0) > 0){
+        ctx.strokeStyle = r.strokeStyle || '#333';
+        ctx.lineWidth = r.lineWidth;
+        ctx.stroke();
+      }
+      if(b.seedDots){
+        ctx.fillStyle = '#1B1B1B';
+        const cos = Math.cos(b.angle), sin = Math.sin(b.angle);
+        b.seedDots.forEach(d => {
+          const wx = b.position.x + d.dx*cos - d.dy*sin;
+          const wy = b.position.y + d.dx*sin + d.dy*cos;
+          ctx.beginPath();
+          ctx.ellipse(wx, wy, 2.6, 4, b.angle, 0, Math.PI*2);
+          ctx.fill();
+        });
+      }
+    }
+  }
+
+  function drawFloorAndWalls(){
+    // floor plank strip
+    const topY = H - 34;
+    ctx.fillStyle = '#7A4E27';
+    ctx.fillRect(0, topY, W, 44);
+    ctx.strokeStyle = '#5c3a1c';
+    ctx.lineWidth = 2;
+    for(let x = -20; x < W+20; x += 34){
+      ctx.beginPath();
+      ctx.moveTo(x, topY);
+      ctx.lineTo(x+10, topY+44);
+      ctx.stroke();
+    }
+    ctx.fillStyle = '#A9713C';
+    ctx.fillRect(0, topY, W, 5);
+  }
+
+  function drawConstraints(){
+    ctx.strokeStyle = 'rgba(27,27,27,0.35)';
+    ctx.lineWidth = 3;
+    Composite.allConstraints(world).forEach(c => {
+      if(!c.bodyA || !c.bodyB) return;
+      const pa = Vector.add(c.bodyA.position, c.pointA || {x:0,y:0});
+      const pb = Vector.add(c.bodyB.position, c.pointB || {x:0,y:0});
+      ctx.beginPath();
+      ctx.moveTo(pa.x, pa.y);
+      ctx.lineTo(pb.x, pb.y);
+      ctx.stroke();
+    });
+  }
+
+  function drawEffects(now){
+    effects = effects.filter(fx => now - fx.start < fx.duration);
+    effects.forEach(fx => {
+      const t = (now - fx.start) / fx.duration;
+      const r = 20 + t*210;
+      if(fx.boltFromY !== undefined){
+        ctx.beginPath();
+        ctx.moveTo(fx.x + rand(-18,18), fx.boltFromY);
+        ctx.lineTo(fx.x - 8, fx.y - 70);
+        ctx.lineTo(fx.x + 11, fx.y - 38);
+        ctx.lineTo(fx.x, fx.y);
+        ctx.strokeStyle = `rgba(255,243,160,${1-t})`;
+        ctx.lineWidth = 5*(1-t)+2;
+        ctx.stroke();
+      } else {
+        ctx.beginPath();
+        ctx.arc(fx.x, fx.y, r, 0, Math.PI*2);
+        ctx.strokeStyle = fx.color || '#C4E86B';
+        ctx.globalAlpha = 1-t;
+        ctx.lineWidth = 6*(1-t)+1;
+        ctx.stroke();
+        ctx.globalAlpha = 1;
+      }
+    });
+  }
+
+  function drawDragLine(){
+    if(mouseConstraint.body){
+      const b = mouseConstraint.body;
+      const m = mouse.position;
+      ctx.beginPath();
+      ctx.setLineDash([6,6]);
+      ctx.moveTo(m.x, m.y);
+      ctx.lineTo(b.position.x, b.position.y);
+      ctx.strokeStyle = 'rgba(31,77,54,0.55)';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+  }
+
+  let lastTime = performance.now();
+  function loop(now){
+    const delta = Math.min(now - lastTime, 33.3);
+    lastTime = now;
+    updateAppleGuys();
+    updateHungryTrees(now);
+    updateSpiders(now);
+    updateStorms(now);
+    Engine.update(engine, delta);
+
+    ctx.clearRect(0,0,W,H);
+    drawConstraints();
+    Composite.allBodies(world).forEach(drawBody);
+    drawFloorAndWalls();
+    drawStorms(now);
+    hungryTrees.forEach(tree => drawHungryTree(tree, now));
+    spiders.forEach(spider => drawSpider(spider, now));
+    appleGuys.forEach(drawGuySprite);
+    pixelBots.forEach(drawPixelBot);
+    drawDragLine();
+    drawEffects(now);
+
+    const n = Composite.allBodies(world).filter(b=>!b.isBoundary).length;
+    countLabel.textContent = n + (n===1 ? ' thing in the yard' : ' things in the yard');
+
+    requestAnimationFrame(loop);
+  }
+
+  resize();
+  requestAnimationFrame(loop);
+
+  setTimeout(() => { if(!hintDismissed){ hint.style.opacity = '0.0'; } }, 7000);
+})();
+</script>
+</body>
+</html>
