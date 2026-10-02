@@ -73,6 +73,45 @@
   }
   #shopMsg.show{ opacity:1; }
 
+  #invPanel{
+    position:fixed; left:50%; top:50%; transform:translate(-50%,-50%);
+    width:min(92vw,360px); z-index:31; display:none;
+    background:#2a2a1a; border:4px solid #66BB6A; border-radius:14px;
+    box-shadow:0 8px 0 #2f5f2f, 0 8px 24px rgba(0,0,0,0.6);
+    padding:14px; font-family:'Kanit',sans-serif; color:#fff;
+  }
+  #invPanel.show{ display:block; }
+  #invHead{
+    display:flex; align-items:center; justify-content:space-between;
+    margin-bottom:10px; font-weight:700; color:#A5D6A7; font-size:17px;
+  }
+  #invClose{
+    background:#c0392b; color:#fff; border:none; border-radius:8px;
+    width:26px;height:26px; font-weight:700; cursor:pointer;
+  }
+  #invBody{
+    display:grid; grid-template-columns:1fr 1fr; gap:8px;
+    font-size:14px; margin-bottom:8px;
+  }
+  .invSlot{
+    display:flex; align-items:center; gap:8px;
+    background:rgba(255,255,255,0.07); border:2px solid rgba(255,255,255,0.15);
+    border-radius:10px; padding:8px 10px;
+  }
+  .invSlotIcon{ font-size:20px; }
+  .invSlotName{ color:#A5D6A7; font-size:13px; }
+  .invSlotCount{ margin-left:auto; font-weight:700; color:#FFD54F; font-size:15px; }
+  #invHint{ font-size:11px; color:#999; text-align:center; line-height:1.5; }
+
+  #cityChip{
+    position:fixed; top:60px; left:50%; transform:translateX(-50%); z-index:15;
+    background:rgba(40,70,40,0.85); color:#C8E6C9; padding:7px 16px;
+    border-radius:20px; font-size:14px; font-weight:700; pointer-events:none;
+    border:2px solid #66BB6A; display:none;
+    font-family:'Kanit',sans-serif;
+  }
+  #cityChip.show{ display:block; }
+
   #timeStopLabel.show{ opacity:1; }
 
   #fifaOverlay{
@@ -226,6 +265,19 @@
   }
   #jumpBtn2:active{ transform:translateY(3px); box-shadow:0 1px 0 #5a3a17; }
 
+  #digBtn, #placeBtn{
+    position:fixed; z-index:12;
+    width:74px;height:74px;border-radius:50%;
+    background:rgba(255,247,230,0.85);
+    border:4px solid #8B5A2B; box-shadow:0 5px 0 #5a3a17;
+    display:none; align-items:center; justify-content:center;
+    font-family:'Press Start 2P',cursive; font-size:10px; color:#5c3d00;
+    text-align:center; line-height:1.4; user-select:none; cursor:pointer;
+  }
+  #digBtn:active, #placeBtn:active{ transform:translateY(3px); box-shadow:0 2px 0 #5a3a17; }
+  #digBtn{ right:222px; bottom:26px; }
+  #placeBtn{ right:310px; bottom:26px; }
+
   #dpad{
     position:fixed; left:18px; bottom:18px; z-index:12;
     width:200px; height:200px; pointer-events:none;
@@ -345,6 +397,8 @@
   <div class="hud-chip">🐷 <span id="pigCount">2</span></div>
   <div class="hud-chip">💎 <span id="gemCount">0</span></div>
   <div class="hud-chip">🐾 <span id="captureCount">0</span></div>
+  <div class="hud-chip">🟫 <span id="dirtCount">0</span></div>
+  <div class="hud-chip" id="invBtn" style="cursor:pointer;">🎒 เก็บของ</div>
   <div class="hud-chip" id="flyChip" style="display:none;">🕊️ <span id="flyTime">0</span>s</div>
   <div class="hud-chip" id="transformedChip" style="display:none;">😈 อมตะ!</div>
   <div class="hud-chip" id="dayNightChip">☀️ กลางวัน</div>
@@ -379,10 +433,21 @@
   </div>
   <div id="shopMsg"></div>
 </div>
+<div id="invPanel">
+  <div id="invHead">
+    <span>🎒 เก็บของ/ไอเทม</span>
+    <button id="invClose">✕</button>
+  </div>
+  <div id="invBody"></div>
+  <div id="invHint">ขุดดิน (Z) ตัดต้นไม้ (E) วางไม้ (X) • ภายในเมืองเท่านั้น</div>
+</div>
 <div id="hint">ลากเมาส์ (หรือลากนิ้วฝั่งขวา) เพื่อมองรอบตัว • WASD เดิน</div>
+<div id="cityChip">🏘️ ในเมือง — คุณเป็นคนธรรมดา มุมมองบุคคลที่ 3</div>
 <div id="prompt"></div>
 <div id="jumpBtn2">⬆️</div>
 <div id="interactBtn">เก็บ<br>E</div>
+<div id="digBtn">⛏️<br>ขุด</div>
+<div id="placeBtn">🧱<br>วาง</div>
 <div id="fireBtn">🔥</div>
 <div id="shootBtn">🔫</div>
 <div id="cloneBtn">👥</div>
@@ -445,6 +510,7 @@
     <p>🦆🦒🦛🐘🦁🦏 มีสัตว์เพิ่มอีก เป็ด ยีราฟ ฮิปโป ช้าง สิงโต แรด เดินเล่นทั่วแผนที่ 🦀🐋⭐️🎐 ในบึงมอนสเตอร์มี ปู ปลาวาฬ ปลาดาว แมงกะพรุน 🦋🐛🐜 มีแมลง ผีเสื้อ ตะขาบ หนอน มด ไต่/บินอยู่รอบๆ และมี<b>ต้นมะพร้าว ต้นมะม่วง ต้นมังคุด</b> เพิ่มในป่าด้วย</p>
     <p>🎥 แตะปุ่ม <b>มุมมอง</b> มุมบนซ้าย (หรือกด <span class="key">I</span> ถ้ามีคีย์บอร์ด) เพื่อสลับมุมกล้องเป็น<b>บุคคลที่สาม (Third-Person)</b> มองเห็นตัวละครจากด้านหลัง แตะอีกครั้งเพื่อกลับเป็นมุมมองเดิม</p>
     <p>🤡 ระวัง<b>ตัวตลก 6 ขา</b> ที่ไต่ปีนกำแพง/บินตามขึ้นไปได้แม้บนที่สูง มันจะไล่ตีเราถ้าเข้าใกล้!</p>
+    <p>🏘️ ทางทิศตะวันตกเฉียงใต้มี<b>เมืองรั้วต้นไม้</b> (รั้วสูง 1 เมตร มีทางเข้าออกทางเดียว) ข้างในมี<b>ป่ารกทึบ</b> <b>สนามหญ้า</b> มีบ้านหมู 3 หลัง และหมู 3 ตัวเดินเพ่นพ่าน เมื่อก้าวเข้าเมือง คุณจะกลายเป็น<b>คนธรรมดา</b> (มุมมองบุคคลที่ 3) ขุดดิน <span class="key">Z</span> ตัดต้นไม้ <span class="key">E</span> วางบล็อกไม้ <span class="key">X</span> วางบล็อกดิน <span class="key">C</span> และดูของที่เก็บได้ที่ปุ่ม 🎒!</p>
     <button id="playBtn">▶ เริ่มเล่น</button>
     <p>👁️⚙️ ในทะเลทรายมี "มอนสเตอร์ 6 แขน" (เลื่อยยนต์ ดาบ ปืน มือ และหัวจิ๋ว) กิน E เพื่อกลายร่าง แล้วใช้ <span class="key">B</span> หยิบจับสัตว์ และ <span class="key">V</span> ยื่นคองับกัดสัตว์ระยะไกล! กด <span class="key">O</span> ค้างเพื่อปีนกำแพงขึ้นตรงๆ และกด <span class="key">L</span> เพื่อบินทะลุกำแพง/สิ่งกีดขวางได้ 3 วิ</p>
     <p>🎈💛 มี "ปีศาจลูกโป่ง" ตัวสีเหลืองเดือด ถือลูกโป่งแดง เดินอยู่ในทุ่งโล่ง กิน E เพื่อกลายร่าง แล้วกด <span class="key">C</span> พ่นลูกโป่งใส่สัตว์ให้ลอยขึ้นแล้วตกตาย จากนั้นจะเกิดใหม่ที่อื่น! ระวัง — มันจะแตะสัตว์อื่นให้กลายเป็นพวกเดียวกันไปเรื่อยๆ ด้วย และถ้าเราถูกโครงกระดูกหรือตัวตลก 6 ขาคุกคามอยู่ใกล้ๆ ปีศาจลูกโป่งที่อยู่แถวนั้นจะช่วยพ่นลูกโป่งใส่ศัตรูให้เราด้วย!</p>
@@ -491,8 +557,8 @@
   sun.position.set(30,50,10);
   sun.castShadow = true;
   sun.shadow.mapSize.set(1024,1024);
-  sun.shadow.camera.left = -100; sun.shadow.camera.right = 100;
-  sun.shadow.camera.top = 100; sun.shadow.camera.bottom = -100;
+  sun.shadow.camera.left = -120; sun.shadow.camera.right = 120;
+  sun.shadow.camera.top = 120; sun.shadow.camera.bottom = -120;
   sun.shadow.camera.near = 1; sun.shadow.camera.far = 220;
   scene.add(sun);
   const ambientLight = new THREE.AmbientLight(0xffffff,0.2);
@@ -597,6 +663,13 @@
   const SEAMONSTER = {x1:-30, x2:14, z1:-83, z2:-58};
   function inSeaMonster(x,z){ return x>=SEAMONSTER.x1 && x<=SEAMONSTER.x2 && z>=SEAMONSTER.z1 && z<=SEAMONSTER.z2; }
 
+  // Enclosed city zone (far west): declared here with the other zones because
+  // several world-spawn loops below must skip this area. The city itself is
+  // built further down (see "Enclosed city มหามงคล").
+  const CITY = {x1:-112, x2:-82, z1:-36, z2:-6};
+  function inCity(x,z){ return x>=CITY.x1 && x<=CITY.x2 && z>=CITY.z1 && z<=CITY.z2; }
+  function inCityWalls(x,z){ return x>=CITY.x1-0.3 && x<=CITY.x2+0.3 && z>=CITY.z1-0.3 && z<=CITY.z2+0.3; }
+
   const trees = [];
   function makeTree(x,z){
     const g = new THREE.Group();
@@ -614,14 +687,14 @@
     const ang = (i/34)*Math.PI*2 + Math.random()*0.2;
     const rad = 40 + Math.random()*20;
     const tx = Math.cos(ang)*rad, tz = Math.sin(ang)*rad;
-    if(inDesert(tx,tz) || inCave(tx,tz) || inBlueField(tx,tz) || inLava(tx,tz) || inVillage(tx,tz) || inSeaMonster(tx,tz)) continue;
+    if(inDesert(tx,tz) || inCave(tx,tz) || inBlueField(tx,tz) || inLava(tx,tz) || inVillage(tx,tz) || inSeaMonster(tx,tz) || inCity(tx,tz)) continue;
     makeTree(tx, tz);
   }
   for(let i=0;i<18;i++){
     const ang = Math.random()*Math.PI*2;
     const rad = 62 + Math.random()*20;
     const tx = Math.cos(ang)*rad, tz = Math.sin(ang)*rad;
-    if(inDesert(tx,tz) || inCave(tx,tz) || inBlueField(tx,tz) || inLava(tx,tz) || inVillage(tx,tz) || inSeaMonster(tx,tz)) continue;
+    if(inDesert(tx,tz) || inCave(tx,tz) || inBlueField(tx,tz) || inLava(tx,tz) || inVillage(tx,tz) || inSeaMonster(tx,tz) || inCity(tx,tz)) continue;
     makeTree(tx, tz);
   }
   for(let i=0;i<10;i++){
@@ -675,13 +748,13 @@
   for(let i=0;i<6;i++){
     let x,z;
     do{ x=(Math.random()-0.5)*70; z=(Math.random()-0.5)*70; }
-    while(inDesert(x,z) || inCave(x,z) || inBlueField(x,z) || inLava(x,z) || inVillage(x,z) || inSeaMonster(x,z));
+    while(inDesert(x,z) || inCave(x,z) || inBlueField(x,z) || inLava(x,z) || inVillage(x,z) || inSeaMonster(x,z) || inCity(x,z));
     makeBananaTree(x,z);
   }
   for(let i=0;i<6;i++){
     let x,z;
     do{ x=(Math.random()-0.5)*70; z=(Math.random()-0.5)*70; }
-    while(inDesert(x,z) || inCave(x,z) || inBlueField(x,z) || inLava(x,z) || inVillage(x,z) || inSeaMonster(x,z));
+    while(inDesert(x,z) || inCave(x,z) || inBlueField(x,z) || inLava(x,z) || inVillage(x,z) || inSeaMonster(x,z) || inCity(x,z));
     makeAppleTree(x,z);
   }
 
@@ -747,19 +820,19 @@
   for(let i=0;i<6;i++){
     let x,z;
     do{ x=(Math.random()-0.5)*70; z=(Math.random()-0.5)*70; }
-    while(inDesert(x,z) || inCave(x,z) || inBlueField(x,z) || inLava(x,z) || inVillage(x,z) || inSeaMonster(x,z));
+    while(inDesert(x,z) || inCave(x,z) || inBlueField(x,z) || inLava(x,z) || inVillage(x,z) || inSeaMonster(x,z) || inCity(x,z));
     makeCoconutTree(x,z);
   }
   for(let i=0;i<6;i++){
     let x,z;
     do{ x=(Math.random()-0.5)*70; z=(Math.random()-0.5)*70; }
-    while(inDesert(x,z) || inCave(x,z) || inBlueField(x,z) || inLava(x,z) || inVillage(x,z) || inSeaMonster(x,z));
+    while(inDesert(x,z) || inCave(x,z) || inBlueField(x,z) || inLava(x,z) || inVillage(x,z) || inSeaMonster(x,z) || inCity(x,z));
     makeMangoTree(x,z);
   }
   for(let i=0;i<6;i++){
     let x,z;
     do{ x=(Math.random()-0.5)*70; z=(Math.random()-0.5)*70; }
-    while(inDesert(x,z) || inCave(x,z) || inBlueField(x,z) || inLava(x,z) || inVillage(x,z) || inSeaMonster(x,z));
+    while(inDesert(x,z) || inCave(x,z) || inBlueField(x,z) || inLava(x,z) || inVillage(x,z) || inSeaMonster(x,z) || inCity(x,z));
     makeMangosteenTree(x,z);
   }
 
@@ -768,6 +841,7 @@
   for(let i=0;i<26;i++){
     const tx = FOREST.x1 + Math.random()*(FOREST.x2-FOREST.x1);
     const tz = FOREST.z1 + Math.random()*(FOREST.z2-FOREST.z1);
+    if(inCity(tx,tz)) continue;
     makeTree(tx,tz);
   }
   const mountainRockMat = new THREE.MeshLambertMaterial({color:0x8d8d7a});
@@ -1344,7 +1418,7 @@
       x=(Math.random()-0.5)*(WORLD_BOUND*1.8);
       z=(Math.random()-0.5)*(WORLD_BOUND*1.8);
       tries++;
-    } while(tries<20 && (inDesert(x,z) || inCave(x,z) || inCave2(x,z) || inBlueField(x,z) || inLava(x,z) || inVillage(x,z) || inSeaMonster(x,z) || inMushZone(x,z)));
+    } while(tries<20 && (inDesert(x,z) || inCave(x,z) || inCave2(x,z) || inBlueField(x,z) || inLava(x,z) || inVillage(x,z) || inSeaMonster(x,z) || inMushZone(x,z) || inCity(x,z)));
     if(tries<20) makeWildflower(x,z, wildflowerPetalMats[Math.floor(Math.random()*wildflowerPetalMats.length)]);
   }
 
@@ -1767,7 +1841,7 @@
     do{
       x=(Math.random()-0.5)*(WORLD_BOUND*1.6);
       z=(Math.random()-0.5)*(WORLD_BOUND*1.6);
-    } while((x>-22 && x<26 && z>-26 && z<2) || inCave(x,z) || inBlueField(x,z) || inLava(x,z) || inVillage(x,z));
+    } while((x>-22 && x<26 && z>-26 && z<2) || inCave(x,z) || inBlueField(x,z) || inLava(x,z) || inVillage(x,z) || inCity(x,z));
     return {x,z};
   }
   function makeCrate(){
@@ -1999,7 +2073,7 @@
     horses.push(g);
   }
   function horseZoneBlocked(x,z){
-    return (x>-22 && x<26 && z>-26 && z<2) || inCave(x,z) || inDesert(x,z) || inBlueField(x,z) || inLava(x,z) || inVillage(x,z) || inSeaMonster(x,z);
+    return (x>-22 && x<26 && z>-26 && z<2) || inCave(x,z) || inDesert(x,z) || inBlueField(x,z) || inLava(x,z) || inVillage(x,z) || inSeaMonster(x,z) || inCity(x,z);
   }
   function randomHorseTarget(){
     let x,z;
@@ -3205,24 +3279,232 @@
   }
   for(let i=0;i<6;i++) makeVillager();
 
-  function updateVillagers(dt, elapsed){
-    villagers.forEach((g,i)=>{
-      g.userData.wait -= dt;
-      if(g.userData.wait<=0){
-        g.userData.target = randomVillageTarget();
-        g.userData.wait = 3 + Math.random()*4;
-      }
-      const tgt = g.userData.target;
-      const dx = tgt.x-g.position.x, dz = tgt.z-g.position.z;
-      const d = Math.hypot(dx,dz);
-      if(d>0.2){
-        const spd = 1.15;
-        g.position.x += (dx/d)*spd*dt;
-        g.position.z += (dz/d)*spd*dt;
-        g.rotation.y = Math.atan2(dx,dz);
-      }
+   function updateVillagers(dt, elapsed){
+     villagers.forEach((g,i)=>{
+       g.userData.wait -= dt;
+       if(g.userData.wait<=0){
+         g.userData.target = randomVillageTarget();
+         g.userData.wait = 3 + Math.random()*4;
+       }
+       const tgt = g.userData.target;
+       const dx = tgt.x-g.position.x, dz = tgt.z-g.position.z;
+       const d = Math.hypot(dx,dz);
+       if(d>0.2){
+         const spd = 1.15;
+         g.position.x += (dx/d)*spd*dt;
+         g.position.z += (dz/d)*spd*dt;
+         g.rotation.y = Math.atan2(dx,dz);
+       }
+     });
+   }
+
+   // ================= Enclosed city มหามงคล (1× size of the village) =================
+   // A walled city whose boundary fence is a ring of 1-metre-tall trees with a single
+   // entrance gap. Inside there is a dense-forest zone, a grassy-field zone and three
+   // little pig houses. Entering turns you into an ordinary person (third-person view)
+   // and lets you dig/dirt, chop trees and place wood blocks.
+    const cityGroup = new THREE.Group();
+   scene.add(cityGroup);
+
+   const cityFenceTrees = [];
+   const cityForestTrees = [];
+   const cityPigs = [];
+   const cityHouses = [];
+   const cityBlocks = [];
+
+   const dirtBlockMat = new THREE.MeshLambertMaterial({color:0x7a5230});
+   const woodBlockMat = new THREE.MeshLambertMaterial({map:plankTex});
+   const cityGrassMat = grassMat;
+   const cityPathMat = new THREE.MeshLambertMaterial({color:0xC9A85C});
+   const pigHouseWallMat = new THREE.MeshLambertMaterial({color:0xD9B26B});
+   const pigHouseRoofMat = new THREE.MeshLambertMaterial({color:0x8a6a2a});
+
+   // fence tree: a short 1-metre tree that acts as the city boundary wall
+   function makeFenceTree(x,z){
+     const g = new THREE.Group();
+     const trunk = new THREE.Mesh(new THREE.BoxGeometry(0.35,0.5,0.35), logMat);
+     trunk.position.y=0.25; g.add(trunk);
+     const leaf = new THREE.Mesh(new THREE.BoxGeometry(0.8,0.5,0.8), leafMat);
+     leaf.position.y=0.75; g.add(leaf);
+     g.position.set(x,0,z);
+     g.userData.type='fencetree';
+     g.userData.isFence=true;
+     g.userData.rootRef=g;
+     cityGroup.add(g);
+     cityFenceTrees.push({group:g, x, z, r:0.5});
+     return g;
+   }
+   // regular forest tree (chop-able) for the dense-forest zone inside the city
+   function makeCityForestTree(x,z){
+     const g = new THREE.Group();
+     const trunk = new THREE.Mesh(new THREE.BoxGeometry(0.5,2.2,0.5), logMat);
+     trunk.position.y=1.1; g.add(trunk);
+     const leaf1 = new THREE.Mesh(new THREE.BoxGeometry(2.4,1.8,2.4), leafMat);
+     leaf1.position.y=2.5; g.add(leaf1);
+     const leaf2 = new THREE.Mesh(new THREE.BoxGeometry(1.6,1.4,1.6), leafMat);
+     leaf2.position.y=4.0; g.add(leaf2);
+     g.position.set(x,0,z);
+     g.userData.type='foretree';
+     g.userData.isFence=false;
+     g.userData.rootRef=g;
+     cityGroup.add(g);
+     cityForestTrees.push({group:g, x, z, r:0.9});
+     return g;
+   }
+
+    // Build the fence ring (1-m trees) with a single entrance gap on the south (z1) face.
+    const ENT_GAP = {x1:CITY.x1+19, x2:CITY.x1+24}; // 5m wide gap on the z1 face
+    // z1 (south) run — leave a single gap (the one entrance/exit)
+    for(let x=CITY.x1+0.9; x<=CITY.x2-0.1; x+=1.4){
+      if(x>=ENT_GAP.x1 && x<=ENT_GAP.x2) continue; // entrance gap
+      makeFenceTree(x, CITY.z1+0.4);
+    }
+    // z2 (north) run
+    for(let x=CITY.x1+0.9; x<=CITY.x2-0.1; x+=1.4) makeFenceTree(x, CITY.z2-0.4);
+    // West run
+    for(let z=CITY.z1+0.9; z<=CITY.z2-0.1; z+=1.4) makeFenceTree(CITY.x1+0.4, z);
+    // East run
+    for(let z=CITY.z1+0.9; z<=CITY.z2-0.1; z+=1.4) makeFenceTree(CITY.x2-0.4, z);
+
+    // Gate path + sign leading to the single entrance
+    const gatePath = new THREE.Mesh(new THREE.PlaneGeometry(5, 10), cityPathMat);
+    gatePath.rotation.x = -Math.PI/2;
+    gatePath.position.set((ENT_GAP.x1+ENT_GAP.x2)/2, 0.03, CITY.z1-4.6);
+    scene.add(gatePath);
+    const signPost = new THREE.Mesh(new THREE.BoxGeometry(0.22,2.4,0.22), logMat);
+    signPost.position.set((ENT_GAP.x1+ENT_GAP.x2)/2 + 3.4, 1.2, CITY.z1-2.5);
+    signPost.castShadow = true;
+    scene.add(signPost);
+    const signTex = makeTexture(128,(ctx,s)=>{
+      ctx.fillStyle='#c9a85c'; ctx.fillRect(0,0,s,s);
+      ctx.strokeStyle='#8a6a2a'; ctx.lineWidth=6; ctx.strokeRect(3,3,s-6,s-6);
+      ctx.fillStyle='#4a3210'; ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.font='bold 26px sans-serif';
+      ctx.fillText('เมืองหมู', s/2, s/2-16);
+      ctx.font='20px sans-serif';
+      ctx.fillText('➡ ทางเข้า', s/2, s/2+22);
     });
-  }
+    const signBoard = new THREE.Mesh(new THREE.BoxGeometry(2.6,1.1,0.16),
+      [plankMat,plankMat,plankMat,plankMat,new THREE.MeshLambertMaterial({map:signTex}),new THREE.MeshLambertMaterial({map:signTex})]);
+    signBoard.position.set((ENT_GAP.x1+ENT_GAP.x2)/2 + 3.4, 2.1, CITY.z1-2.5);
+    signBoard.castShadow = true;
+    scene.add(signBoard);
+
+   // Dense-forest zone (top-left interior)
+    const FOREST_ZONE = {x1:CITY.x1+4, x2:CITY.x1+16, z1:CITY.z1+4, z2:CITY.z1+16};
+   const FOREST_TREE_COUNT = 10;
+   for(let i=0;i<FOREST_TREE_COUNT;i++){
+     let gx, gz, tries=0;
+     do{
+       gx = FOREST_ZONE.x1 + 2 + Math.random()*(FOREST_ZONE.x2-FOREST_ZONE.x1-4);
+       gz = FOREST_ZONE.z1 + 2 + Math.random()*(FOREST_ZONE.z2-FOREST_ZONE.z1-4);
+       tries++;
+     } while(tries<40 && cityForestTrees.some(t=>Math.hypot(t.x-gx,t.z-gz)<3.4));
+     makeCityForestTree(gx, gz);
+   }
+
+   // Grassy field zone (bottom-right interior, open plain with a few flowers)
+    const FIELD_ZONE = {x1:CITY.x1+18, x2:CITY.x2-4, z1:CITY.z1+4, z2:CITY.z2-4};
+   const fieldTuftTex = makeTexture(16,(ctx,s)=>speckle(ctx,s,'#5fa93e','#3f7a28',22));
+   const fieldTuftMat = new THREE.MeshLambertMaterial({map:fieldTuftTex});
+   for(let i=0;i<18;i++){
+     const fx = FIELD_ZONE.x1+2 + Math.random()*(FIELD_ZONE.x2-FIELD_ZONE.x1-4);
+     const fz = FIELD_ZONE.z1+2 + Math.random()*(FIELD_ZONE.z2-FIELD_ZONE.z1-4);
+     const tuft = new THREE.Mesh(new THREE.CylinderGeometry(0.16,0.16,0.08,6), fieldTuftMat);
+     tuft.position.set(fx, 0.05, fz);
+     scene.add(tuft);
+   }
+   // a tiny decorative pond in the middle of the grassy field
+   const pond = new THREE.Mesh(new THREE.CircleGeometry(1.6,20), new THREE.MeshLambertMaterial({color:0x2f7fd1, transparent:true, opacity:0.82}));
+   pond.rotation.x = -Math.PI/2;
+   pond.position.set(-87, 0.04, -27);
+   scene.add(pond);
+
+   // Three little pig houses inside the grassy-field zone
+   const pigHouseMat = pigHouseWallMat;
+   const pigHouseRoof = pigHouseRoofMat;
+   const pigDoorMat = new THREE.MeshLambertMaterial({color:0x5c3d20});
+   function makePigHouse(hx, hz, hrot){
+     const g = new THREE.Group();
+     const w = new THREE.Mesh(new THREE.BoxGeometry(2.2,1.8,2.2), pigHouseMat);
+     w.position.y=0.9; g.add(w);
+     // doorway gap on the east side so you can see the little pigs inside
+     const roof = new THREE.Mesh(new THREE.ConeGeometry(1.9,1.3,4), pigHouseRoof);
+     roof.rotation.y=Math.PI/4; roof.position.y=2.2; g.add(roof);
+     g.position.set(hx,0,hz); g.rotation.y=hrot||0;
+     scene.add(g);
+     cityHouses.push({group:g, x:hx, z:hz, r:1.7});
+   }
+    makePigHouse(-91, -30,  Math.PI/3);
+    makePigHouse(-89, -23,  -Math.PI/4);
+    makePigHouse(-91, -16, 0);
+
+   // Three city pigs that roam the city (plain, not feedable)
+   const cityPigMat = new THREE.MeshLambertMaterial({color:0xF4A6B7});
+   const cityPigDarkMat = new THREE.MeshLambertMaterial({color:0xE17FA0});
+   function makeCityPig(px,pz){
+     const g = new THREE.Group();
+     const body = new THREE.Mesh(new THREE.BoxGeometry(1.1,0.7,0.7), cityPigMat);
+     body.position.y=0.55; g.add(body);
+     const snout = new THREE.Mesh(new THREE.BoxGeometry(0.28,0.3,0.28), cityPigDarkMat);
+     snout.position.set(0.65,0.5,0); g.add(snout);
+     const earGeo = new THREE.BoxGeometry(0.22,0.22,0.1);
+     g.add(new THREE.Mesh(earGeo,cityPigMat)).position.set(0.4,0.95,0.22);
+     g.add(new THREE.Mesh(earGeo,cityPigMat)).position.set(0.4,0.95,-0.22);
+     const legGeo = new THREE.BoxGeometry(0.18,0.4,0.18);
+     [[0.35,0.22],[0.35,-0.22],[-0.35,0.22],[-0.35,-0.22]].forEach(([lx,lz])=>{
+       const leg = new THREE.Mesh(legGeo, cityPigDarkMat); leg.position.set(lx,0.2,lz); g.add(leg);
+     });
+     g.position.set(px,0,pz);
+     g.userData.target={x:px,z:pz}; g.userData.wait=Math.random()*2;
+     g.userData.bounce=0;
+     scene.add(g);
+     cityPigs.push(g);
+   }
+    makeCityPig(-92, -29);
+    makeCityPig(-87, -26);
+    makeCityPig(-90, -18);
+
+   const CITY_INNER_PAD = 2;
+   function randomCityTarget(){
+     return {
+       x: CITY.x1+CITY_INNER_PAD + Math.random()*(CITY.x2-CITY.x1-2*CITY_INNER_PAD),
+       z: CITY.z1+CITY_INNER_PAD + Math.random()*(CITY.z2-CITY.z1-2*CITY_INNER_PAD)
+     };
+   }
+   function updateCityPigs(dt, elapsed){
+     cityPigs.forEach(g=>{
+       g.userData.wait -= dt;
+       if(g.userData.wait<=0){
+         g.userData.target = randomCityTarget();
+         g.userData.wait = 1.5 + Math.random()*2.5;
+       }
+        const tgt = g.userData.target;
+        const dx = tgt.x-g.position.x, dz = tgt.z-g.position.z;
+        const d = Math.hypot(dx,dz);
+        if(d>0.15){
+          const spd = 0.9;
+          let nx = g.position.x + (dx/d)*spd*dt;
+          let nz = g.position.z + (dz/d)*spd*dt;
+          nx = Math.min(CITY.x2-1.2, Math.max(CITY.x1+1.2, nx));
+          nz = Math.min(CITY.z2-1.2, Math.max(CITY.z1+1.2, nz));
+          const blocked = cityHouses.some(h=>Math.hypot(h.x-nx,h.z-nz)<h.r+0.5);
+          if(blocked){
+            g.userData.target = randomCityTarget();
+            g.userData.wait = 1.2;
+          } else {
+            g.position.x = nx; g.position.z = nz;
+            g.rotation.y = Math.atan2(dx,dz);
+          }
+        }
+       if(g.userData.bounce>0){
+         g.userData.bounce -= dt;
+         const s = 1 + Math.max(0,Math.sin(g.userData.bounce*22))*0.18;
+         g.scale.set(s,s,s);
+       } else { g.scale.set(1,1,1); }
+     });
+   }
+
 
   // ================= Gun-headed monster (boss) =================
   // Based on the drawing: blue gun-head, white shirt, red necktie, black pants,
@@ -4857,6 +5139,7 @@
   playerAvatar.visible = false;
   scene.add(playerAvatar);
   function toggleThirdPerson(){
+    if(inCityMode) return; // city forces third-person view
     thirdPerson = !thirdPerson;
     playerAvatar.visible = thirdPerson;
   }
@@ -4884,7 +5167,204 @@
   }
   const keys = {};
   let active = false; // true once "start" pressed
-  const stats = { wood:0, corn:0, gems:0, captured:0 };
+  const stats = { wood:0, corn:0, gems:0, captured:0, dirt:0 };
+
+  // ================= City mode: ordinary person + third-person + build actions =================
+  const cityChipEl = document.getElementById('cityChip');
+  const dirtCountEl = document.getElementById('dirtCount');
+  const invPanelEl = document.getElementById('invPanel');
+  const invBtnEl = document.getElementById('invBtn');
+  const invCloseEl = document.getElementById('invClose');
+  const invBodyEl = document.getElementById('invBody');
+
+  let inCityMode = false;
+  let cityPreState = null;
+  let digHoleMesh = null, digHoleTimer = 0;
+
+  function hideTransUI(){
+    transformedChip.style.display='none';
+    godChip.style.display='none';
+    godBarEl.classList.remove('show');
+    [shootBtn,cloneBtn,attackBtn,swingBtn,runBtn,grabBtn,biteBtn,climbBtn,phaseBtn,balloonBtn,splitBtn,eatBtn,boneBtn]
+      .forEach(b=> b.style.display='none');
+  }
+
+  function enterCityMode(){
+    if(inCityMode) return;
+    inCityMode = true;
+    cityPreState = {
+      thirdPerson,
+      transformed:player.transformed, transformedSword:player.transformedSword,
+      transformedHybrid:player.transformedHybrid, transformedParty:player.transformedParty,
+      transformedBlack:player.transformedBlack, transformedBlob:player.transformedBlob,
+      transformedBoneThief:player.transformedBoneThief,
+      phaseTimer:player.phaseTimer, godMode:player.godMode, flightTimer:player.flightTimer
+    };
+    player.transformed=player.transformedSword=player.transformedHybrid=false;
+    player.transformedParty=player.transformedBlack=player.transformedBlob=false;
+    player.transformedBoneThief=false;
+    player.phaseTimer=0; player.flightTimer=0; player.godMode=false;
+    hideTransUI();
+    thirdPerson = true;                 // forced third-person view inside the city
+    playerAvatar.visible = true;
+    cityChipEl.classList.add('show');
+    setTimeout(()=>cityChipEl.classList.remove('show'), 4200);
+    promptEl.classList.remove('show');
+    refreshActionButtons();
+    digBtn.style.display = 'flex';
+    placeBtn.style.display = 'flex';
+    swingBtn.style.display = 'none';
+    runBtn.style.display = 'none';
+    clockBtn.style.display = 'none';
+    followBtn.style.display = 'none';
+  }
+  function exitCityMode(){
+    if(!inCityMode) return;
+    inCityMode = false;
+    if(cityPreState){
+      player.transformed=cityPreState.transformed;
+      player.transformedSword=cityPreState.transformedSword;
+      player.transformedHybrid=cityPreState.transformedHybrid;
+      player.transformedParty=cityPreState.transformedParty;
+      player.transformedBlack=cityPreState.transformedBlack;
+      player.transformedBlob=cityPreState.transformedBlob;
+      player.transformedBoneThief=cityPreState.transformedBoneThief;
+      player.phaseTimer=cityPreState.phaseTimer;
+      player.flightTimer=cityPreState.flightTimer;
+      player.godMode=cityPreState.godMode;
+      thirdPerson = cityPreState.thirdPerson;
+      playerAvatar.visible = thirdPerson;
+      refreshActionButtons();
+    }
+    cityChipEl.classList.remove('show');
+    invPanelEl.classList.remove('show');
+    digBtn.style.display = 'none';
+    placeBtn.style.display = 'none';
+    promptEl.classList.remove('show');
+  }
+  // helper: show action buttons for whatever abilities are currently active
+  function refreshActionButtons(){
+    transformedChip.style.display = (player.transformed||player.transformedSword||player.transformedHybrid||player.transformedParty||player.transformedBlack||player.transformedBlob||player.transformedBoneThief) ? 'flex':'none';
+    godChip.style.display = player.godMode ? 'flex':'none';
+    godBarEl.classList.toggle('show', player.godMode);
+    shootBtn.style.display = (player.transformed||player.transformedHybrid) ? 'flex':'none';
+    cloneBtn.style.display = player.transformed ? 'flex':'none';
+    attackBtn.style.display = player.transformed ? 'flex':'none';
+    swingBtn.style.display = (player.transformedSword||player.transformedHybrid||player.hasSword) ? 'flex':'none';
+    runBtn.style.display = (player.transformedSword||player.godMode) ? 'flex':'none';
+    grabBtn.style.display = player.transformedHybrid ? 'flex':'none';
+    biteBtn.style.display = player.transformedHybrid ? 'flex':'none';
+    climbBtn.style.display = player.transformedHybrid ? 'flex':'none';
+    phaseBtn.style.display = player.transformedHybrid ? 'flex':'none';
+    balloonBtn.style.display = player.transformedParty ? 'flex':'none';
+    splitBtn.style.display = player.transformedBlack ? 'flex':'none';
+    eatBtn.style.display = (player.transformedBlob||player.transformedBoneThief) ? 'flex':'none';
+    boneBtn.style.display = player.transformedBoneThief ? 'flex':'none';
+    clockBtn.style.display = player.hasClock ? 'flex':'none';
+    followBtn.style.display = smileyState.opened ? 'flex':'none';
+  }
+
+  function updateCityEntry(){
+    const nowIn = inCityWalls(player.x, player.z);
+    if(nowIn && !inCityMode) enterCityMode();
+    else if(!nowIn && inCityMode) exitCityMode();
+  }
+
+  // ---- Dig dirt (Z) : +1 ดิน, leaves a hole mark for a moment ----
+  function digDirt(){
+    if(!inCityMode) return;
+    stats.dirt++;
+    updateHUD();
+    if(digHoleMesh) scene.remove(digHoleMesh);
+    const hole = new THREE.Mesh(new THREE.CircleGeometry(0.45,14), new THREE.MeshBasicMaterial({color:0x4b3318}));
+    hole.rotation.x = -Math.PI/2;
+    hole.position.set(player.x, 0.06, player.z);
+    scene.add(hole);
+    digHoleMesh = hole; digHoleTimer = 1.6;
+    flashCityMsg('⛏️ ขุดได้ดิน +1 ดิน 🟫');
+  }
+
+  // ---- Chop a tree (E on a city tree) : +2/1 wood ----
+  function chopTree(obj){
+    if(!inCityMode) return false;
+    const isFence = !!obj.userData.isFence;
+    const idxF = isFence ? cityFenceTrees.findIndex(t=>t.group===obj) : -1;
+    const idxR = isFence ? -1 : cityForestTrees.findIndex(t=>t.group===obj);
+    const idx = isFence ? idxF : idxR;
+    if(idx<0) return false;
+    const rec = isFence ? cityFenceTrees[idx] : cityForestTrees[idx];
+    cityGroup.remove(obj);
+    if(isFence) cityFenceTrees.splice(idx,1); else cityForestTrees.splice(idx,1);
+    stats.wood += isFence ? 1 : 2;
+    updateHUD();
+    flashCityMsg(isFence ? '🪓 ตัดต้นไม้เล็ก +1 ไม้ 🪵' : '🪓 ตัดต้นไม้ใหญ่ +2 ไม้ 🪵');
+    return true;
+  }
+
+  // ---- Place a block (X wood / C dirt) : costs 1 resource, becomes a solid collider ----
+  function placeBlock(kind){
+    if(!inCityMode) return;
+    if(kind==='wood' && stats.wood<1){ flashCityMsg('ยังไม่มีไม้! ตัดต้นไม้ก่อน (E)'); return; }
+    if(kind!=='wood' && stats.dirt<1){ flashCityMsg('ยังไม่มีดิน! ขุดดินก่อน (Z)'); return; }
+    const fwd = new THREE.Vector3();
+    camera.getWorldDirection(fwd);
+    const bx = Math.round(player.x + fwd.x*1.4);
+    const bz = Math.round(player.z + fwd.z*1.4);
+    if(!inCityWalls(bx,bz)){ flashCityMsg('วางได้เฉพาะในเมืองเท่านั้น!'); return; }
+    if(cityBlocks.some(b=>Math.hypot(b.x-bx, b.z-bz)<0.5)){ flashCityMsg('มีบล็อกอยู่ตรงนั้นแล้ว'); return; }
+    if(kind==='wood') stats.wood--; else stats.dirt--;
+    const mat = kind==='wood' ? woodBlockMat : dirtBlockMat;
+    const mesh = new THREE.Mesh(new THREE.BoxGeometry(1,1,1), mat);
+    mesh.position.set(bx, 0.5, bz);
+    mesh.castShadow = true; mesh.receiveShadow = true;
+    mesh.userData.type = kind==='wood' ? 'blockwood' : 'blockdirt';
+    mesh.userData.rootRef = mesh;
+    scene.add(mesh);
+    cityBlocks.push({mesh, x:bx, z:bz, r:0.72, kind});
+    updateHUD();
+    flashCityMsg(kind==='wood' ? '🧱 วางไม้แล้ว!' : '🟫 วางดินแล้ว!');
+  }
+
+  function breakBlock(obj){
+    const i = cityBlocks.findIndex(b=>b.mesh===obj);
+    if(i<0) return false;
+    if(obj.userData.type==='blockwood') stats.wood++; else stats.dirt++;
+    scene.remove(obj);
+    cityBlocks.splice(i,1);
+    updateHUD();
+    flashCityMsg('🧱 เก็บบล็อกกลับเข้ากระเป๋า');
+    return true;
+  }
+
+  let cityMsgTimer = null;
+  function flashCityMsg(text){
+    hintEl.textContent = text;
+    hintEl.classList.remove('fade');
+    if(cityMsgTimer) clearTimeout(cityMsgTimer);
+    cityMsgTimer = setTimeout(()=> hintEl.classList.add('fade'), 1800);
+  }
+
+  // ---- Inventory panel ----
+  const invItems = [
+    {name:'ไม้',        icon:'🪵', get:()=>stats.wood},
+    {name:'ดิน',        icon:'🟫', get:()=>stats.dirt},
+    {name:'ข้าวโพด',    icon:'🌽', get:()=>stats.corn},
+    {name:'เพชร',       icon:'💎', get:()=>stats.gems},
+    {name:'สัตว์จับได้', icon:'🐾', get:()=>stats.captured},
+    {name:'หมูในเมือง', icon:'🐷', get:()=>cityPigs.length}
+  ];
+  function refreshInventory(){
+    if(!invPanelEl.classList.contains('show')) return;
+    invBodyEl.innerHTML = invItems.map(it=>
+      `<div class="invSlot"><span class="invSlotIcon">${it.icon}</span><span class="invSlotName">${it.name}</span><span class="invSlotCount">${it.get()}</span></div>`
+    ).join('');
+  }
+  invBtnEl.addEventListener('click', ()=>{
+    invPanelEl.classList.toggle('show');
+    refreshInventory();
+  });
+  invCloseEl.addEventListener('click', ()=> invPanelEl.classList.remove('show'));
+
   let wantJump = false;
   let holdUp = false; // continuous ascend input for flight (touch/mouse jump button)
   let holdRun = false; // continuous sprint input (touch/mouse run button)
@@ -4905,6 +5385,8 @@
   const flyTimeEl = document.getElementById('flyTime');
   const hintEl = document.getElementById('hint');
   const interactBtn = document.getElementById('interactBtn');
+  const digBtn = document.getElementById('digBtn');
+  const placeBtn = document.getElementById('placeBtn');
   const jumpBtn2 = document.getElementById('jumpBtn2');
   const fireBtn = document.getElementById('fireBtn');
   const shootBtn = document.getElementById('shootBtn');
@@ -5766,6 +6248,8 @@
     pigEl.textContent = pigs.length;
     gemEl.textContent = stats.gems;
     captureEl.textContent = stats.captured;
+    if(dirtCountEl) dirtCountEl.textContent = stats.dirt;
+    refreshInventory();
   }
   updateHUD();
 
@@ -5855,6 +6339,12 @@
   function pressInteract(e){ e.preventDefault(); if(active) doInteract(); }
   interactBtn.addEventListener('touchstart', pressInteract, {passive:false});
   interactBtn.addEventListener('mousedown', pressInteract);
+  function pressDig(e){ e.preventDefault(); if(active) digDirt(); }
+  digBtn.addEventListener('touchstart', pressDig, {passive:false});
+  digBtn.addEventListener('mousedown', pressDig);
+  function pressPlace(e){ e.preventDefault(); if(active) placeBlock(stats.wood>=1 ? 'wood' : 'dirt'); }
+  placeBtn.addEventListener('touchstart', pressPlace, {passive:false});
+  placeBtn.addEventListener('mousedown', pressPlace);
 
   function triggerFire(){
     if(!active || fireCooldown>0) return;
@@ -5945,6 +6435,16 @@
   window.addEventListener('keydown', (e)=>{
     if(document.activeElement && (document.activeElement.tagName==='INPUT' || document.activeElement.tagName==='TEXTAREA')) return;
     keys[e.code]=true;
+    if(inCityMode){
+      if(e.code==='KeyZ' && !e.repeat) digDirt();
+      if(e.code==='KeyX' && !e.repeat) placeBlock('wood');
+      if(e.code==='KeyC' && !e.repeat) placeBlock('dirt');
+      if(e.code==='KeyE') doInteract();
+      if(e.code==='Space') wantJump = true;
+      if(e.code==='KeyI') toggleThirdPerson();
+      if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code)) e.preventDefault();
+      return;
+    }
     if(e.code==='KeyE') doInteract();
     if(e.code==='KeyF') triggerFire();
     if(e.code==='KeyT') shootGun();
@@ -6009,7 +6509,12 @@
       ...(partyMonster.visible ? [partyMonster] : []),
       ...(blackDemon.visible ? [blackDemon] : []),
       ...(handBlob.visible ? [handBlob] : []),
-      ...(boneThief.visible ? [boneThief] : [])
+      ...(boneThief.visible ? [boneThief] : []),
+      ...(inCityMode ? [
+        ...cityFenceTrees.map(t=>t.group),
+        ...cityForestTrees.map(t=>t.group),
+        ...cityBlocks.map(b=>b.mesh)
+      ] : [])
     ];
     const hits = raycaster.intersectObjects(candidates, true);
     currentTarget = null;
@@ -6040,11 +6545,20 @@
       else if(currentTarget.userData.type==='monster5') text = 'กด E เพื่อกินหัวใจและกลายร่างเป็นมัน! ⚫';
       else if(currentTarget.userData.type==='monster6') text = 'กด E เพื่อกินหัวใจและกลายร่างเป็นมัน! 🖐️🥚';
       else if(currentTarget.userData.type==='monster7') text = 'กด E เพื่อกินหัวใจและกลายร่างเป็นมัน! 🦴💛';
+      else if(currentTarget.userData.type==='fencetree') text = 'กด E เพื่อตัดต้นไม้รั้ว (ไม้ +1) 🪓';
+      else if(currentTarget.userData.type==='foretree') text = 'กด E เพื่อตัดต้นไม้ (ไม้ +2) 🪓';
+      else if(currentTarget.userData.type==='blockwood') text = 'กด E เพื่อรื้อบล็อกไม้ 🧱';
+      else if(currentTarget.userData.type==='blockdirt') text = 'กด E เพื่อรื้อบล็อกดิน 🟫';
       promptEl.textContent = text;
       promptEl.classList.add('show');
       interactBtn.style.opacity = currentTarget.userData.type==='pig' && stats.corn<=0 ? '0.5' : '1';
     } else {
-      promptEl.classList.remove('show');
+      if(inCityMode){
+        promptEl.textContent = 'ในเมือง: Z ขุดดิน ⛏️ | X วางไม้ 🧱 | C วางดิน 🟫 | E ตัดต้นไม้/รื้อบล็อก';
+        promptEl.classList.add('show');
+      } else {
+        promptEl.classList.remove('show');
+      }
       interactBtn.style.opacity = '0.55';
     }
   }
@@ -6088,7 +6602,7 @@
     } else if(t.userData.type==='sworditem'){
       t.visible = false;
       player.hasSword = true;
-      swingBtn.style.display = 'flex';
+      swingBtn.style.display = inCityMode ? 'none' : 'flex';
     } else if(t.userData.type==='smileybox'){
       openSmileyBox();
     } else if(t.userData.type==='smileynpc'){
@@ -6107,6 +6621,10 @@
       transformIntoHandBlob();
     } else if(t.userData.type==='monster7'){
       transformIntoBoneThief();
+    } else if(t.userData.type==='fencetree' || t.userData.type==='foretree'){
+      chopTree(t);
+    } else if(t.userData.type==='blockwood' || t.userData.type==='blockdirt'){
+      breakBlock(t);
     }
   }
 
@@ -6198,7 +6716,24 @@
     }
 
     if(player.y < 2.6 && !phasing){
-      [...trees, ...cacti, ...caveWalls, ...manEaterColliders, ...hutColliders, ...mazeColliders].forEach(t=>{
+      [...trees, ...cacti, ...caveWalls, ...manEaterColliders, ...hutColliders, ...mazeColliders,
+       ...cityForestTrees.map(t=>({x:t.x, z:t.z, r:t.r})),
+       ...cityHouses,
+       ...cityBlocks.map(b=>({x:b.x, z:b.z, r:b.r}))].forEach(t=>{
+        const dx = player.x - t.x, dz = player.z - t.z;
+        const dist = Math.hypot(dx,dz);
+        const minDist = t.r + 0.5;
+        if(dist < minDist && dist>0.0001){
+          const push = (minDist-dist);
+          player.x += (dx/dist)*push;
+          player.z += (dz/dist)*push;
+        }
+      });
+    }
+
+    // City fence (1-m trees) — higher threshold so you cannot jump over it
+    if(player.y < 4.5 && !phasing){
+      cityFenceTrees.forEach(t=>{
         const dx = player.x - t.x, dz = player.z - t.z;
         const dist = Math.hypot(dx,dz);
         const minDist = t.r + 0.5;
@@ -6335,6 +6870,12 @@
     updateSummonedPets(worldDt, worldElapsed);
     updateManEaters(worldDt, worldElapsed);
     updateVillagers(worldDt, worldElapsed);
+    updateCityPigs(worldDt, worldElapsed);
+    if(active) updateCityEntry();
+    if(digHoleMesh){
+      digHoleTimer -= dt;
+      if(digHoleTimer<=0){ scene.remove(digHoleMesh); digHoleMesh = null; digHoleTimer = 0; }
+    }
     updateGunMonster(worldDt, worldElapsed);
     updateSwordMonster(worldDt, worldElapsed);
     updateHybridMonster(worldDt, worldElapsed);
