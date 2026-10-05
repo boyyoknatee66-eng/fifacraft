@@ -37,38 +37,6 @@
     font-family:'Press Start 2P',cursive; font-size:13px; color:#ffe0e0;
     text-shadow:0 2px 0 #7a1010; pointer-events:none; opacity:0; transition:opacity 0.4s;
   }
-  #townBar{
-    position:fixed; right:14px; bottom:230px; z-index:17;
-    display:none; flex-direction:column; gap:8px;
-  }
-  #townBar.show{ display:flex; }
-  #townBar button{
-    background:#5a3d22; color:#fff; border:2px solid #3a2410; border-radius:10px;
-    padding:10px 12px; font-family:'Kanit',sans-serif; font-size:13px; font-weight:700;
-    cursor:pointer; box-shadow:0 3px 0 #2a1a0a;
-  }
-  #townBar button:active{ transform:translateY(2px); box-shadow:0 1px 0 #2a1a0a; }
-  #invBtn{
-    position:fixed; right:14px; top:60px; z-index:17;
-    background:#5a3d22; color:#fff; border:2px solid #3a2410; border-radius:10px;
-    padding:8px 10px; font-family:'Kanit',sans-serif; font-size:12px; font-weight:700;
-    cursor:pointer;
-  }
-  #invPanel{
-    position:fixed; left:50%; top:50%; transform:translate(-50%,-50%);
-    width:min(85vw,320px); z-index:31; display:none;
-    background:#2a2a1a; border:4px solid #8d6e4a; border-radius:14px;
-    box-shadow:0 8px 0 #4a3420, 0 8px 24px rgba(0,0,0,0.6);
-    padding:14px; font-family:'Kanit',sans-serif; color:#fff;
-  }
-  #invPanel.show{ display:block; }
-  #invPanel h3{ margin:0 0 10px 0; color:#FFD54F; font-size:16px; }
-  .invRow{ display:flex; justify-content:space-between; padding:6px 0; font-size:14px; border-bottom:1px solid rgba(255,255,255,0.1); }
-  #invCloseBtn{
-    background:#c0392b; color:#fff; border:none; border-radius:8px;
-    width:26px;height:26px; font-weight:700; cursor:pointer; float:right; margin-top:-4px;
-  }
-
   #shopPanel{
     position:fixed; left:50%; top:50%; transform:translate(-50%,-50%);
     width:min(92vw,420px); z-index:31; display:none;
@@ -104,6 +72,45 @@
     opacity:0; transition:opacity 0.3s;
   }
   #shopMsg.show{ opacity:1; }
+
+  #invPanel{
+    position:fixed; left:50%; top:50%; transform:translate(-50%,-50%);
+    width:min(92vw,360px); z-index:31; display:none;
+    background:#2a2a1a; border:4px solid #66BB6A; border-radius:14px;
+    box-shadow:0 8px 0 #2f5f2f, 0 8px 24px rgba(0,0,0,0.6);
+    padding:14px; font-family:'Kanit',sans-serif; color:#fff;
+  }
+  #invPanel.show{ display:block; }
+  #invHead{
+    display:flex; align-items:center; justify-content:space-between;
+    margin-bottom:10px; font-weight:700; color:#A5D6A7; font-size:17px;
+  }
+  #invClose{
+    background:#c0392b; color:#fff; border:none; border-radius:8px;
+    width:26px;height:26px; font-weight:700; cursor:pointer;
+  }
+  #invBody{
+    display:grid; grid-template-columns:1fr 1fr; gap:8px;
+    font-size:14px; margin-bottom:8px;
+  }
+  .invSlot{
+    display:flex; align-items:center; gap:8px;
+    background:rgba(255,255,255,0.07); border:2px solid rgba(255,255,255,0.15);
+    border-radius:10px; padding:8px 10px;
+  }
+  .invSlotIcon{ font-size:20px; }
+  .invSlotName{ color:#A5D6A7; font-size:13px; }
+  .invSlotCount{ margin-left:auto; font-weight:700; color:#FFD54F; font-size:15px; }
+  #invHint{ font-size:11px; color:#999; text-align:center; line-height:1.5; }
+
+  #cityChip{
+    position:fixed; top:60px; left:50%; transform:translateX(-50%); z-index:15;
+    background:rgba(40,70,40,0.85); color:#C8E6C9; padding:7px 16px;
+    border-radius:20px; font-size:14px; font-weight:700; pointer-events:none;
+    border:2px solid #66BB6A; display:none;
+    font-family:'Kanit',sans-serif;
+  }
+  #cityChip.show{ display:block; }
 
   #timeStopLabel.show{ opacity:1; }
 
@@ -152,6 +159,49 @@
   }
   #smileyChatAsk{
     background:#FFD54F; color:#3a2a00; border:none; border-radius:8px;
+    padding:8px 14px; font-weight:700; cursor:pointer; font-family:'Kanit',sans-serif;
+  }
+
+  #pinkChat{
+    position:fixed; left:50%; bottom:18px; transform:translateX(-50%);
+    width:min(92vw,420px); z-index:31; display:none;
+    background:#2a1a22; border:4px solid #F48FB1; border-radius:14px;
+    box-shadow:0 8px 0 #8a2a4a, 0 8px 24px rgba(0,0,0,0.5);
+    padding:12px; font-family:'Kanit',sans-serif; color:#fff;
+  }
+  #pinkChat.show{ display:block; }
+  #pinkChatHead{
+    display:flex; align-items:center; justify-content:space-between;
+    margin-bottom:8px; font-weight:700; color:#F8BBD0;
+  }
+  #pinkChatClose{
+    background:#c0392b; color:#fff; border:none; border-radius:8px;
+    width:26px;height:26px; font-weight:700; cursor:pointer;
+  }
+  #pinkChatLog{
+    max-height:150px; overflow-y:auto; margin-bottom:8px;
+    display:flex; flex-direction:column; gap:6px;
+  }
+  #pinkChatLog .q{ align-self:flex-end; background:#3a5a9a; color:#fff; padding:6px 10px; border-radius:10px 10px 2px 10px; font-size:13px; max-width:85%; }
+  #pinkChatLog .a{ align-self:flex-start; background:#F8BBD0; color:#4a1024; padding:6px 10px; border-radius:10px 10px 10px 2px; font-size:13px; max-width:85%; }
+  #pinkActs{ display:flex; gap:6px; margin-bottom:8px; }
+  #pinkActs button{
+    flex:1; background:#F48FB1; color:#4a1024; border:none; border-radius:8px;
+    padding:8px 4px; font-weight:700; cursor:pointer; font-family:'Kanit',sans-serif; font-size:13px;
+  }
+  #pinkRps{ display:none; gap:6px; margin-bottom:8px; }
+  #pinkRps.show{ display:flex; }
+  #pinkRps button{
+    flex:1; background:#EC407A; color:#fff; border:none; border-radius:8px;
+    padding:10px 4px; font-size:20px; cursor:pointer;
+  }
+  #pinkChatRow{ display:flex; gap:6px; }
+  #pinkChatInput{
+    flex:1; padding:8px 10px; border-radius:8px; border:2px solid #F48FB1;
+    font-family:'Kanit',sans-serif; font-size:14px; outline:none;
+  }
+  #pinkChatAsk{
+    background:#F48FB1; color:#4a1024; border:none; border-radius:8px;
     padding:8px 14px; font-weight:700; cursor:pointer; font-family:'Kanit',sans-serif;
   }
 
@@ -257,6 +307,19 @@
     user-select:none; cursor:pointer;
   }
   #jumpBtn2:active{ transform:translateY(3px); box-shadow:0 1px 0 #5a3a17; }
+
+  #digBtn, #placeBtn{
+    position:fixed; z-index:12;
+    width:74px;height:74px;border-radius:50%;
+    background:rgba(255,247,230,0.85);
+    border:4px solid #8B5A2B; box-shadow:0 5px 0 #5a3a17;
+    display:none; align-items:center; justify-content:center;
+    font-family:'Press Start 2P',cursive; font-size:10px; color:#5c3d00;
+    text-align:center; line-height:1.4; user-select:none; cursor:pointer;
+  }
+  #digBtn:active, #placeBtn:active{ transform:translateY(3px); box-shadow:0 2px 0 #5a3a17; }
+  #digBtn{ right:222px; bottom:26px; }
+  #placeBtn{ right:310px; bottom:26px; }
 
   #dpad{
     position:fixed; left:18px; bottom:18px; z-index:12;
@@ -371,18 +434,40 @@
     <button id="smileyChatAsk">ถาม</button>
   </div>
 </div>
+<div id="pinkChat">
+  <div id="pinkChatHead"><span>💗 น้องชมพู</span><button id="pinkChatClose">✕</button></div>
+  <div id="pinkChatLog"></div>
+  <div id="pinkActs">
+    <button id="pinkGameBtn">🎮 ชวนเล่นเกม</button>
+    <button id="pinkFollowBtn">👣 ตามฉัน</button>
+    <button id="pinkFeedBtn">🍚 ให้ข้าว</button>
+  </div>
+  <div id="pinkRps">
+    <button data-move="0">✊ ค้อน</button>
+    <button data-move="1">✋ กระดาษ</button>
+    <button data-move="2">✌️ กรรไกร</button>
+  </div>
+  <div id="pinkChatRow">
+    <input id="pinkChatInput" type="text" placeholder="พูดอะไรกับน้องชมพู..." maxlength="80">
+    <button id="pinkChatAsk">พูด</button>
+  </div>
+</div>
 <div id="hud">
   <div class="hud-chip">🪵 <span id="woodCount">0</span></div>
   <div class="hud-chip">🌽 <span id="cornCount">0</span></div>
   <div class="hud-chip">🐷 <span id="pigCount">2</span></div>
   <div class="hud-chip">💎 <span id="gemCount">0</span></div>
   <div class="hud-chip">🐾 <span id="captureCount">0</span></div>
+  <div class="hud-chip">🟫 <span id="dirtCount">0</span></div>
+  <div class="hud-chip">🍚 <span id="riceCount">0</span></div>
+  <div class="hud-chip" id="invBtn" style="cursor:pointer;">🎒 เก็บของ</div>
   <div class="hud-chip" id="flyChip" style="display:none;">🕊️ <span id="flyTime">0</span>s</div>
   <div class="hud-chip" id="transformedChip" style="display:none;">😈 อมตะ!</div>
   <div class="hud-chip" id="dayNightChip">☀️ กลางวัน</div>
   <div class="hud-chip" id="trapChip" style="display:none;"></div>
   <div class="hud-chip" id="clockChip" style="display:none;"></div>
   <div class="hud-chip" id="followChip" style="display:none;">🙂 ตามเรามาแล้ว!</div>
+  <div class="hud-chip" id="pinkFollowChip" style="display:none;">💗 น้องชมพู ตามอยู่!</div>
   <div class="hud-chip" id="godChip" style="display:none;">👑 พระเจ้า</div>
   <div class="hud-chip" id="shopBtn" style="cursor:pointer;">🏪 ร้านค้า</div>
   <div class="hud-chip" id="viewToggleBtn" style="cursor:pointer;">🎥 มุมมอง</div>
@@ -411,25 +496,21 @@
   </div>
   <div id="shopMsg"></div>
 </div>
-
-<button id="invBtn">🎒 กระเป๋า</button>
 <div id="invPanel">
-  <button id="invCloseBtn">✕</button>
-  <h3>🎒 กระเป๋าของ</h3>
-  <div class="invRow"><span>🪵 ไม้</span><span id="invWood">0</span></div>
-  <div class="invRow"><span>🟫 ดิน</span><span id="invSoil">0</span></div>
-  <div class="invRow"><span>🌽 ข้าวโพด</span><span id="invCorn">0</span></div>
-  <div class="invRow"><span>💎 เพชร</span><span id="invGems">0</span></div>
-</div>
-
-<div id="townBar">
-  <button id="digSoilBtn">⛏️ ขุดดิน</button>
-  <button id="placeWoodBtn">🧱 ต่อบล็อก</button>
+  <div id="invHead">
+    <span>🎒 เก็บของ/ไอเทม</span>
+    <button id="invClose">✕</button>
+  </div>
+  <div id="invBody"></div>
+  <div id="invHint">ขุดดิน (Z) ตัดต้นไม้ (E) วางไม้ (X) • ภายในเมืองเท่านั้น</div>
 </div>
 <div id="hint">ลากเมาส์ (หรือลากนิ้วฝั่งขวา) เพื่อมองรอบตัว • WASD เดิน</div>
+<div id="cityChip">🏘️ ในเมือง — คุณเป็นคนธรรมดา มุมมองบุคคลที่ 3</div>
 <div id="prompt"></div>
 <div id="jumpBtn2">⬆️</div>
 <div id="interactBtn">เก็บ<br>E</div>
+<div id="digBtn">⛏️<br>ขุด</div>
+<div id="placeBtn">🧱<br>วาง</div>
 <div id="fireBtn">🔥</div>
 <div id="shootBtn">🔫</div>
 <div id="cloneBtn">👥</div>
@@ -492,14 +573,13 @@
     <p>🦆🦒🦛🐘🦁🦏 มีสัตว์เพิ่มอีก เป็ด ยีราฟ ฮิปโป ช้าง สิงโต แรด เดินเล่นทั่วแผนที่ 🦀🐋⭐️🎐 ในบึงมอนสเตอร์มี ปู ปลาวาฬ ปลาดาว แมงกะพรุน 🦋🐛🐜 มีแมลง ผีเสื้อ ตะขาบ หนอน มด ไต่/บินอยู่รอบๆ และมี<b>ต้นมะพร้าว ต้นมะม่วง ต้นมังคุด</b> เพิ่มในป่าด้วย</p>
     <p>🎥 แตะปุ่ม <b>มุมมอง</b> มุมบนซ้าย (หรือกด <span class="key">I</span> ถ้ามีคีย์บอร์ด) เพื่อสลับมุมกล้องเป็น<b>บุคคลที่สาม (Third-Person)</b> มองเห็นตัวละครจากด้านหลัง แตะอีกครั้งเพื่อกลับเป็นมุมมองเดิม</p>
     <p>🤡 ระวัง<b>ตัวตลก 6 ขา</b> ที่ไต่ปีนกำแพง/บินตามขึ้นไปได้แม้บนที่สูง มันจะไล่ตีเราถ้าเข้าใกล้!</p>
+    <p>🏘️ ทางทิศตะวันตกเฉียงใต้มี<b>เมืองรั้วต้นไม้</b> (รั้วสูง 1 เมตร มีทางเข้าออกทางเดียว) ข้างในมี<b>ป่ารกทึบ</b> <b>สนามหญ้า</b> มีบ้านหมู 3 หลัง และหมู 3 ตัวเดินเพ่นพ่าน เมื่อก้าวเข้าเมือง คุณจะกลายเป็น<b>คนธรรมดา</b> (มุมมองบุคคลที่ 3) ขุดดิน <span class="key">Z</span> ตัดต้นไม้ <span class="key">E</span> วางบล็อกไม้ <span class="key">X</span> วางบล็อกดิน <span class="key">C</span> และดูของที่เก็บได้ที่ปุ่ม 🎒!</p>
     <button id="playBtn">▶ เริ่มเล่น</button>
     <p>👁️⚙️ ในทะเลทรายมี "มอนสเตอร์ 6 แขน" (เลื่อยยนต์ ดาบ ปืน มือ และหัวจิ๋ว) กิน E เพื่อกลายร่าง แล้วใช้ <span class="key">B</span> หยิบจับสัตว์ และ <span class="key">V</span> ยื่นคองับกัดสัตว์ระยะไกล! กด <span class="key">O</span> ค้างเพื่อปีนกำแพงขึ้นตรงๆ และกด <span class="key">L</span> เพื่อบินทะลุกำแพง/สิ่งกีดขวางได้ 3 วิ</p>
     <p>🎈💛 มี "ปีศาจลูกโป่ง" ตัวสีเหลืองเดือด ถือลูกโป่งแดง เดินอยู่ในทุ่งโล่ง กิน E เพื่อกลายร่าง แล้วกด <span class="key">C</span> พ่นลูกโป่งใส่สัตว์ให้ลอยขึ้นแล้วตกตาย จากนั้นจะเกิดใหม่ที่อื่น! ระวัง — มันจะแตะสัตว์อื่นให้กลายเป็นพวกเดียวกันไปเรื่อยๆ ด้วย และถ้าเราถูกโครงกระดูกหรือตัวตลก 6 ขาคุกคามอยู่ใกล้ๆ ปีศาจลูกโป่งที่อยู่แถวนั้นจะช่วยพ่นลูกโป่งใส่ศัตรูให้เราด้วย!</p>
     <p>🟡 มีวงกลมสีเหลืองลึกลับซ่อนอยู่มุมหนึ่งของแผนที่ — ยืนอยู่ในวงกลมนั้นครบ 1 วินาทีแล้วจะร่วงตกลงไปใน<b>เขาวงกตสีเหลือง</b>ลับ ข้างในมี "ปีศาจดำ" (E กลายร่าง แล้วกด <span class="key">1</span> แยกร่างโคลนตัวเอง), "ก้อนมือสีไข่" (E กลายร่าง แล้วกด <span class="key">9</span> กินสัตว์), "ปีศาจโขมยกระดูก" หน้าดำตาขาวตัวเหลือง (E กลายร่าง แล้วกด <span class="key">9</span> พ่นกระดูกฆ่าสัตว์ระยะไกล และกด <span class="key">8</span> ค้างเพื่อปีนกำแพง) และปีศาจลูกโป่งอีกตัวก็ซ่อนอยู่ในนั้นด้วย!</p>
     <p>👁️ กลางทะเลทรายมี "อสูรหกแขน" (เลื่อยยนต์ x2, หัว, ดาบ, ปืน, มือ) กด E กินหัวใจแปลงร่างเป็นมันได้ อมตะเช่นกัน ใช้ <span class="key">B</span> ฟันดาบ และ <span class="key">U</span> ยิงปืนได้ทั้งคู่!</p>
     <p>🗺️ แผนที่ขยายกว้างขึ้นแล้ว! 💧⛰️ มี<b>น้ำตก</b>ไหลลงมาจากภูเขาทางทิศตะวันตกเฉียงเหนือ 🕳️ มี<b>ถ้ำแห่งที่สอง</b>ซ่อนอยู่ไกลสุดทางทิศตะวันออกเฉียงเหนือ (มีเห็ดเรืองแสงในถ้ำเหมือนกัน) และพอถึง<b>กลางคืน</b>จะมี<b>ผีตัวเรืองแสง</b> สีขาว ตาสีดำ ปากสีดำ ล่องลอยไปมาทั่วแผนที่ (ยังไม่ทำร้ายเรา แค่ล่องลอยผ่านไปมาให้เห็นบรรยากาศ)</p>
-    <p>🏘️ ทางตะวันออกของแผนที่มี <b>"เมืองลูกหมู"</b> (ขยายใหญ่ขึ้นเป็น 44×30 แล้ว) ล้อมรอบด้วยรั้วต้นไม้สูง 1 เมตร มีทางเข้าออกทางเดียว (ด้านใต้) แบ่งเป็นโซนอย่างเป็นระเบียบ: ฝั่งตะวันตกเป็น<b>โซนป่ารกทึบ</b> (ตัดต้นไม้ได้) คั่นด้วยแนวพุ่มไม้ แล้วเป็น<b>โซนสนามหญ้า</b>ซึ่งมี<b>ถนน</b>พาดผ่านกลาง มี<b>รถวิ่งไปมา</b> 2 คัน <b>เสาไฟ</b>เรียงรายสองข้างถนน และ<b>บ้าน 3 หลังเรียงแถว</b>สำหรับลูกหมู 3 ตัวอยู่ริมถนน มี<b>เก้าอี้นั่งได้จริง</b> 🪑 หน้าบ้านกลาง (กด E เพื่อนั่ง กด E อีกครั้งเพื่อลุก) พอเดินเข้าเมืองจะกลายเป็นคนธรรมดา มุมมองสลับเป็นบุคคลที่ 3 อัตโนมัติ ในเมืองนี้ <b>ตัดต้นไม้</b> (กด E ที่ต้นไม้ในป่า ได้ไม้) <b>ขุดดิน</b> (ปุ่ม ⛏️ มุมขวาล่าง ขุดตรงหน้าได้เลยทุกจุดในเมือง ได้ดินทุกครั้ง) และ <b>ต่อบล็อก</b> (ปุ่ม 🧱 มุมขวาล่าง ใช้ไม้ 1 ชิ้นต่อ 1 บล็อก วางต่อกันเป็นแนว หรือวางซ้อนสูงขึ้นได้สูงสุด 6 ชั้นในจุดเดียวกัน บล็อกจะเรียงชิดต่อกันเป็นกำแพง/โครงสร้างได้จริง กด E ที่บล็อกที่วางไว้เพื่อเก็บคืน ได้ไม้กลับมา 1 ชิ้น) มีปุ่ม <b>🎒 กระเป๋า</b> มุมขวาบนไว้ดูของที่เก็บมาด้วย</p>
-    <p>⛰️ เพิ่มภูเขาอีก 4 ลูกทางทิศตะวันตกเฉียงเหนือ รวมเป็น 7 ลูกทั้งหมด กระจายเป็นแนวเทือกเขาใหญ่ขึ้น</p>
     <p>🍄 ทางตะวันออกเฉียงใต้ไกลๆ มี<b>โซนเห็ด</b> เต็มไปด้วยเห็ดสีแดง ฟ้า เขียว และ<b>เห็ดยักษ์</b>ต้นใหญ่ยักษ์ ที่นั่นยังมี<b>เห็ดเดินได้</b> ตาสีดำ มีขาสี่ขา เดินไปมาในโซนนี้ด้วย (ฆ่า/แปลงร่างเป็นเพื่อนยิ้มสีฟ้าได้เหมือนสัตว์อื่น)</p>
     <p>🕷️🦂🍃🪲 ในถ้ำมีแมงมุมอาศัยอยู่ในรังของมัน ในทะเลทรายมีแมงป่อง 6 ตัวเดินเพ่นพ่าน และตามทุ่งหญ้าจะเจอตั๊กแตนใบไม้มาเลเซียสีเขียวกับด้วงงวงสีน้ำเงินเดินเล่นไปมา</p>
     <p>🕸️🏜️ ในทะเลทรายยังมี "แมงมุมทรายหกตา" ตัวจอมพรางตัวสีเดียวกับทราย มันเป็นแมงมุมพิษร้ายแรงที่สุดชนิดหนึ่งของโลก พบจริงในทะเลทรายทางภาคใต้ของแอฟริกา ปกติมันจะซุ่มนิ่งๆ แล้วพุ่งเข้าหาเหยื่ออย่างรวดเร็ว</p>
@@ -540,8 +620,8 @@
   sun.position.set(30,50,10);
   sun.castShadow = true;
   sun.shadow.mapSize.set(1024,1024);
-  sun.shadow.camera.left = -100; sun.shadow.camera.right = 100;
-  sun.shadow.camera.top = 100; sun.shadow.camera.bottom = -100;
+  sun.shadow.camera.left = -120; sun.shadow.camera.right = 120;
+  sun.shadow.camera.top = 120; sun.shadow.camera.bottom = -120;
   sun.shadow.camera.near = 1; sun.shadow.camera.far = 220;
   scene.add(sun);
   const ambientLight = new THREE.AmbientLight(0xffffff,0.2);
@@ -646,6 +726,13 @@
   const SEAMONSTER = {x1:-30, x2:14, z1:-83, z2:-58};
   function inSeaMonster(x,z){ return x>=SEAMONSTER.x1 && x<=SEAMONSTER.x2 && z>=SEAMONSTER.z1 && z<=SEAMONSTER.z2; }
 
+  // Enclosed city zone (far west): declared here with the other zones because
+  // several world-spawn loops below must skip this area. The city itself is
+  // built further down (see "Enclosed city มหามงคล").
+  const CITY = {x1:-112, x2:-82, z1:-36, z2:-6};
+  function inCity(x,z){ return x>=CITY.x1 && x<=CITY.x2 && z>=CITY.z1 && z<=CITY.z2; }
+  function inCityWalls(x,z){ return x>=CITY.x1-0.3 && x<=CITY.x2+0.3 && z>=CITY.z1-0.3 && z<=CITY.z2+0.3; }
+
   const trees = [];
   function makeTree(x,z){
     const g = new THREE.Group();
@@ -663,14 +750,14 @@
     const ang = (i/34)*Math.PI*2 + Math.random()*0.2;
     const rad = 40 + Math.random()*20;
     const tx = Math.cos(ang)*rad, tz = Math.sin(ang)*rad;
-    if(inDesert(tx,tz) || inCave(tx,tz) || inBlueField(tx,tz) || inLava(tx,tz) || inVillage(tx,tz) || inSeaMonster(tx,tz)) continue;
+    if(inDesert(tx,tz) || inCave(tx,tz) || inBlueField(tx,tz) || inLava(tx,tz) || inVillage(tx,tz) || inSeaMonster(tx,tz) || inCity(tx,tz)) continue;
     makeTree(tx, tz);
   }
   for(let i=0;i<18;i++){
     const ang = Math.random()*Math.PI*2;
     const rad = 62 + Math.random()*20;
     const tx = Math.cos(ang)*rad, tz = Math.sin(ang)*rad;
-    if(inDesert(tx,tz) || inCave(tx,tz) || inBlueField(tx,tz) || inLava(tx,tz) || inVillage(tx,tz) || inSeaMonster(tx,tz)) continue;
+    if(inDesert(tx,tz) || inCave(tx,tz) || inBlueField(tx,tz) || inLava(tx,tz) || inVillage(tx,tz) || inSeaMonster(tx,tz) || inCity(tx,tz)) continue;
     makeTree(tx, tz);
   }
   for(let i=0;i<10;i++){
@@ -724,13 +811,13 @@
   for(let i=0;i<6;i++){
     let x,z;
     do{ x=(Math.random()-0.5)*70; z=(Math.random()-0.5)*70; }
-    while(inDesert(x,z) || inCave(x,z) || inBlueField(x,z) || inLava(x,z) || inVillage(x,z) || inSeaMonster(x,z));
+    while(inDesert(x,z) || inCave(x,z) || inBlueField(x,z) || inLava(x,z) || inVillage(x,z) || inSeaMonster(x,z) || inCity(x,z));
     makeBananaTree(x,z);
   }
   for(let i=0;i<6;i++){
     let x,z;
     do{ x=(Math.random()-0.5)*70; z=(Math.random()-0.5)*70; }
-    while(inDesert(x,z) || inCave(x,z) || inBlueField(x,z) || inLava(x,z) || inVillage(x,z) || inSeaMonster(x,z));
+    while(inDesert(x,z) || inCave(x,z) || inBlueField(x,z) || inLava(x,z) || inVillage(x,z) || inSeaMonster(x,z) || inCity(x,z));
     makeAppleTree(x,z);
   }
 
@@ -796,19 +883,19 @@
   for(let i=0;i<6;i++){
     let x,z;
     do{ x=(Math.random()-0.5)*70; z=(Math.random()-0.5)*70; }
-    while(inDesert(x,z) || inCave(x,z) || inBlueField(x,z) || inLava(x,z) || inVillage(x,z) || inSeaMonster(x,z));
+    while(inDesert(x,z) || inCave(x,z) || inBlueField(x,z) || inLava(x,z) || inVillage(x,z) || inSeaMonster(x,z) || inCity(x,z));
     makeCoconutTree(x,z);
   }
   for(let i=0;i<6;i++){
     let x,z;
     do{ x=(Math.random()-0.5)*70; z=(Math.random()-0.5)*70; }
-    while(inDesert(x,z) || inCave(x,z) || inBlueField(x,z) || inLava(x,z) || inVillage(x,z) || inSeaMonster(x,z));
+    while(inDesert(x,z) || inCave(x,z) || inBlueField(x,z) || inLava(x,z) || inVillage(x,z) || inSeaMonster(x,z) || inCity(x,z));
     makeMangoTree(x,z);
   }
   for(let i=0;i<6;i++){
     let x,z;
     do{ x=(Math.random()-0.5)*70; z=(Math.random()-0.5)*70; }
-    while(inDesert(x,z) || inCave(x,z) || inBlueField(x,z) || inLava(x,z) || inVillage(x,z) || inSeaMonster(x,z));
+    while(inDesert(x,z) || inCave(x,z) || inBlueField(x,z) || inLava(x,z) || inVillage(x,z) || inSeaMonster(x,z) || inCity(x,z));
     makeMangosteenTree(x,z);
   }
 
@@ -817,6 +904,7 @@
   for(let i=0;i<26;i++){
     const tx = FOREST.x1 + Math.random()*(FOREST.x2-FOREST.x1);
     const tz = FOREST.z1 + Math.random()*(FOREST.z2-FOREST.z1);
+    if(inCity(tx,tz)) continue;
     makeTree(tx,tz);
   }
   const mountainRockMat = new THREE.MeshLambertMaterial({color:0x8d8d7a});
@@ -833,11 +921,6 @@
   makeMountain(-70, 60, 1);
   makeMountain(-60, 68, 0.7);
   makeMountain(-80, 66, 0.8);
-  // 4 more mountains, extending the range
-  makeMountain(-92, 58, 0.9);
-  makeMountain(-65, 82, 0.65);
-  makeMountain(-88, 80, 0.75);
-  makeMountain(-52, 56, 0.6);
 
   // ================= Waterfall (cascading down from the mountain) =================
   const waterfallTex = makeTexture(16,(ctx,s)=>{
@@ -1398,7 +1481,7 @@
       x=(Math.random()-0.5)*(WORLD_BOUND*1.8);
       z=(Math.random()-0.5)*(WORLD_BOUND*1.8);
       tries++;
-    } while(tries<20 && (inDesert(x,z) || inCave(x,z) || inCave2(x,z) || inBlueField(x,z) || inLava(x,z) || inVillage(x,z) || inSeaMonster(x,z) || inMushZone(x,z)));
+    } while(tries<20 && (inDesert(x,z) || inCave(x,z) || inCave2(x,z) || inBlueField(x,z) || inLava(x,z) || inVillage(x,z) || inSeaMonster(x,z) || inMushZone(x,z) || inCity(x,z)));
     if(tries<20) makeWildflower(x,z, wildflowerPetalMats[Math.floor(Math.random()*wildflowerPetalMats.length)]);
   }
 
@@ -1821,7 +1904,7 @@
     do{
       x=(Math.random()-0.5)*(WORLD_BOUND*1.6);
       z=(Math.random()-0.5)*(WORLD_BOUND*1.6);
-    } while((x>-22 && x<26 && z>-26 && z<2) || inCave(x,z) || inBlueField(x,z) || inLava(x,z) || inVillage(x,z));
+    } while((x>-22 && x<26 && z>-26 && z<2) || inCave(x,z) || inBlueField(x,z) || inLava(x,z) || inVillage(x,z) || inCity(x,z));
     return {x,z};
   }
   function makeCrate(){
@@ -1858,38 +1941,10 @@
     g.userData.target = {x:px,z:pz};
     g.userData.wait = Math.random()*2;
     g.userData.bounce = 0;
-    g.userData.homeX = penCenter.x; g.userData.homeZ = penCenter.z;
-    g.userData.homeRX = (penW-2)/2; g.userData.homeRZ = (penD-2)/2;
     scene.add(g);
     pigs.push(g);
   }
   makePig(); makePig();
-  function spawnHomePig(x,z,homeR){
-    const g = new THREE.Group();
-    const body = new THREE.Mesh(new THREE.BoxGeometry(1.1,0.7,0.7), pigMat);
-    body.position.y=0.55; g.add(body);
-    const snout = new THREE.Mesh(new THREE.BoxGeometry(0.28,0.3,0.28), pigDarkMat);
-    snout.position.set(0.65,0.5,0); g.add(snout);
-    const earGeo = new THREE.BoxGeometry(0.22,0.22,0.1);
-    const ear1 = new THREE.Mesh(earGeo,pigMat); ear1.position.set(0.4,0.95,0.22); g.add(ear1);
-    const ear2 = new THREE.Mesh(earGeo,pigMat); ear2.position.set(0.4,0.95,-0.22); g.add(ear2);
-    const legGeo = new THREE.BoxGeometry(0.18,0.4,0.18);
-    [[0.35,0.22],[0.35,-0.22],[-0.35,0.22],[-0.35,-0.22]].forEach(([lx,lz])=>{
-      const leg = new THREE.Mesh(legGeo, pigDarkMat);
-      leg.position.set(lx,0.2,lz); g.add(leg);
-    });
-    g.userData.type='pig';
-    g.traverse(o=>{o.userData.rootRef=g;});
-    g.position.set(x,0,z);
-    g.userData.target = {x,z};
-    g.userData.wait = Math.random()*2;
-    g.userData.bounce = 0;
-    g.userData.homeX = x; g.userData.homeZ = z;
-    g.userData.homeRX = homeR||1.6; g.userData.homeRZ = homeR||1.6;
-    scene.add(g);
-    pigs.push(g);
-    return g;
-  }
 
   let feedCount = 0;
 
@@ -2081,7 +2136,7 @@
     horses.push(g);
   }
   function horseZoneBlocked(x,z){
-    return (x>-22 && x<26 && z>-26 && z<2) || inCave(x,z) || inDesert(x,z) || inBlueField(x,z) || inLava(x,z) || inVillage(x,z) || inSeaMonster(x,z);
+    return (x>-22 && x<26 && z>-26 && z<2) || inCave(x,z) || inDesert(x,z) || inBlueField(x,z) || inLava(x,z) || inVillage(x,z) || inSeaMonster(x,z) || inCity(x,z);
   }
   function randomHorseTarget(){
     let x,z;
@@ -2484,6 +2539,174 @@
     if(/ที่ไหน|ตรงไหน/.test(s)) return "อยู่ใกล้ๆ นี่แหละ ลองเดินหาดูสิ!";
     if(/ไหม|มั้ย|หรือเปล่า|รึเปล่า/.test(s)) return smileyYesNo[Math.floor(Math.random()*smileyYesNo.length)];
     return smileyGeneral[Math.floor(Math.random()*smileyGeneral.length)];
+  }
+
+  // ================= Pink smiling friend "น้องชมพู" (lives in a pink box in the city) =================
+  const pinkBoxMat = new THREE.MeshLambertMaterial({color:0xF06292});
+  const pinkBoxLidMat = new THREE.MeshLambertMaterial({color:0xD81B60});
+  const pinkFaceMat = new THREE.MeshLambertMaterial({color:0xF8BBD0, emissive:0x5c1430});
+  const pinkDarkMat = new THREE.MeshLambertMaterial({color:0x1a1a1a});
+  const pinkBlushMat = new THREE.MeshLambertMaterial({color:0xF50057});
+  const pinkBowMat = new THREE.MeshLambertMaterial({color:0xE91E63});
+  let pinkBox = null, pinkCreature = null;
+  const pinkState = { opened:false, emergeT:0, follow:false, feedT:0, eaten:0,
+                      wins:0, losses:0, draws:0 };
+
+  function makePinkBoxAndCreature(x,z){
+    const box = new THREE.Group();
+    const base = new THREE.Mesh(new THREE.BoxGeometry(0.9,0.6,0.9), pinkBoxMat);
+    base.position.y = 0.3; box.add(base);
+    const ribbon = new THREE.Mesh(new THREE.BoxGeometry(0.2,0.62,0.94), pinkBoxLidMat);
+    ribbon.position.y = 0.3; box.add(ribbon);
+    const lidPivot = new THREE.Group();
+    lidPivot.position.set(0,0.6,-0.45);
+    const lid = new THREE.Mesh(new THREE.BoxGeometry(0.94,0.14,0.9), pinkBoxLidMat);
+    lid.position.set(0,0.07,0.45);
+    lidPivot.add(lid);
+    box.add(lidPivot);
+    box.userData.type = 'pinkbox';
+    box.userData.lidPivot = lidPivot;
+    box.traverse(o=>{o.userData.rootRef=box;});
+    box.position.set(x,0,z);
+    scene.add(box);
+    pinkBox = box;
+
+    const g = new THREE.Group();
+    const head = new THREE.Mesh(new THREE.SphereGeometry(0.34,14,12), pinkFaceMat);
+    g.add(head);
+    [-0.13,0.13].forEach(ex=>{
+      const eye = new THREE.Mesh(new THREE.SphereGeometry(0.045,8,8), pinkDarkMat);
+      eye.scale.set(0.8,1.3,0.6);
+      eye.position.set(ex,0.08,0.29);
+      g.add(eye);
+      [-0.035,0.035].forEach(dx=>{
+        const lash = new THREE.Mesh(new THREE.BoxGeometry(0.014,0.05,0.014), pinkDarkMat);
+        lash.position.set(ex+dx,0.17,0.29);
+        lash.rotation.z = dx>0 ? -0.45 : 0.45;
+        g.add(lash);
+      });
+      const blush = new THREE.Mesh(new THREE.SphereGeometry(0.05,8,6), pinkBlushMat);
+      blush.scale.set(1,0.7,0.35);
+      blush.position.set(ex*1.55,-0.03,0.30);
+      g.add(blush);
+    });
+    const smile = new THREE.Mesh(new THREE.TorusGeometry(0.14,0.025,8,16,Math.PI*0.75), pinkDarkMat);
+    smile.position.set(0,-0.05,0.27);
+    smile.rotation.z = Math.PI*1.12;
+    g.add(smile);
+    const bowKnot = new THREE.Mesh(new THREE.SphereGeometry(0.045,8,6), pinkBowMat);
+    bowKnot.position.set(0,0.36,0.06);
+    g.add(bowKnot);
+    [-1,1].forEach(s=>{
+      const wing = new THREE.Mesh(new THREE.ConeGeometry(0.07,0.14,4), pinkBowMat);
+      wing.position.set(s*0.1,0.36,0.06);
+      wing.rotation.z = s*-Math.PI/2;
+      g.add(wing);
+    });
+    g.userData.type = 'pinkbox'; // opens the box if targeted before she emerges
+    g.traverse(o=>{o.userData.rootRef=g;});
+    g.position.set(x,0.35,z);
+    g.scale.set(0.01,0.01,0.01);
+    g.visible = false;
+    scene.add(g);
+    pinkCreature = g;
+  }
+  makePinkBoxAndCreature(-95, -11);
+
+  function openPinkBox(){
+    if(pinkState.opened) return;
+    pinkState.opened = true;
+    pinkBox.userData.lidPivot.rotation.x = -1.9;
+    pinkBox.userData.type = null;
+    pinkCreature.visible = true;
+    pinkCreature.userData.type = 'pinknpc';
+    pinkState.emergeT = 0;
+    stats.rice += 3;
+    updateHUD();
+    flashCityMsg('💗 เปิดกล่อง! น้องชมพูออกมา 👋 ได้ข้าว 🍚+3');
+  }
+
+  let pinkFollow = false;
+  function togglePinkFollow(){
+    if(!pinkState.opened) return;
+    pinkFollow = !pinkFollow;
+    pinkState.follow = pinkFollow;
+    const chip = document.getElementById('pinkFollowChip');
+    const btn = document.getElementById('pinkFollowBtn');
+    if(chip) chip.style.display = pinkFollow ? 'flex' : 'none';
+    if(btn) btn.textContent = pinkFollow ? '👣 หยุดตาม' : '👣 ตามฉัน';
+  }
+
+  function updatePink(dt, elapsed){
+    if(!pinkCreature || !pinkCreature.visible) return;
+    if(pinkState.feedT > 0) pinkState.feedT = Math.max(0, pinkState.feedT - dt);
+    if(pinkState.emergeT < 1){
+      pinkState.emergeT = Math.min(1, pinkState.emergeT + dt/0.6);
+      const s = 0.2 + 0.8*pinkState.emergeT;
+      pinkCreature.scale.set(s,s,s);
+      pinkCreature.position.y = 0.35 + Math.sin(pinkState.emergeT*Math.PI)*0.5;
+    } else if(pinkFollow){
+      const behindDist = 1.7;
+      const fwd = new THREE.Vector3(0,0,-1).applyEuler(new THREE.Euler(0, player.yaw, 0));
+      const tx = player.x - fwd.x*behindDist;
+      const tz = player.z - fwd.z*behindDist;
+      const dx = tx - pinkCreature.position.x, dz = tz - pinkCreature.position.z;
+      const d = Math.hypot(dx,dz);
+      const spd = 4.6;
+      if(d>0.05){
+        const step = Math.min(d, spd*dt);
+        pinkCreature.position.x += (dx/d)*step;
+        pinkCreature.position.z += (dz/d)*step;
+      }
+      pinkCreature.position.y = 1.05 + Math.sin(elapsed*2)*0.08;
+      const lx = player.x - pinkCreature.position.x, lz = player.z - pinkCreature.position.z;
+      if(Math.hypot(lx,lz) > 0.1) pinkCreature.rotation.y = Math.atan2(lx,lz);
+    } else {
+      pinkCreature.position.y = 0.65 + Math.sin(elapsed*2)*0.08;
+      pinkCreature.rotation.y = Math.sin(elapsed*0.8)*0.4;
+    }
+    if(pinkState.feedT > 0){
+      pinkCreature.rotation.z = Math.sin(elapsed*22)*0.18*pinkState.feedT;
+      const p = 1 + Math.sin(elapsed*16)*0.12*pinkState.feedT;
+      pinkCreature.scale.set(p,p,p);
+    } else if(pinkState.emergeT >= 1){
+      pinkCreature.rotation.z = 0;
+      pinkCreature.scale.set(1,1,1);
+    }
+  }
+
+  // --- น้องชมพู answers (pink persona) ---
+  const pinkGeneral = [
+    "ชมพูว่า... ใช่เลยล่ะ! 💗",
+    "555 คำถามนี้น่ารักจัง ชมพูชอบ!",
+    "ลองชวนชมพูเล่นเป่ายิ้งฉุบสิ อาจได้ข้าวไปกินด้วย 🍚",
+    "ไม่แน่ใจเหมือนกันนะ แต่ชมพูเชื่อในตัวเธอแน่นอน ✨",
+    "อย่าลืมแวะมาให้ข้าวชมพูกินเรื่อยๆ นะ 🍚",
+    "โลกในกล่องก็สดใสได้ ถ้ามีเพื่อนอย่างเธอ 💗",
+    "ลองคิดดูอีกทีสิ บางทีคำตอบอาจอยู่ใกล้ๆ เอง",
+    "ชมพูยิ้มให้ทุกคำถามเลย 😊",
+    "คำตอบที่ดีที่สุดคือ... อย่าลืมยิ้มเข้าไว้นะ 💗",
+    "ถ้าเธอชนะเป่ายิ้งฉุบ ชมพูจะขโมยข้าวมาให้เลย 🍚😄"
+  ];
+  const pinkYesNo = [
+    "ใช่สิ! 💗","ไม่หรอกมั้ง~","อาจใช่ก็ได้นะ 😊","แน่นอนอยู่แล้ว!",
+    "หืม... ไม่แน่ใจ ขอเดาว่าใช่ละกัน","ไม่นะ ชมพูว่าไม่","ใช่แน่ๆ! ✨","อืม... อาจจะไม่"
+  ];
+  function pinkAnswer(q){
+    const s = q.trim();
+    if(!s) return "พูดอะไรหน่อยสิ ชมพูฟังอยู่นะ 💗";
+    if(/สวัสดี|หวัดดี|ไง|หวัดดีจ้า/.test(s)) return "หวัดดีจ้า! ดีใจจังที่เธอเปิดกล่องชมพู 💗";
+    if(/ชื่ออะไร|เธอชื่อ|นายชื่อ|ชื่อ/.test(s)) return "ฉันชื่อ ชมพู เพื่อนยิ้มสีชมพูที่อยู่ในกล่องใบนี้ไง 💗";
+    if(/เล่นเกม|เป่ายิ้งฉุบ|เกม/.test(s)) return "ชวนเล่นเกมสิ! กดปุ่ม 🎮 ชวนเล่นเกม ได้เลย ชนะชมพูได้ข้าว 🍚 ด้วยนะ!";
+    if(/ข้าว|หิว|กิน/.test(s)) return stats.rice>0 ? `ตอนนี้มีข้าว 🍚 ${stats.rice} ถ้วย กด 🍚 ให้ชมพูกินหน่อยสิ!` : "ชมพูอยากกินข้าว 🍚 จัง... เปิดกล่องหรือชนะเกมให้ได้ข้าวมานะ!";
+    if(/ตาม|ไปด้วย/.test(s)) return "กด 👣 ตามฉัน ได้เลย ชมพูจะลอยตามเธอไปทุกที่! 💗";
+    if(/รัก/.test(s)) return "ชมพูก็รักเธอนะ! 💗💗💗";
+    if(/ทำไม/.test(s)) return "เพราะชมพูอยู่ในกล่องแล้วเหงา เลยดีใจที่เธอมาคุยด้วย 😊";
+    if(/ใคร/.test(s)) return "ชมพูเอง เพื่อนยิ้มสีชมพูจ้า 💗";
+    if(/ที่ไหน|ตรงไหน/.test(s)) return "ชมพูอยู่ในเมือง ใกล้ทุ่งหญ้า มองหากล่องสีชมพูสิ!";
+    if(/อายุ|กี่ขวบ/.test(s)) return "อายุเท่ากับรอยยิ้มของชมพู นับไม่ถ้วนเลย 😊";
+    if(/ไหม|มั้ย|หรือเปล่า|รึเปล่า/.test(s)) return pinkYesNo[Math.floor(Math.random()*pinkYesNo.length)];
+    return pinkGeneral[Math.floor(Math.random()*pinkGeneral.length)];
   }
 
   // ================= Lava zone =================
@@ -3253,166 +3476,6 @@
   }
   makeWell(0,22);
 
-  // ================= Piglet Town: hedge-walled town, 1 entrance, neatly organized zones =================
-  // Zones (west to east): dense forest | lawn with a road, lamps, cars and 3 houses for 3 piglets
-  const PIGTOWN = {x1:54, x2:98, z1:8, z2:38}; // widened: 44 x 30 (was 28 x 24)
-  const PIGTOWN_ENTRANCE_CX = (PIGTOWN.x1+PIGTOWN.x2)/2;
-  const PIGTOWN_ENTRANCE_HALFW = 2.6;
-  function inPigTown(x,z){ return x>=PIGTOWN.x1 && x<=PIGTOWN.x2 && z>=PIGTOWN.z1 && z<=PIGTOWN.z2; }
-  const PIGTOWN_FOREST = {x1:PIGTOWN.x1+1.6, x2:PIGTOWN.x1+16, z1:PIGTOWN.z1+1.6, z2:PIGTOWN.z2-1.6};
-  const PIGTOWN_LAWN = {x1:PIGTOWN_FOREST.x2+1, x2:PIGTOWN.x2-1.6, z1:PIGTOWN.z1+1.6, z2:PIGTOWN.z2-1.6};
-  const PIGTOWN_ROAD_X = (PIGTOWN_LAWN.x1+PIGTOWN_LAWN.x2)/2 - 2;
-  const PIGTOWN_ROAD_Z1 = PIGTOWN_LAWN.z1+1, PIGTOWN_ROAD_Z2 = PIGTOWN_LAWN.z2-1;
-
-  const hedgeTrunkMat = new THREE.MeshLambertMaterial({color:0x5a3d22});
-  const hedgeLeafMat = new THREE.MeshLambertMaterial({color:0x3f8a3f});
-  function makeHedgePost(x,z){
-    const g = new THREE.Group();
-    const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.06,0.08,0.5,6), hedgeTrunkMat);
-    trunk.position.y = 0.25; g.add(trunk);
-    const leaf = new THREE.Mesh(new THREE.SphereGeometry(0.34,8,6), hedgeLeafMat);
-    leaf.position.y = 0.62; leaf.scale.set(1,0.85,1);
-    g.add(leaf);
-    g.position.set(x,0,z);
-    scene.add(g);
-    caveWalls.push({x, z, r:0.4}); // shared obstacle list, blocks the player like other small props
-  }
-  // perimeter hedge fence (south edge has the single entrance gap)
-  for(let x=PIGTOWN.x1; x<=PIGTOWN.x2+0.01; x+=1.5){
-    if(Math.abs(x-PIGTOWN_ENTRANCE_CX) > PIGTOWN_ENTRANCE_HALFW) makeHedgePost(x, PIGTOWN.z1);
-    makeHedgePost(x, PIGTOWN.z2);
-  }
-  for(let z=PIGTOWN.z1+1.5; z<=PIGTOWN.z2-1.5+0.01; z+=1.5){
-    makeHedgePost(PIGTOWN.x1, z);
-    makeHedgePost(PIGTOWN.x2, z);
-  }
-  // a low hedge divider marks the line between the forest zone and the lawn zone, for a tidy layout
-  for(let z=PIGTOWN.z1+1.5; z<=PIGTOWN.z2-1.5+0.01; z+=1.8){
-    makeHedgePost(PIGTOWN_FOREST.x2+0.5, z);
-  }
-
-  // --- Forest zone: dense, choppable trees ---
-  const pigTownTrees = [];
-  function makeChoppableTownTree(x,z){
-    const g = new THREE.Group();
-    const trunk = new THREE.Mesh(new THREE.BoxGeometry(1,3,1), logMat);
-    trunk.position.y = 1.5; g.add(trunk);
-    const leaf1 = new THREE.Mesh(new THREE.BoxGeometry(3,2.4,3), leafMat);
-    leaf1.position.y = 3.6; g.add(leaf1);
-    const leaf2 = new THREE.Mesh(new THREE.BoxGeometry(2,1.6,2), leafMat);
-    leaf2.position.y = 5.1; g.add(leaf2);
-    g.position.set(x,0,z);
-    scene.add(g);
-    const rec = {group:g, x, z, r:0.9, hp:3};
-    g.userData.type = 'choptree';
-    g.userData.treeRef = rec;
-    g.traverse(o=>{o.userData.rootRef=g; o.userData.type='choptree'; o.userData.treeRef=rec;});
-    trees.push(rec);
-    pigTownTrees.push(rec);
-  }
-  for(let i=0;i<22;i++){
-    const tx = PIGTOWN_FOREST.x1 + Math.random()*(PIGTOWN_FOREST.x2-PIGTOWN_FOREST.x1);
-    const tz = PIGTOWN_FOREST.z1 + Math.random()*(PIGTOWN_FOREST.z2-PIGTOWN_FOREST.z1);
-    makeChoppableTownTree(tx,tz);
-  }
-
-  // --- Lawn zone: road, street lamps, cars, 3 houses, soil mounds, a real sit-able chair ---
-  const roadMat = new THREE.MeshLambertMaterial({color:0x3a3a3a});
-  const roadLineMat = new THREE.MeshLambertMaterial({color:0xe8e04a});
-  const road = new THREE.Mesh(new THREE.PlaneGeometry(4.2, PIGTOWN_ROAD_Z2-PIGTOWN_ROAD_Z1), roadMat);
-  road.rotation.x = -Math.PI/2;
-  road.position.set(PIGTOWN_ROAD_X, 0.02, (PIGTOWN_ROAD_Z1+PIGTOWN_ROAD_Z2)/2);
-  scene.add(road);
-  for(let z=PIGTOWN_ROAD_Z1+1; z<=PIGTOWN_ROAD_Z2-1; z+=2.2){
-    const line = new THREE.Mesh(new THREE.PlaneGeometry(0.15,1.1), roadLineMat);
-    line.rotation.x = -Math.PI/2;
-    line.position.set(PIGTOWN_ROAD_X, 0.03, z);
-    scene.add(line);
-  }
-  for(let z=PIGTOWN_ROAD_Z1; z<=PIGTOWN_ROAD_Z2+0.01; z+=6){
-    makeLamp(PIGTOWN_ROAD_X-2.6, z);
-    makeLamp(PIGTOWN_ROAD_X+2.6, z);
-  }
-  // simple cars that drive back and forth along the road
-  const carBodyMat = new THREE.MeshLambertMaterial({color:0xD32F2F});
-  const carBodyMat2 = new THREE.MeshLambertMaterial({color:0x1976D2});
-  const carGlassMat = new THREE.MeshLambertMaterial({color:0xBBDEFB});
-  const carWheelMat = new THREE.MeshLambertMaterial({color:0x1a1a1a});
-  const pigTownCars = [];
-  function makeTownCar(bodyMat, laneX, startZ, dir){
-    const g = new THREE.Group();
-    const body = new THREE.Mesh(new THREE.BoxGeometry(0.9,0.45,1.8), bodyMat);
-    body.position.y = 0.4; g.add(body);
-    const cabin = new THREE.Mesh(new THREE.BoxGeometry(0.75,0.35,0.9), carGlassMat);
-    cabin.position.set(0,0.75,-0.1); g.add(cabin);
-    const wheelGeo = new THREE.CylinderGeometry(0.18,0.18,0.12,10);
-    [[0.42,0.6],[0.42,-0.6],[-0.42,0.6],[-0.42,-0.6]].forEach(([wx,wz])=>{
-      const wheel = new THREE.Mesh(wheelGeo, carWheelMat);
-      wheel.rotation.z = Math.PI/2;
-      wheel.position.set(wx,0.18,wz); g.add(wheel);
-    });
-    g.position.set(laneX, 0, startZ);
-    g.rotation.y = dir>0 ? 0 : Math.PI;
-    g.userData.laneX = laneX;
-    g.userData.dir = dir;
-    g.userData.speed = 2.2 + Math.random()*0.8;
-    scene.add(g);
-    pigTownCars.push(g);
-    return g;
-  }
-  makeTownCar(carBodyMat, PIGTOWN_ROAD_X-1.1, PIGTOWN_ROAD_Z1+2, 1);
-  makeTownCar(carBodyMat2, PIGTOWN_ROAD_X+1.1, PIGTOWN_ROAD_Z2-2, -1);
-  function updatePigTownCars(dt){
-    pigTownCars.forEach(car=>{
-      car.position.z += car.userData.dir * car.userData.speed * dt;
-      if(car.userData.dir>0 && car.position.z > PIGTOWN_ROAD_Z2-1.5){
-        car.userData.dir = -1; car.rotation.y = Math.PI;
-      } else if(car.userData.dir<0 && car.position.z < PIGTOWN_ROAD_Z1+1.5){
-        car.userData.dir = 1; car.rotation.y = 0;
-      }
-    });
-  }
-
-  // soil mounds to dig, on the lawn side of the road
-  const soilMoundMat = new THREE.MeshLambertMaterial({color:0x7a5230});
-  const soilMounds = [];
-  function makeSoilMound(x,z){
-    const g = new THREE.Mesh(new THREE.ConeGeometry(0.5,0.4,8), soilMoundMat);
-    g.position.set(x,0.2,z);
-    g.userData.type = 'soilmound';
-    g.userData.respawnTimer = 0;
-    scene.add(g);
-    soilMounds.push(g);
-  }
-  makeSoilMound(PIGTOWN_LAWN.x1+1.5, PIGTOWN_LAWN.z1+2);
-  makeSoilMound(PIGTOWN_LAWN.x1+1.5, (PIGTOWN_LAWN.z1+PIGTOWN_LAWN.z2)/2);
-  makeSoilMound(PIGTOWN_LAWN.x1+1.5, PIGTOWN_LAWN.z2-2);
-
-  // 3 houses for 3 piglets, lined up neatly along the east side of the road
-  const pigTownHouses = [
-    [PIGTOWN_ROAD_X+6, PIGTOWN_LAWN.z1+3],
-    [PIGTOWN_ROAD_X+6, (PIGTOWN_LAWN.z1+PIGTOWN_LAWN.z2)/2],
-    [PIGTOWN_ROAD_X+6, PIGTOWN_LAWN.z2-3]
-  ];
-  pigTownHouses.forEach(([hx,hz])=>{
-    makeHut(hx,hz);
-    spawnHomePig(hx+1.3, hz, 1.3);
-  });
-
-  // a real sit-able chair, out front of the middle house
-  const sitChairs = [];
-  function makeSitChair(x,z,rotY){
-    const g = makeChair(x,z,rotY);
-    g.userData.type = 'sitchair';
-    g.traverse(o=>{ o.userData.type='sitchair'; o.userData.chairRef=g; });
-    g.userData.sitX = x - Math.sin(rotY||0)*0.05;
-    g.userData.sitZ = z - Math.cos(rotY||0)*0.05;
-    g.userData.sitYaw = (rotY||0) + Math.PI;
-    sitChairs.push(g);
-    return g;
-  }
-  makeSitChair(PIGTOWN_ROAD_X+4, (PIGTOWN_LAWN.z1+PIGTOWN_LAWN.z2)/2, -Math.PI/2);
-
   // Villagers wandering around the village
   const villagerColors = [0x5a7a4a, 0x7a5a3a, 0x4a5a7a, 0x7a4a5a, 0x6a6a3a];
   const villagerSkinMat = new THREE.MeshLambertMaterial({color:0xE8B98A});
@@ -3447,24 +3510,232 @@
   }
   for(let i=0;i<6;i++) makeVillager();
 
-  function updateVillagers(dt, elapsed){
-    villagers.forEach((g,i)=>{
-      g.userData.wait -= dt;
-      if(g.userData.wait<=0){
-        g.userData.target = randomVillageTarget();
-        g.userData.wait = 3 + Math.random()*4;
-      }
-      const tgt = g.userData.target;
-      const dx = tgt.x-g.position.x, dz = tgt.z-g.position.z;
-      const d = Math.hypot(dx,dz);
-      if(d>0.2){
-        const spd = 1.15;
-        g.position.x += (dx/d)*spd*dt;
-        g.position.z += (dz/d)*spd*dt;
-        g.rotation.y = Math.atan2(dx,dz);
-      }
+   function updateVillagers(dt, elapsed){
+     villagers.forEach((g,i)=>{
+       g.userData.wait -= dt;
+       if(g.userData.wait<=0){
+         g.userData.target = randomVillageTarget();
+         g.userData.wait = 3 + Math.random()*4;
+       }
+       const tgt = g.userData.target;
+       const dx = tgt.x-g.position.x, dz = tgt.z-g.position.z;
+       const d = Math.hypot(dx,dz);
+       if(d>0.2){
+         const spd = 1.15;
+         g.position.x += (dx/d)*spd*dt;
+         g.position.z += (dz/d)*spd*dt;
+         g.rotation.y = Math.atan2(dx,dz);
+       }
+     });
+   }
+
+   // ================= Enclosed city มหามงคล (1× size of the village) =================
+   // A walled city whose boundary fence is a ring of 1-metre-tall trees with a single
+   // entrance gap. Inside there is a dense-forest zone, a grassy-field zone and three
+   // little pig houses. Entering turns you into an ordinary person (third-person view)
+   // and lets you dig/dirt, chop trees and place wood blocks.
+    const cityGroup = new THREE.Group();
+   scene.add(cityGroup);
+
+   const cityFenceTrees = [];
+   const cityForestTrees = [];
+   const cityPigs = [];
+   const cityHouses = [];
+   const cityBlocks = [];
+
+   const dirtBlockMat = new THREE.MeshLambertMaterial({color:0x7a5230});
+   const woodBlockMat = new THREE.MeshLambertMaterial({map:plankTex});
+   const cityGrassMat = grassMat;
+   const cityPathMat = new THREE.MeshLambertMaterial({color:0xC9A85C});
+   const pigHouseWallMat = new THREE.MeshLambertMaterial({color:0xD9B26B});
+   const pigHouseRoofMat = new THREE.MeshLambertMaterial({color:0x8a6a2a});
+
+   // fence tree: a short 1-metre tree that acts as the city boundary wall
+   function makeFenceTree(x,z){
+     const g = new THREE.Group();
+     const trunk = new THREE.Mesh(new THREE.BoxGeometry(0.35,0.5,0.35), logMat);
+     trunk.position.y=0.25; g.add(trunk);
+     const leaf = new THREE.Mesh(new THREE.BoxGeometry(0.8,0.5,0.8), leafMat);
+     leaf.position.y=0.75; g.add(leaf);
+     g.position.set(x,0,z);
+     g.userData.type='fencetree';
+     g.userData.isFence=true;
+     g.userData.rootRef=g;
+     cityGroup.add(g);
+     cityFenceTrees.push({group:g, x, z, r:0.5});
+     return g;
+   }
+   // regular forest tree (chop-able) for the dense-forest zone inside the city
+   function makeCityForestTree(x,z){
+     const g = new THREE.Group();
+     const trunk = new THREE.Mesh(new THREE.BoxGeometry(0.5,2.2,0.5), logMat);
+     trunk.position.y=1.1; g.add(trunk);
+     const leaf1 = new THREE.Mesh(new THREE.BoxGeometry(2.4,1.8,2.4), leafMat);
+     leaf1.position.y=2.5; g.add(leaf1);
+     const leaf2 = new THREE.Mesh(new THREE.BoxGeometry(1.6,1.4,1.6), leafMat);
+     leaf2.position.y=4.0; g.add(leaf2);
+     g.position.set(x,0,z);
+     g.userData.type='foretree';
+     g.userData.isFence=false;
+     g.userData.rootRef=g;
+     cityGroup.add(g);
+     cityForestTrees.push({group:g, x, z, r:0.9});
+     return g;
+   }
+
+    // Build the fence ring (1-m trees) with a single entrance gap on the south (z1) face.
+    const ENT_GAP = {x1:CITY.x1+19, x2:CITY.x1+24}; // 5m wide gap on the z1 face
+    // z1 (south) run — leave a single gap (the one entrance/exit)
+    for(let x=CITY.x1+0.9; x<=CITY.x2-0.1; x+=1.4){
+      if(x>=ENT_GAP.x1 && x<=ENT_GAP.x2) continue; // entrance gap
+      makeFenceTree(x, CITY.z1+0.4);
+    }
+    // z2 (north) run
+    for(let x=CITY.x1+0.9; x<=CITY.x2-0.1; x+=1.4) makeFenceTree(x, CITY.z2-0.4);
+    // West run
+    for(let z=CITY.z1+0.9; z<=CITY.z2-0.1; z+=1.4) makeFenceTree(CITY.x1+0.4, z);
+    // East run
+    for(let z=CITY.z1+0.9; z<=CITY.z2-0.1; z+=1.4) makeFenceTree(CITY.x2-0.4, z);
+
+    // Gate path + sign leading to the single entrance
+    const gatePath = new THREE.Mesh(new THREE.PlaneGeometry(5, 10), cityPathMat);
+    gatePath.rotation.x = -Math.PI/2;
+    gatePath.position.set((ENT_GAP.x1+ENT_GAP.x2)/2, 0.03, CITY.z1-4.6);
+    scene.add(gatePath);
+    const signPost = new THREE.Mesh(new THREE.BoxGeometry(0.22,2.4,0.22), logMat);
+    signPost.position.set((ENT_GAP.x1+ENT_GAP.x2)/2 + 3.4, 1.2, CITY.z1-2.5);
+    signPost.castShadow = true;
+    scene.add(signPost);
+    const signTex = makeTexture(128,(ctx,s)=>{
+      ctx.fillStyle='#c9a85c'; ctx.fillRect(0,0,s,s);
+      ctx.strokeStyle='#8a6a2a'; ctx.lineWidth=6; ctx.strokeRect(3,3,s-6,s-6);
+      ctx.fillStyle='#4a3210'; ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.font='bold 26px sans-serif';
+      ctx.fillText('เมืองหมู', s/2, s/2-16);
+      ctx.font='20px sans-serif';
+      ctx.fillText('➡ ทางเข้า', s/2, s/2+22);
     });
-  }
+    const signBoard = new THREE.Mesh(new THREE.BoxGeometry(2.6,1.1,0.16),
+      [plankMat,plankMat,plankMat,plankMat,new THREE.MeshLambertMaterial({map:signTex}),new THREE.MeshLambertMaterial({map:signTex})]);
+    signBoard.position.set((ENT_GAP.x1+ENT_GAP.x2)/2 + 3.4, 2.1, CITY.z1-2.5);
+    signBoard.castShadow = true;
+    scene.add(signBoard);
+
+   // Dense-forest zone (top-left interior)
+    const FOREST_ZONE = {x1:CITY.x1+4, x2:CITY.x1+16, z1:CITY.z1+4, z2:CITY.z1+16};
+   const FOREST_TREE_COUNT = 10;
+   for(let i=0;i<FOREST_TREE_COUNT;i++){
+     let gx, gz, tries=0;
+     do{
+       gx = FOREST_ZONE.x1 + 2 + Math.random()*(FOREST_ZONE.x2-FOREST_ZONE.x1-4);
+       gz = FOREST_ZONE.z1 + 2 + Math.random()*(FOREST_ZONE.z2-FOREST_ZONE.z1-4);
+       tries++;
+     } while(tries<40 && cityForestTrees.some(t=>Math.hypot(t.x-gx,t.z-gz)<3.4));
+     makeCityForestTree(gx, gz);
+   }
+
+   // Grassy field zone (bottom-right interior, open plain with a few flowers)
+    const FIELD_ZONE = {x1:CITY.x1+18, x2:CITY.x2-4, z1:CITY.z1+4, z2:CITY.z2-4};
+   const fieldTuftTex = makeTexture(16,(ctx,s)=>speckle(ctx,s,'#5fa93e','#3f7a28',22));
+   const fieldTuftMat = new THREE.MeshLambertMaterial({map:fieldTuftTex});
+   for(let i=0;i<18;i++){
+     const fx = FIELD_ZONE.x1+2 + Math.random()*(FIELD_ZONE.x2-FIELD_ZONE.x1-4);
+     const fz = FIELD_ZONE.z1+2 + Math.random()*(FIELD_ZONE.z2-FIELD_ZONE.z1-4);
+     const tuft = new THREE.Mesh(new THREE.CylinderGeometry(0.16,0.16,0.08,6), fieldTuftMat);
+     tuft.position.set(fx, 0.05, fz);
+     scene.add(tuft);
+   }
+   // a tiny decorative pond in the middle of the grassy field
+   const pond = new THREE.Mesh(new THREE.CircleGeometry(1.6,20), new THREE.MeshLambertMaterial({color:0x2f7fd1, transparent:true, opacity:0.82}));
+   pond.rotation.x = -Math.PI/2;
+   pond.position.set(-87, 0.04, -27);
+   scene.add(pond);
+
+   // Three little pig houses inside the grassy-field zone
+   const pigHouseMat = pigHouseWallMat;
+   const pigHouseRoof = pigHouseRoofMat;
+   const pigDoorMat = new THREE.MeshLambertMaterial({color:0x5c3d20});
+   function makePigHouse(hx, hz, hrot){
+     const g = new THREE.Group();
+     const w = new THREE.Mesh(new THREE.BoxGeometry(2.2,1.8,2.2), pigHouseMat);
+     w.position.y=0.9; g.add(w);
+     // doorway gap on the east side so you can see the little pigs inside
+     const roof = new THREE.Mesh(new THREE.ConeGeometry(1.9,1.3,4), pigHouseRoof);
+     roof.rotation.y=Math.PI/4; roof.position.y=2.2; g.add(roof);
+     g.position.set(hx,0,hz); g.rotation.y=hrot||0;
+     scene.add(g);
+     cityHouses.push({group:g, x:hx, z:hz, r:1.7});
+   }
+    makePigHouse(-91, -30,  Math.PI/3);
+    makePigHouse(-89, -23,  -Math.PI/4);
+    makePigHouse(-91, -16, 0);
+
+   // Three city pigs that roam the city (plain, not feedable)
+   const cityPigMat = new THREE.MeshLambertMaterial({color:0xF4A6B7});
+   const cityPigDarkMat = new THREE.MeshLambertMaterial({color:0xE17FA0});
+   function makeCityPig(px,pz){
+     const g = new THREE.Group();
+     const body = new THREE.Mesh(new THREE.BoxGeometry(1.1,0.7,0.7), cityPigMat);
+     body.position.y=0.55; g.add(body);
+     const snout = new THREE.Mesh(new THREE.BoxGeometry(0.28,0.3,0.28), cityPigDarkMat);
+     snout.position.set(0.65,0.5,0); g.add(snout);
+     const earGeo = new THREE.BoxGeometry(0.22,0.22,0.1);
+     g.add(new THREE.Mesh(earGeo,cityPigMat)).position.set(0.4,0.95,0.22);
+     g.add(new THREE.Mesh(earGeo,cityPigMat)).position.set(0.4,0.95,-0.22);
+     const legGeo = new THREE.BoxGeometry(0.18,0.4,0.18);
+     [[0.35,0.22],[0.35,-0.22],[-0.35,0.22],[-0.35,-0.22]].forEach(([lx,lz])=>{
+       const leg = new THREE.Mesh(legGeo, cityPigDarkMat); leg.position.set(lx,0.2,lz); g.add(leg);
+     });
+     g.position.set(px,0,pz);
+     g.userData.target={x:px,z:pz}; g.userData.wait=Math.random()*2;
+     g.userData.bounce=0;
+     scene.add(g);
+     cityPigs.push(g);
+   }
+     makeCityPig(-93.5, -28.5);
+    makeCityPig(-87, -26);
+    makeCityPig(-90, -18);
+
+   const CITY_INNER_PAD = 2;
+   function randomCityTarget(){
+     return {
+       x: CITY.x1+CITY_INNER_PAD + Math.random()*(CITY.x2-CITY.x1-2*CITY_INNER_PAD),
+       z: CITY.z1+CITY_INNER_PAD + Math.random()*(CITY.z2-CITY.z1-2*CITY_INNER_PAD)
+     };
+   }
+   function updateCityPigs(dt, elapsed){
+     cityPigs.forEach(g=>{
+       g.userData.wait -= dt;
+       if(g.userData.wait<=0){
+         g.userData.target = randomCityTarget();
+         g.userData.wait = 1.5 + Math.random()*2.5;
+       }
+        const tgt = g.userData.target;
+        const dx = tgt.x-g.position.x, dz = tgt.z-g.position.z;
+        const d = Math.hypot(dx,dz);
+        if(d>0.15){
+          const spd = 0.9;
+          let nx = g.position.x + (dx/d)*spd*dt;
+          let nz = g.position.z + (dz/d)*spd*dt;
+          nx = Math.min(CITY.x2-1.2, Math.max(CITY.x1+1.2, nx));
+          nz = Math.min(CITY.z2-1.2, Math.max(CITY.z1+1.2, nz));
+          const blocked = cityHouses.some(h=>Math.hypot(h.x-nx,h.z-nz)<h.r+0.5);
+          if(blocked){
+            g.userData.target = randomCityTarget();
+            g.userData.wait = 1.2;
+          } else {
+            g.position.x = nx; g.position.z = nz;
+            g.rotation.y = Math.atan2(dx,dz);
+          }
+        }
+       if(g.userData.bounce>0){
+         g.userData.bounce -= dt;
+         const s = 1 + Math.max(0,Math.sin(g.userData.bounce*22))*0.18;
+         g.scale.set(s,s,s);
+       } else { g.scale.set(1,1,1); }
+     });
+   }
+
 
   // ================= Gun-headed monster (boss) =================
   // Based on the drawing: blue gun-head, white shirt, red necktie, black pants,
@@ -5074,31 +5345,92 @@
   }
 
   // ================= Player & input state =================
-  const player = { x:0, y:EYE_HEIGHT, z:12, vy:0, yaw:Math.PI, pitch:0, grounded:true, flightTimer:0, transformed:false, transformedSword:false, transformedHybrid:false, transformedParty:false, transformedBlack:false, transformedBlob:false, transformedBoneThief:false, phaseTimer:0, trapTimer:0, hasClock:false, godMode:false, hasBlueClock:false, hasBottle:false, hasAxe:false, hasSword:false, sitting:false };
+  const player = { x:0, y:EYE_HEIGHT, z:12, vy:0, yaw:Math.PI, pitch:0, grounded:true, flightTimer:0, transformed:false, transformedSword:false, transformedHybrid:false, transformedParty:false, transformedBlack:false, transformedBlob:false, transformedBoneThief:false, phaseTimer:0, trapTimer:0, hasClock:false, godMode:false, hasBlueClock:false, hasBottle:false, hasAxe:false, hasSword:false };
 
   // ================= Third-person view: player avatar + camera toggle =================
   let thirdPerson = false;
-  const avatarSkinMat = new THREE.MeshLambertMaterial({color:0xE0AC85});
-  const avatarShirtMat = new THREE.MeshLambertMaterial({color:0x4A90D9});
-  const avatarPantsMat = new THREE.MeshLambertMaterial({color:0x3A3A5A});
+  const avatarSkinMat = new THREE.MeshLambertMaterial({color:0xE8B48A});
+  const avatarShirtMat = new THREE.MeshLambertMaterial({color:0x3E7BD6});
+  const avatarShirtDarkMat = new THREE.MeshLambertMaterial({color:0x2C5FA8});
+  const avatarTeeMat = new THREE.MeshLambertMaterial({color:0xF4F4F6});
+  const avatarPantsMat = new THREE.MeshLambertMaterial({color:0x2F3550});
+  const avatarShoeMat = new THREE.MeshLambertMaterial({color:0xF4F4F6});
+  const avatarSoleMat = new THREE.MeshLambertMaterial({color:0x1E2026});
+  const avatarHairMat = new THREE.MeshLambertMaterial({color:0x2B1B12});
+  const avatarDarkMat = new THREE.MeshLambertMaterial({color:0x1C1C24});
+  const avatarBuckleMat = new THREE.MeshLambertMaterial({color:0xB8BCC6});
+  // face texture drawn on the head's front (+Z) face
+  const avatarFaceTex = makeTexture(64,(ctx,s)=>{
+    ctx.fillStyle='#E8B48A'; ctx.fillRect(0,0,s,s);
+    ctx.fillStyle='#2B1B12';
+    ctx.fillRect(12,18,16,5); ctx.fillRect(36,18,16,5);
+    ctx.fillStyle='#FFFFFF';
+    ctx.fillRect(13,27,14,11); ctx.fillRect(37,27,14,11);
+    ctx.fillStyle='#2A2118';
+    ctx.fillRect(18,29,7,8); ctx.fillRect(42,29,7,8);
+    ctx.fillStyle='#FFFFFF';
+    ctx.fillRect(20,30,2,2); ctx.fillRect(44,30,2,2);
+    ctx.fillStyle='#D89E76'; ctx.fillRect(29,39,6,6);
+    ctx.strokeStyle='#9C5B45'; ctx.lineWidth=3; ctx.lineCap='round';
+    ctx.beginPath(); ctx.arc(32,44,10,0.25*Math.PI,0.75*Math.PI); ctx.stroke();
+    ctx.fillStyle='rgba(228,120,110,0.35)';
+    ctx.fillRect(8,38,8,5); ctx.fillRect(48,38,8,5);
+  });
+  const avatarFaceMat = new THREE.MeshLambertMaterial({map:avatarFaceTex});
   const playerAvatar = new THREE.Group();
   {
-    const head = new THREE.Mesh(new THREE.BoxGeometry(0.34,0.34,0.34), avatarSkinMat);
-    head.position.y = 1.5; playerAvatar.add(head);
-    const torso = new THREE.Mesh(new THREE.BoxGeometry(0.42,0.5,0.24), avatarShirtMat);
-    torso.position.y = 1.1; playerAvatar.add(torso);
-    const armGeo = new THREE.BoxGeometry(0.14,0.46,0.16);
-    const armL = new THREE.Mesh(armGeo, avatarShirtMat); armL.position.set(0.28,1.1,0); playerAvatar.add(armL);
-    const armR = new THREE.Mesh(armGeo, avatarShirtMat); armR.position.set(-0.28,1.1,0); playerAvatar.add(armR);
-    const legGeo = new THREE.BoxGeometry(0.16,0.5,0.18);
-    const legL = new THREE.Mesh(legGeo, avatarPantsMat); legL.position.set(0.11,0.6,0); playerAvatar.add(legL);
-    const legR = new THREE.Mesh(legGeo, avatarPantsMat); legR.position.set(-0.11,0.6,0); playerAvatar.add(legR);
+    const mk=(w,h,d,m,x,y,z,parent)=>{
+      const mesh=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);
+      mesh.position.set(x,y,z); mesh.castShadow=true;
+      (parent||playerAvatar).add(mesh); return mesh;
+    };
+    // legs: pivot at the hip so the walk swing reads correctly
+    const mkLeg=(sx)=>{
+      const leg=new THREE.Group(); leg.position.set(sx,0.86,0); playerAvatar.add(leg);
+      mk(0.17,0.71,0.19, avatarPantsMat, 0,-0.355,0, leg);
+      mk(0.19,0.12,0.26, avatarShoeMat, 0,-0.75,0.05, leg);
+      mk(0.20,0.05,0.27, avatarSoleMat, 0,-0.835,0.05, leg);
+      return leg;
+    };
+    const legL=mkLeg(0.115), legR=mkLeg(-0.115);
+    // arms: pivot at the shoulder
+    const mkArm=(sx,watch)=>{
+      const arm=new THREE.Group(); arm.position.set(sx,1.36,0); playerAvatar.add(arm);
+      mk(0.15,0.34,0.17, avatarShirtMat, 0,-0.18,0, arm);
+      mk(0.16,0.06,0.18, watch?avatarBuckleMat:avatarShirtDarkMat, 0,-0.37,0, arm);
+      mk(0.15,0.16,0.17, avatarSkinMat, 0,-0.46,0, arm);
+      return arm;
+    };
+    const armL=mkArm(0.31,true), armR=mkArm(-0.31,false);
+    // torso: jacket + tee + belt + pockets
+    mk(0.46,0.56,0.28, avatarShirtMat, 0,1.14,0);
+    mk(0.20,0.14,0.03, avatarTeeMat, 0,1.38,0.145);
+    mk(0.04,0.44,0.03, avatarShirtDarkMat, 0,1.12,0.145);
+    mk(0.48,0.09,0.30, avatarDarkMat, 0,0.89,0);
+    mk(0.09,0.07,0.03, avatarBuckleMat, 0,0.89,0.155);
+    mk(0.11,0.11,0.03, avatarShirtDarkMat, 0.15,1.02,0.145);
+    mk(0.11,0.11,0.03, avatarShirtDarkMat, -0.15,1.02,0.145);
+    // neck + head
+    mk(0.16,0.08,0.16, avatarSkinMat, 0,1.45,0);
+    const head = new THREE.Mesh(new THREE.BoxGeometry(0.36,0.34,0.34),
+      [avatarSkinMat,avatarSkinMat,avatarSkinMat,avatarSkinMat,avatarFaceMat,avatarSkinMat]);
+    head.position.set(0,1.65,0); head.castShadow=true; playerAvatar.add(head);
+    // hair: top, fringe, back, sides
+    mk(0.38,0.14,0.38, avatarHairMat, 0,1.80,0);
+    mk(0.38,0.10,0.07, avatarHairMat, 0,1.76,0.17);
+    mk(0.38,0.28,0.08, avatarHairMat, 0,1.72,-0.17);
+    mk(0.07,0.20,0.34, avatarHairMat, 0.17,1.76,0);
+    mk(0.07,0.20,0.34, avatarHairMat, -0.17,1.76,0);
+    // ears
+    mk(0.05,0.10,0.10, avatarSkinMat, 0.195,1.60,0);
+    mk(0.05,0.10,0.10, avatarSkinMat, -0.195,1.60,0);
     playerAvatar.userData.armL = armL; playerAvatar.userData.armR = armR;
     playerAvatar.userData.legL = legL; playerAvatar.userData.legR = legR;
   }
   playerAvatar.visible = false;
   scene.add(playerAvatar);
   function toggleThirdPerson(){
+    if(inCityMode) return; // city forces third-person view
     thirdPerson = !thirdPerson;
     playerAvatar.visible = thirdPerson;
   }
@@ -5121,31 +5453,245 @@
     }
     playerAvatar.userData.lastX = player.x;
     playerAvatar.userData.lastZ = player.z;
-    // hide the body model while any transformation is active (visuals don't have a matching avatar) -
-    // except inside Piglet Town, where you always look like an ordinary person
-    playerAvatar.visible = thirdPerson && (inPigTownZone || !(player.transformed||player.transformedSword||player.transformedHybrid||player.transformedParty||player.transformedBlack||player.transformedBlob||player.transformedBoneThief));
-  }
-  let inPigTownZone = false;
-  let prevThirdPersonBeforeTown = false;
-  function updatePigTownZone(){
-    const nowIn = inPigTown(player.x, player.z);
-    if(nowIn && !inPigTownZone){
-      prevThirdPersonBeforeTown = thirdPerson;
-      thirdPerson = true;
-      playerAvatar.visible = true;
-      townBarEl.classList.add('show');
-      flashShopMsg('🏘️ ยินดีต้อนรับสู่เมืองลูกหมู! ตอนนี้คุณเป็นคนธรรมดา มุมมองบุคคลที่ 3');
-    } else if(!nowIn && inPigTownZone){
-      thirdPerson = prevThirdPersonBeforeTown;
-      playerAvatar.visible = thirdPerson;
-      townBarEl.classList.remove('show');
-      flashShopMsg('👋 ออกจากเมืองลูกหมูแล้ว');
-    }
-    inPigTownZone = nowIn;
+    // hide the body model while any transformation is active (visuals don't have a matching avatar)
+    playerAvatar.visible = thirdPerson && !(player.transformed||player.transformedSword||player.transformedHybrid||player.transformedParty||player.transformedBlack||player.transformedBlob||player.transformedBoneThief);
   }
   const keys = {};
   let active = false; // true once "start" pressed
-  const stats = { wood:0, corn:0, gems:0, captured:0, soil:0 };
+  const stats = { wood:0, corn:0, gems:0, captured:0, dirt:0, rice:0 };
+
+  // ================= City mode: ordinary person + third-person + build actions =================
+  const cityChipEl = document.getElementById('cityChip');
+  const dirtCountEl = document.getElementById('dirtCount');
+  const invPanelEl = document.getElementById('invPanel');
+  const invBtnEl = document.getElementById('invBtn');
+  const invCloseEl = document.getElementById('invClose');
+  const invBodyEl = document.getElementById('invBody');
+
+  let inCityMode = false;
+  let cityPreState = null;
+  const cityHoles = [];
+  const holeSoilMat  = new THREE.MeshLambertMaterial({color:0x7a5227});
+  const holeWallMat  = new THREE.MeshLambertMaterial({color:0x5a3a1a});
+  const holeFloorMat = new THREE.MeshLambertMaterial({color:0x1d1207});
+
+  function hideTransUI(){
+    transformedChip.style.display='none';
+    godChip.style.display='none';
+    godBarEl.classList.remove('show');
+    [shootBtn,cloneBtn,attackBtn,swingBtn,runBtn,grabBtn,biteBtn,climbBtn,phaseBtn,balloonBtn,splitBtn,eatBtn,boneBtn]
+      .forEach(b=> b.style.display='none');
+  }
+
+  function enterCityMode(){
+    if(inCityMode) return;
+    inCityMode = true;
+    cityPreState = {
+      thirdPerson,
+      transformed:player.transformed, transformedSword:player.transformedSword,
+      transformedHybrid:player.transformedHybrid, transformedParty:player.transformedParty,
+      transformedBlack:player.transformedBlack, transformedBlob:player.transformedBlob,
+      transformedBoneThief:player.transformedBoneThief,
+      phaseTimer:player.phaseTimer, godMode:player.godMode, flightTimer:player.flightTimer
+    };
+    player.transformed=player.transformedSword=player.transformedHybrid=false;
+    player.transformedParty=player.transformedBlack=player.transformedBlob=false;
+    player.transformedBoneThief=false;
+    player.phaseTimer=0; player.flightTimer=0; player.godMode=false;
+    hideTransUI();
+    thirdPerson = true;                 // forced third-person view inside the city
+    playerAvatar.visible = true;
+    cityChipEl.classList.add('show');
+    setTimeout(()=>cityChipEl.classList.remove('show'), 4200);
+    promptEl.classList.remove('show');
+    refreshActionButtons();
+    digBtn.style.display = 'flex';
+    placeBtn.style.display = 'flex';
+    swingBtn.style.display = 'none';
+    runBtn.style.display = 'none';
+    clockBtn.style.display = 'none';
+    followBtn.style.display = 'none';
+  }
+  function exitCityMode(){
+    if(!inCityMode) return;
+    inCityMode = false;
+    if(cityPreState){
+      player.transformed=cityPreState.transformed;
+      player.transformedSword=cityPreState.transformedSword;
+      player.transformedHybrid=cityPreState.transformedHybrid;
+      player.transformedParty=cityPreState.transformedParty;
+      player.transformedBlack=cityPreState.transformedBlack;
+      player.transformedBlob=cityPreState.transformedBlob;
+      player.transformedBoneThief=cityPreState.transformedBoneThief;
+      player.phaseTimer=cityPreState.phaseTimer;
+      player.flightTimer=cityPreState.flightTimer;
+      player.godMode=cityPreState.godMode;
+      thirdPerson = cityPreState.thirdPerson;
+      playerAvatar.visible = thirdPerson;
+      refreshActionButtons();
+    }
+    cityChipEl.classList.remove('show');
+    invPanelEl.classList.remove('show');
+    digBtn.style.display = 'none';
+    placeBtn.style.display = 'none';
+    promptEl.classList.remove('show');
+  }
+  // helper: show action buttons for whatever abilities are currently active
+  function refreshActionButtons(){
+    transformedChip.style.display = (player.transformed||player.transformedSword||player.transformedHybrid||player.transformedParty||player.transformedBlack||player.transformedBlob||player.transformedBoneThief) ? 'flex':'none';
+    godChip.style.display = player.godMode ? 'flex':'none';
+    godBarEl.classList.toggle('show', player.godMode);
+    shootBtn.style.display = (player.transformed||player.transformedHybrid) ? 'flex':'none';
+    cloneBtn.style.display = player.transformed ? 'flex':'none';
+    attackBtn.style.display = player.transformed ? 'flex':'none';
+    swingBtn.style.display = (player.transformedSword||player.transformedHybrid||player.hasSword) ? 'flex':'none';
+    runBtn.style.display = (player.transformedSword||player.godMode) ? 'flex':'none';
+    grabBtn.style.display = player.transformedHybrid ? 'flex':'none';
+    biteBtn.style.display = player.transformedHybrid ? 'flex':'none';
+    climbBtn.style.display = player.transformedHybrid ? 'flex':'none';
+    phaseBtn.style.display = player.transformedHybrid ? 'flex':'none';
+    balloonBtn.style.display = player.transformedParty ? 'flex':'none';
+    splitBtn.style.display = player.transformedBlack ? 'flex':'none';
+    eatBtn.style.display = (player.transformedBlob||player.transformedBoneThief) ? 'flex':'none';
+    boneBtn.style.display = player.transformedBoneThief ? 'flex':'none';
+    clockBtn.style.display = player.hasClock ? 'flex':'none';
+    followBtn.style.display = smileyState.opened ? 'flex':'none';
+  }
+
+  function updateCityEntry(){
+    // hysteresis: enter only when truly inside the city rect, leave when outside the
+    // padded rect — so standing against the outside of the fence never toggles the mode
+    if(inCity(player.x, player.z) && !inCityMode) enterCityMode();
+    else if(!inCityWalls(player.x, player.z) && inCityMode) exitCityMode();
+  }
+
+  // ---- Dig dirt (Z) : +1 ดิน, leaves a square hole pit on the player's tile ----
+  function makeSquareHole(hx, hz){
+    const O = 0.82, W = 0.15, rimH = 0.13, outer = O + W*2;
+    const padY = 0.012, floorY = 0.03;
+    const g = new THREE.Group();
+    const pad = new THREE.Mesh(new THREE.PlaneGeometry(1.5,1.5), holeSoilMat);
+    pad.rotation.x = -Math.PI/2; pad.position.y = padY; pad.receiveShadow = true;
+    g.add(pad);
+    const rimGeoNS = new THREE.BoxGeometry(outer, rimH, W);
+    const rimGeoEW = new THREE.BoxGeometry(W, rimH, O);
+    [[rimGeoNS,0,(O+W)/2],[rimGeoNS,0,-(O+W)/2],[rimGeoEW,(O+W)/2,0],[rimGeoEW,-(O+W)/2,0]].forEach(([geo,x,z])=>{
+      const m = new THREE.Mesh(geo, holeSoilMat);
+      m.position.set(x, padY + rimH/2, z);
+      m.castShadow = true; m.receiveShadow = true;
+      g.add(m);
+    });
+    const wallH = (padY + rimH) - floorY;
+    const wallGeo = new THREE.PlaneGeometry(O, wallH);
+    [[0,-O/2,0],[0,O/2,Math.PI],[-O/2,0,Math.PI/2],[O/2,0,-Math.PI/2]].forEach(([x,z,ry])=>{
+      const m = new THREE.Mesh(wallGeo, holeWallMat);
+      m.position.set(x, floorY + wallH/2, z);
+      m.rotation.y = ry;
+      g.add(m);
+    });
+    const floor = new THREE.Mesh(new THREE.PlaneGeometry(O,O), holeFloorMat);
+    floor.rotation.x = -Math.PI/2; floor.position.y = floorY;
+    g.add(floor);
+    g.position.set(hx, 0, hz);
+    scene.add(g);
+    return g;
+  }
+
+  function digDirt(){
+    if(!inCityMode) return;
+    stats.dirt++;
+    updateHUD();
+    const hx = Math.round(player.x), hz = Math.round(player.z);
+    if(!cityHoles.some(h=>h.x===hx && h.z===hz)){
+      const mesh = makeSquareHole(hx, hz);
+      cityHoles.push({x:hx, z:hz, mesh});
+      if(cityHoles.length>60) scene.remove(cityHoles.shift().mesh);
+    }
+    flashCityMsg('⛏️ ขุดได้ดิน +1 ดิน 🟫');
+  }
+
+  // ---- Chop a tree (E on a city tree) : +2/1 wood ----
+  function chopTree(obj){
+    if(!inCityMode) return false;
+    const isFence = !!obj.userData.isFence;
+    const idxF = isFence ? cityFenceTrees.findIndex(t=>t.group===obj) : -1;
+    const idxR = isFence ? -1 : cityForestTrees.findIndex(t=>t.group===obj);
+    const idx = isFence ? idxF : idxR;
+    if(idx<0) return false;
+    const rec = isFence ? cityFenceTrees[idx] : cityForestTrees[idx];
+    cityGroup.remove(obj);
+    if(isFence) cityFenceTrees.splice(idx,1); else cityForestTrees.splice(idx,1);
+    stats.wood += isFence ? 1 : 2;
+    updateHUD();
+    flashCityMsg(isFence ? '🪓 ตัดต้นไม้เล็ก +1 ไม้ 🪵' : '🪓 ตัดต้นไม้ใหญ่ +2 ไม้ 🪵');
+    return true;
+  }
+
+  // ---- Place a block (X wood / C dirt) : costs 1 resource, becomes a solid collider ----
+  function placeBlock(kind){
+    if(!inCityMode) return;
+    if(kind==='wood' && stats.wood<1){ flashCityMsg('ยังไม่มีไม้! ตัดต้นไม้ก่อน (E)'); return; }
+    if(kind!=='wood' && stats.dirt<1){ flashCityMsg('ยังไม่มีดิน! ขุดดินก่อน (Z)'); return; }
+    const fwd = new THREE.Vector3();
+    camera.getWorldDirection(fwd);
+    const bx = Math.round(player.x + fwd.x*1.4);
+    const bz = Math.round(player.z + fwd.z*1.4);
+    if(!inCityWalls(bx,bz)){ flashCityMsg('วางได้เฉพาะในเมืองเท่านั้น!'); return; }
+    if(cityBlocks.some(b=>Math.hypot(b.x-bx, b.z-bz)<0.5)){ flashCityMsg('มีบล็อกอยู่ตรงนั้นแล้ว'); return; }
+    if(kind==='wood') stats.wood--; else stats.dirt--;
+    const mat = kind==='wood' ? woodBlockMat : dirtBlockMat;
+    const mesh = new THREE.Mesh(new THREE.BoxGeometry(1,1,1), mat);
+    mesh.position.set(bx, 0.5, bz);
+    mesh.castShadow = true; mesh.receiveShadow = true;
+    mesh.userData.type = kind==='wood' ? 'blockwood' : 'blockdirt';
+    mesh.userData.rootRef = mesh;
+    scene.add(mesh);
+    cityBlocks.push({mesh, x:bx, z:bz, r:0.72, kind});
+    updateHUD();
+    flashCityMsg(kind==='wood' ? '🧱 วางไม้แล้ว!' : '🟫 วางดินแล้ว!');
+  }
+
+  function breakBlock(obj){
+    const i = cityBlocks.findIndex(b=>b.mesh===obj);
+    if(i<0) return false;
+    if(obj.userData.type==='blockwood') stats.wood++; else stats.dirt++;
+    scene.remove(obj);
+    cityBlocks.splice(i,1);
+    updateHUD();
+    flashCityMsg('🧱 เก็บบล็อกกลับเข้ากระเป๋า');
+    return true;
+  }
+
+  let cityMsgTimer = null;
+  function flashCityMsg(text){
+    hintEl.textContent = text;
+    hintEl.classList.remove('fade');
+    if(cityMsgTimer) clearTimeout(cityMsgTimer);
+    cityMsgTimer = setTimeout(()=> hintEl.classList.add('fade'), 1800);
+  }
+
+  // ---- Inventory panel ----
+  const invItems = [
+    {name:'ไม้',        icon:'🪵', get:()=>stats.wood},
+    {name:'ดิน',        icon:'🟫', get:()=>stats.dirt},
+    {name:'ข้าว',       icon:'🍚', get:()=>stats.rice},
+    {name:'ข้าวโพด',    icon:'🌽', get:()=>stats.corn},
+    {name:'เพชร',       icon:'💎', get:()=>stats.gems},
+    {name:'สัตว์จับได้', icon:'🐾', get:()=>stats.captured},
+    {name:'หมูในเมือง', icon:'🐷', get:()=>cityPigs.length}
+  ];
+  function refreshInventory(){
+    if(!invPanelEl.classList.contains('show')) return;
+    invBodyEl.innerHTML = invItems.map(it=>
+      `<div class="invSlot"><span class="invSlotIcon">${it.icon}</span><span class="invSlotName">${it.name}</span><span class="invSlotCount">${it.get()}</span></div>`
+    ).join('');
+  }
+  invBtnEl.addEventListener('click', ()=>{
+    invPanelEl.classList.toggle('show');
+    refreshInventory();
+  });
+  invCloseEl.addEventListener('click', ()=> invPanelEl.classList.remove('show'));
+
   let wantJump = false;
   let holdUp = false; // continuous ascend input for flight (touch/mouse jump button)
   let holdRun = false; // continuous sprint input (touch/mouse run button)
@@ -5166,6 +5712,8 @@
   const flyTimeEl = document.getElementById('flyTime');
   const hintEl = document.getElementById('hint');
   const interactBtn = document.getElementById('interactBtn');
+  const digBtn = document.getElementById('digBtn');
+  const placeBtn = document.getElementById('placeBtn');
   const jumpBtn2 = document.getElementById('jumpBtn2');
   const fireBtn = document.getElementById('fireBtn');
   const shootBtn = document.getElementById('shootBtn');
@@ -5956,6 +6504,93 @@
     if(e.code==='Enter') askSmiley();
   });
 
+  // ---- Pink friend chat panel: talk / invite game / follow / feed rice ----
+  const pinkChatEl = document.getElementById('pinkChat');
+  const pinkChatLogEl = document.getElementById('pinkChatLog');
+  const pinkChatInputEl = document.getElementById('pinkChatInput');
+  const pinkChatAskEl = document.getElementById('pinkChatAsk');
+  const pinkChatCloseEl = document.getElementById('pinkChatClose');
+  const pinkGameBtnEl = document.getElementById('pinkGameBtn');
+  const pinkFollowBtnEl = document.getElementById('pinkFollowBtn');
+  const pinkFeedBtnEl = document.getElementById('pinkFeedBtn');
+  const pinkRpsEl = document.getElementById('pinkRps');
+  let pinkChatOpen = false;
+
+  function pinkLog(text, who){
+    const el = document.createElement('div');
+    el.className = who;
+    el.textContent = text;
+    pinkChatLogEl.appendChild(el);
+    pinkChatLogEl.scrollTop = pinkChatLogEl.scrollHeight;
+  }
+  function openPinkChat(){
+    if(!pinkState.opened) return;
+    pinkChatOpen = true;
+    pinkChatEl.classList.add('show');
+    if(!pinkChatLogEl.childElementCount)
+      pinkLog('หวัดดีจ้า! ฉันชื่อชมพู 💗 อยู่ในกล่องชมพูใบนี้ตั้งนานเลย เรียกฉันออกมาเล่นด้วยสิ!', 'a');
+    setTimeout(()=>pinkChatInputEl.focus(), 50);
+  }
+  function closePinkChat(){
+    pinkChatOpen = false;
+    pinkChatEl.classList.remove('show');
+    pinkChatInputEl.blur();
+  }
+  function askPink(){
+    const q = pinkChatInputEl.value;
+    if(!q.trim()) return;
+    pinkLog(q, 'q');
+    pinkLog(pinkAnswer(q), 'a');
+    pinkChatInputEl.value = '';
+  }
+  function invitePinkGame(){
+    pinkRpsEl.classList.add('show');
+    pinkLog('มาเล่นเป่ายิ้งฉุบกัน! เลือกเลยนะ ✊ ค้อน / ✋ กระดาษ / ✌️ กรรไกร — ชนะชมพูได้ข้าว 🍚 ด้วย!', 'a');
+  }
+  const RPS_ICON = ['✊','✋','✌️'];
+  const RPS_NAME = ['ค้อน','กระดาษ','กรรไกร'];
+  function playRps(move){
+    const she = Math.floor(Math.random()*3);
+    let result;
+    if(move === she){ pinkState.draws++; result = 'เสมอ! 🤝'; }
+    else if((move+1)%3 === she){ pinkState.wins++; stats.rice++; updateHUD(); result = 'เธอชนะ! 🎉 ชมพูให้ข้าว 🍚+1 เลย'; }
+    else { pinkState.losses++; result = 'ชมพูชนะ! 😜'; }
+    pinkLog(`เราเลือก ${RPS_ICON[move]} ${RPS_NAME[move]}`, 'q');
+    pinkLog(`ชมพูเลือก ${RPS_ICON[she]} ${RPS_NAME[she]} — ${result} (สกอร์ ชนะ ${pinkState.wins} • เสมอ ${pinkState.draws} • แพ้ ${pinkState.losses})`, 'a');
+  }
+  function feedPink(){
+    if(!pinkState.opened) return;
+    if(stats.rice <= 0){
+      pinkLog('ข้าวหมดแล้ว 😢 เปิดกล่อง🎁 หรือชนะเป่ายิ้งฉุบ เพื่อเอาข้าว 🍚 มาให้ชมพูกินนะ', 'a');
+      return;
+    }
+    stats.rice--;
+    pinkState.eaten++;
+    pinkState.feedT = 1.4;
+    updateHUD();
+    const lines = [
+      'อร่อยจัง!! ขอบคุณสำหรับข้าว 🍚💕',
+      'อิ่มท้องเลย~ ข้าวฝีมือเธออร่อยจัง 🍚😋',
+      'จุ๊มุ่ยๆ~ หอมไปทั้งกล่องเลย 💗',
+      'ชมพูชอบข้าวที่เธอให้ที่สุดเลย 🍚💗'
+    ];
+    pinkLog(lines[pinkState.eaten % lines.length], 'a');
+    if(pinkState.eaten % 5 === 0)
+      pinkLog(`กินครบ ${pinkState.eaten} ถ้วยแล้ว! เราเป็นเพื่อนกันตลอดไปนะ 💗`, 'a');
+  }
+  pinkChatAskEl.addEventListener('click', askPink);
+  pinkChatCloseEl.addEventListener('click', closePinkChat);
+  pinkChatInputEl.addEventListener('keydown', (e)=>{
+    e.stopPropagation();
+    if(e.code==='Enter') askPink();
+  });
+  pinkGameBtnEl.addEventListener('click', invitePinkGame);
+  pinkFollowBtnEl.addEventListener('click', togglePinkFollow);
+  pinkFeedBtnEl.addEventListener('click', feedPink);
+  pinkRpsEl.querySelectorAll('button').forEach(b=>{
+    b.addEventListener('click', ()=> playRps(parseInt(b.dataset.move,10)));
+  });
+
   // ================= Shop: blue clock (rewind time) & bottle (combine smiley bugs) =================
   const shopBtnEl = document.getElementById('shopBtn');
   const shopPanelEl = document.getElementById('shopPanel');
@@ -6020,96 +6655,6 @@
   const viewToggleBtnEl = document.getElementById('viewToggleBtn');
   viewToggleBtnEl.addEventListener('click', toggleThirdPerson);
 
-  // ================= Inventory panel =================
-  const invBtnEl = document.getElementById('invBtn');
-  const invPanelEl = document.getElementById('invPanel');
-  const invCloseBtnEl = document.getElementById('invCloseBtn');
-  const invWoodEl = document.getElementById('invWood');
-  const invSoilEl = document.getElementById('invSoil');
-  const invCornEl = document.getElementById('invCorn');
-  const invGemsEl = document.getElementById('invGems');
-  function refreshInventory(){
-    invWoodEl.textContent = stats.wood;
-    invSoilEl.textContent = stats.soil;
-    invCornEl.textContent = stats.corn;
-    invGemsEl.textContent = stats.gems;
-  }
-  invBtnEl.addEventListener('click', ()=>{ refreshInventory(); invPanelEl.classList.add('show'); });
-  invCloseBtnEl.addEventListener('click', ()=> invPanelEl.classList.remove('show'));
-
-  // ================= Piglet Town: grid-based building (dig soil anywhere + stack/connect wood blocks) =================
-  const townBarEl = document.getElementById('townBar');
-  const placeWoodBtnEl = document.getElementById('placeWoodBtn');
-  const digSoilBtnEl = document.getElementById('digSoilBtn');
-  const placedWoodMat = new THREE.MeshLambertMaterial({map:logTex});
-  const GRID = 1; // block/grid cell size - blocks snap to this so they line up and connect
-  const blockGrid = {}; // "gx,gz" -> stack height (number of blocks)
-  const placedBlocks = []; // {mesh, gx, gz, level, colliderIdx}
-  function gridKey(gx,gz){ return gx+','+gz; }
-  function targetGridCell(){
-    const fwd = new THREE.Vector3(0,0,-1).applyEuler(new THREE.Euler(0, player.yaw, 0));
-    const tx = player.x + fwd.x*1.8, tz = player.z + fwd.z*1.8;
-    return { gx: Math.round(tx/GRID), gz: Math.round(tz/GRID) };
-  }
-  function placeWoodBlock(){
-    if(stats.wood<1){ flashShopMsg('ไม้ไม่พอ ต้องมีไม้อย่างน้อย 1 ชิ้น 🪵'); return; }
-    if(placedBlocks.length>=120){ flashShopMsg('วางไม้ในเมืองเต็มแล้ว!'); return; }
-    const {gx,gz} = targetGridCell();
-    const key = gridKey(gx,gz);
-    const level = blockGrid[key]||0;
-    if(level>=6){ flashShopMsg('ซ้อนสูงสุดแล้วตรงจุดนี้!'); return; }
-    const bx = gx*GRID, bz = gz*GRID;
-    const block = new THREE.Mesh(new THREE.BoxGeometry(GRID*0.98,GRID*0.98,GRID*0.98), placedWoodMat);
-    block.position.set(bx, level*GRID + GRID/2, bz);
-    scene.add(block);
-    block.userData.type = 'placedblock';
-    const colliderIdx = caveWalls.length;
-    caveWalls.push({x:bx, z:bz, r:0.55});
-    const rec = {mesh:block, gx, gz, level, colliderIdx};
-    block.userData.blockRef = rec;
-    placedBlocks.push(rec);
-    blockGrid[key] = level+1;
-    stats.wood -= 1;
-    updateHUD(); refreshInventory();
-    flashShopMsg('🧱 ต่อบล็อกสำเร็จ! ('+(level+1)+' ชั้น)');
-  }
-  function removePlacedBlock(rec){
-    scene.remove(rec.mesh);
-    const idx = placedBlocks.indexOf(rec);
-    if(idx>=0) placedBlocks.splice(idx,1);
-    caveWalls[rec.colliderIdx].r = 0; // neutralize collider (kept in place so other indices stay valid)
-    const key = gridKey(rec.gx, rec.gz);
-    if(blockGrid[key]===rec.level+1) blockGrid[key] = rec.level;
-    stats.wood += 1;
-    updateHUD(); refreshInventory();
-    flashShopMsg('🪵 เก็บบล็อกคืนแล้ว (+1 ไม้)');
-  }
-  placeWoodBtnEl.addEventListener('click', placeWoodBlock);
-
-  // Free digging: dig the ground anywhere in town for soil, leaves a little dirt patch
-  const dirtPatchMat = new THREE.MeshLambertMaterial({color:0x6b4a2c});
-  const dirtPatches = [];
-  let digCooldown = 0;
-  function digSoilHere(){
-    if(digCooldown>0){ return; }
-    digCooldown = 0.8;
-    const fwd = new THREE.Vector3(0,0,-1).applyEuler(new THREE.Euler(0, player.yaw, 0));
-    const dx = player.x + fwd.x*1.6, dz = player.z + fwd.z*1.6;
-    if(dirtPatches.length>=80){
-      const old = dirtPatches.shift();
-      scene.remove(old);
-    }
-    const patch = new THREE.Mesh(new THREE.CircleGeometry(0.55,12), dirtPatchMat);
-    patch.rotation.x = -Math.PI/2;
-    patch.position.set(dx, 0.015, dz);
-    scene.add(patch);
-    dirtPatches.push(patch);
-    stats.soil += 1 + Math.floor(Math.random()*2);
-    updateHUD(); refreshInventory();
-    flashShopMsg('⛏️ ขุดดินสำเร็จ!');
-  }
-  digSoilBtnEl.addEventListener('click', digSoilHere);
-
 
   function updateHUD(){
     woodEl.textContent = stats.wood;
@@ -6117,6 +6662,10 @@
     pigEl.textContent = pigs.length;
     gemEl.textContent = stats.gems;
     captureEl.textContent = stats.captured;
+    if(dirtCountEl) dirtCountEl.textContent = stats.dirt;
+    const riceEl = document.getElementById('riceCount');
+    if(riceEl) riceEl.textContent = stats.rice;
+    refreshInventory();
   }
   updateHUD();
 
@@ -6132,11 +6681,11 @@
   let dragging = false, lastX=0, lastY=0;
   const SENS = 0.0035;
   domCanvas.addEventListener('mousedown', (e)=>{
-    if(!active || smileyChatOpen || godPromptOpen) return;
+    if(!active || smileyChatOpen || pinkChatOpen || godPromptOpen) return;
     dragging = true; lastX=e.clientX; lastY=e.clientY;
   });
   window.addEventListener('mousemove', (e)=>{
-    if(!dragging || smileyChatOpen || godPromptOpen) return;
+    if(!dragging || smileyChatOpen || pinkChatOpen || godPromptOpen) return;
     const dx = e.clientX-lastX, dy = e.clientY-lastY;
     lastX=e.clientX; lastY=e.clientY;
     player.yaw -= dx*SENS;
@@ -6151,7 +6700,7 @@
   let lookTouchId = null, lookLast={x:0,y:0};
 
   domCanvas.addEventListener('touchstart', (e)=>{
-    if(!active || smileyChatOpen || godPromptOpen) return;
+    if(!active || smileyChatOpen || pinkChatOpen || godPromptOpen) return;
     for(const t of e.changedTouches){
       const isLeft = t.clientX < window.innerWidth/2;
       if(isLeft && moveTouchId===null){
@@ -6166,7 +6715,7 @@
   }, {passive:true});
 
   domCanvas.addEventListener('touchmove', (e)=>{
-    if(smileyChatOpen || godPromptOpen) return;
+    if(smileyChatOpen || pinkChatOpen || godPromptOpen) return;
     for(const t of e.changedTouches){
       if(t.identifier===moveTouchId){
         let dx = t.clientX-moveStart.x, dy = t.clientY-moveStart.y;
@@ -6206,6 +6755,12 @@
   function pressInteract(e){ e.preventDefault(); if(active) doInteract(); }
   interactBtn.addEventListener('touchstart', pressInteract, {passive:false});
   interactBtn.addEventListener('mousedown', pressInteract);
+  function pressDig(e){ e.preventDefault(); if(active) digDirt(); }
+  digBtn.addEventListener('touchstart', pressDig, {passive:false});
+  digBtn.addEventListener('mousedown', pressDig);
+  function pressPlace(e){ e.preventDefault(); if(active) placeBlock(stats.wood>=1 ? 'wood' : 'dirt'); }
+  placeBtn.addEventListener('touchstart', pressPlace, {passive:false});
+  placeBtn.addEventListener('mousedown', pressPlace);
 
   function triggerFire(){
     if(!active || fireCooldown>0) return;
@@ -6296,6 +6851,16 @@
   window.addEventListener('keydown', (e)=>{
     if(document.activeElement && (document.activeElement.tagName==='INPUT' || document.activeElement.tagName==='TEXTAREA')) return;
     keys[e.code]=true;
+    if(inCityMode){
+      if(e.code==='KeyZ' && !e.repeat) digDirt();
+      if(e.code==='KeyX' && !e.repeat) placeBlock('wood');
+      if(e.code==='KeyC' && !e.repeat) placeBlock('dirt');
+      if(e.code==='KeyE') doInteract();
+      if(e.code==='Space') wantJump = true;
+      if(e.code==='KeyI') toggleThirdPerson();
+      if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code)) e.preventDefault();
+      return;
+    }
     if(e.code==='KeyE') doInteract();
     if(e.code==='KeyF') triggerFire();
     if(e.code==='KeyT') shootGun();
@@ -6352,29 +6917,33 @@
       ...(clockItem && clockItem.visible ? [clockItem] : []),
       ...(axeItem && axeItem.visible ? [axeItem] : []),
       ...(swordItem && swordItem.visible ? [swordItem] : []),
-      ...pigTownTrees.filter(t=>t.hp>0).map(t=>t.group),
-      ...soilMounds.filter(o=>o.visible),
-      ...sitChairs,
-      ...placedBlocks.map(r=>r.mesh),
       ...(smileyBox && smileyBox.userData.type==='smileybox' ? [smileyBox] : []),
       ...(smileyCreature && smileyCreature.visible && smileyCreature.userData.type==='smileynpc' ? [smileyCreature] : []),
+      ...(pinkBox && pinkBox.userData.type==='pinkbox' ? [pinkBox] : []),
+      ...(pinkCreature && pinkCreature.visible && pinkCreature.userData.type==='pinknpc' ? [pinkCreature] : []),
       ...(gunMonster.visible ? [gunMonster] : []),
       ...(swordMonster.visible ? [swordMonster] : []),
       ...(hybridMonster.visible ? [hybridMonster] : []),
       ...(partyMonster.visible ? [partyMonster] : []),
       ...(blackDemon.visible ? [blackDemon] : []),
       ...(handBlob.visible ? [handBlob] : []),
-      ...(boneThief.visible ? [boneThief] : [])
+      ...(boneThief.visible ? [boneThief] : []),
+      ...(inCityMode ? [
+        ...cityFenceTrees.map(t=>t.group),
+        ...cityForestTrees.map(t=>t.group),
+        ...cityBlocks.map(b=>b.mesh)
+      ] : [])
     ];
     const hits = raycaster.intersectObjects(candidates, true);
     currentTarget = null;
-    if(hits.length){
-      const hit = hits[0];
-      if(hit.distance <= REACH){
-        let obj = hit.object;
-        while(obj && !obj.userData.type) obj = obj.parent;
-        if(obj) currentTarget = obj;
-      }
+    // Reach is measured from the player (not the camera) so that interactions still
+    // work in third-person view, where the camera sits ~4.6m behind the player.
+    const playerPos = new THREE.Vector3(player.x, player.y, player.z);
+    for(const hit of hits){
+      if(hit.point.distanceTo(playerPos) > REACH) continue;
+      let obj = hit.object;
+      while(obj && !obj.userData.type) obj = obj.parent;
+      if(obj){ currentTarget = obj; break; }
     }
     if(currentTarget){
       let text = '';
@@ -6386,12 +6955,10 @@
       else if(currentTarget.userData.type==='clockitem') text = 'เก็บนาฬิกาปลุก ⏰ (ใช้หยุดเวลาได้)';
       else if(currentTarget.userData.type==='axeitem') text = 'เก็บขวาน 🪓 (ตัดไม้ได้ไม้เพิ่มขึ้น)';
       else if(currentTarget.userData.type==='sworditem') text = 'เก็บดาบ ⚔️ (ฟันดาบได้โดยไม่ต้องแปลงร่าง กด M)';
-      else if(currentTarget.userData.type==='choptree') text = 'ตัดต้นไม้ 🪓 ('+currentTarget.userData.treeRef.hp+' ครั้ง)';
-      else if(currentTarget.userData.type==='soilmound') text = 'ขุดดิน ⛏️';
-      else if(currentTarget.userData.type==='sitchair') text = 'นั่งเก้าอี้ 🪑';
-      else if(currentTarget.userData.type==='placedblock') text = 'เก็บบล็อกคืน 🪵 (+1 ไม้)';
       else if(currentTarget.userData.type==='smileybox') text = 'เปิดกล่อง 📦😊';
       else if(currentTarget.userData.type==='smileynpc') text = 'คุยกับเพื่อนยิ้ม 😊 (E)';
+      else if(currentTarget.userData.type==='pinkbox') text = 'เปิดกล่องชมพู 🎁💗 (E)';
+      else if(currentTarget.userData.type==='pinknpc') text = 'คุยกับน้องชมพู 💗 (E)';
       else if(currentTarget.userData.type==='monster') text = 'กด E เพื่อกินหัวใจและกลายร่างเป็นมัน! 💙🔫';
       else if(currentTarget.userData.type==='monster2') text = 'กด E เพื่อกินหัวใจและกลายร่างเป็นมัน! 🧡⚔️';
       else if(currentTarget.userData.type==='monster3') text = 'กด E เพื่อกินหัวใจและกลายร่างเป็นมัน! 👁️⚙️';
@@ -6399,23 +6966,26 @@
       else if(currentTarget.userData.type==='monster5') text = 'กด E เพื่อกินหัวใจและกลายร่างเป็นมัน! ⚫';
       else if(currentTarget.userData.type==='monster6') text = 'กด E เพื่อกินหัวใจและกลายร่างเป็นมัน! 🖐️🥚';
       else if(currentTarget.userData.type==='monster7') text = 'กด E เพื่อกินหัวใจและกลายร่างเป็นมัน! 🦴💛';
+      else if(currentTarget.userData.type==='fencetree') text = 'กด E เพื่อตัดต้นไม้รั้ว (ไม้ +1) 🪓';
+      else if(currentTarget.userData.type==='foretree') text = 'กด E เพื่อตัดต้นไม้ (ไม้ +2) 🪓';
+      else if(currentTarget.userData.type==='blockwood') text = 'กด E เพื่อรื้อบล็อกไม้ 🧱';
+      else if(currentTarget.userData.type==='blockdirt') text = 'กด E เพื่อรื้อบล็อกดิน 🟫';
       promptEl.textContent = text;
       promptEl.classList.add('show');
       interactBtn.style.opacity = currentTarget.userData.type==='pig' && stats.corn<=0 ? '0.5' : '1';
     } else {
-      promptEl.classList.remove('show');
+      if(inCityMode){
+        promptEl.textContent = 'ในเมือง: Z ขุดดิน ⛏️ | X วางไม้ 🧱 | C วางดิน 🟫 | E ตัดต้นไม้/รื้อบล็อก';
+        promptEl.classList.add('show');
+      } else {
+        promptEl.classList.remove('show');
+      }
       interactBtn.style.opacity = '0.55';
     }
   }
 
-  function standUpFromChair(){
-    player.sitting = false;
-    flashShopMsg('🧍 ลุกขึ้นแล้ว');
-  }
   function doInteract(){
-    if(!active || smileyChatOpen || godPromptOpen) return;
-    if(player.sitting){ standUpFromChair(); return; }
-    if(!currentTarget) return;
+    if(!active || !currentTarget || smileyChatOpen || pinkChatOpen || godPromptOpen) return;
     const t = currentTarget;
     if(t.userData.type==='wood'){
       t.visible = false;
@@ -6453,39 +7023,15 @@
     } else if(t.userData.type==='sworditem'){
       t.visible = false;
       player.hasSword = true;
-      swingBtn.style.display = 'flex';
-    } else if(t.userData.type==='choptree'){
-      const rec = t.userData.treeRef;
-      rec.hp -= player.hasAxe ? 2 : 1;
-      if(rec.hp<=0){
-        scene.remove(rec.group);
-        const ti = trees.indexOf(rec);
-        if(ti>=0) trees.splice(ti,1);
-        const pi = pigTownTrees.indexOf(rec);
-        if(pi>=0) pigTownTrees.splice(pi,1);
-        stats.wood += 4;
-      } else {
-        rec.group.scale.setScalar(1 - (3-rec.hp)*0.12);
-      }
-      updateHUD(); refreshInventory();
-    } else if(t.userData.type==='soilmound'){
-      t.visible = false;
-      t.userData.respawnTimer = 10 + Math.random()*6;
-      stats.soil += 1 + Math.floor(Math.random()*2);
-      updateHUD(); refreshInventory();
-    } else if(t.userData.type==='sitchair'){
-      const chair = t.userData.chairRef;
-      player.sitting = true;
-      player.x = chair.userData.sitX;
-      player.z = chair.userData.sitZ;
-      player.yaw = chair.userData.sitYaw;
-      flashShopMsg('🪑 นั่งลงแล้ว (กด E อีกครั้งเพื่อลุกขึ้น)');
-    } else if(t.userData.type==='placedblock'){
-      removePlacedBlock(t.userData.blockRef);
+      swingBtn.style.display = inCityMode ? 'none' : 'flex';
     } else if(t.userData.type==='smileybox'){
       openSmileyBox();
     } else if(t.userData.type==='smileynpc'){
       openSmileyChat();
+    } else if(t.userData.type==='pinkbox'){
+      openPinkBox();
+    } else if(t.userData.type==='pinknpc'){
+      openPinkChat();
     } else if(t.userData.type==='monster'){
       transformIntoMonster();
     } else if(t.userData.type==='monster2'){
@@ -6500,6 +7046,10 @@
       transformIntoHandBlob();
     } else if(t.userData.type==='monster7'){
       transformIntoBoneThief();
+    } else if(t.userData.type==='fencetree' || t.userData.type==='foretree'){
+      chopTree(t);
+    } else if(t.userData.type==='blockwood' || t.userData.type==='blockdirt'){
+      breakBlock(t);
     }
   }
 
@@ -6532,7 +7082,7 @@
     camera.rotation.y = player.yaw;
     camera.rotation.x = player.pitch;
 
-    if(active && !smileyChatOpen && !godPromptOpen && !player.sitting){
+    if(active && !smileyChatOpen && !pinkChatOpen && !godPromptOpen){
       const dir = new THREE.Vector3();
       if(keys['KeyW']) dir.z -= 1;
       if(keys['KeyS']) dir.z += 1;
@@ -6591,7 +7141,24 @@
     }
 
     if(player.y < 2.6 && !phasing){
-      [...trees, ...cacti, ...caveWalls, ...manEaterColliders, ...hutColliders, ...mazeColliders].forEach(t=>{
+      [...trees, ...cacti, ...caveWalls, ...manEaterColliders, ...hutColliders, ...mazeColliders,
+       ...cityForestTrees.map(t=>({x:t.x, z:t.z, r:t.r})),
+       ...cityHouses,
+       ...cityBlocks.map(b=>({x:b.x, z:b.z, r:b.r}))].forEach(t=>{
+        const dx = player.x - t.x, dz = player.z - t.z;
+        const dist = Math.hypot(dx,dz);
+        const minDist = t.r + 0.5;
+        if(dist < minDist && dist>0.0001){
+          const push = (minDist-dist);
+          player.x += (dx/dist)*push;
+          player.z += (dz/dist)*push;
+        }
+      });
+    }
+
+    // City fence (1-m trees) — higher threshold so you cannot jump over it
+    if(player.y < 4.5 && !phasing){
+      cityFenceTrees.forEach(t=>{
         const dx = player.x - t.x, dz = player.z - t.z;
         const dist = Math.hypot(dx,dz);
         const minDist = t.r + 0.5;
@@ -6627,7 +7194,7 @@
   }
 
   function updateRespawns(dt){
-    [...woodCrates, ...cornStalks, ...flyMushrooms, ...soilMounds].forEach(o=>{
+    [...woodCrates, ...cornStalks, ...flyMushrooms].forEach(o=>{
       if(!o.visible && o.userData.respawnTimer>0){
         o.userData.respawnTimer -= dt;
         if(o.userData.respawnTimer<=0){
@@ -6645,11 +7212,9 @@
     pigs.forEach(g=>{
       g.userData.wait -= dt;
       if(g.userData.wait<=0){
-        const hx = g.userData.homeX??penCenter.x, hz = g.userData.homeZ??penCenter.z;
-        const hrx = g.userData.homeRX??(penW-2)/2, hrz = g.userData.homeRZ??(penD-2)/2;
         g.userData.target = {
-          x: hx + (Math.random()-0.5)*2*hrx,
-          z: hz + (Math.random()-0.5)*2*hrz
+          x: penCenter.x + (Math.random()-0.5)*(penW-2),
+          z: penCenter.z + (Math.random()-0.5)*(penD-2)
         };
         g.userData.wait = 1.5 + Math.random()*2.5;
       }
@@ -6687,18 +7252,17 @@
       }
     }
     if(timeStopCooldown>0){ timeStopCooldown -= dt; if(timeStopCooldown<0) timeStopCooldown=0; }
-    if(digCooldown>0){ digCooldown -= dt; if(digCooldown<0) digCooldown=0; }
     if(player.hasClock) updateClockChip();
     const frozen = timeStopTimer>0;
     const worldDt = frozen ? 0 : dt;
     if(!frozen) worldElapsed += dt;
 
     updatePlayer(dt);
-    updatePigTownZone();
     updatePlayerAvatar(dt, timeAcc);
     updateClockItem(dt, timeAcc);
     updateToolItems(dt, timeAcc);
     updateSmiley(worldDt, worldElapsed);
+    updatePink(worldDt, worldElapsed);
     updateFireBreath(worldDt, worldElapsed);
     checkLavaHit(worldDt);
     checkManEaterHit(worldDt);
@@ -6726,13 +7290,14 @@
     updateWaterfall(worldDt);
     updateGhosts(worldDt, worldElapsed);
     updateMushWalkers(worldDt, worldElapsed);
-    updatePigTownCars(worldDt);
     updateOctopuses(worldDt, worldElapsed);
     updateSeaMonsters(worldDt, worldElapsed);
     updateSeaFlyers(worldDt, worldElapsed);
     updateSummonedPets(worldDt, worldElapsed);
     updateManEaters(worldDt, worldElapsed);
     updateVillagers(worldDt, worldElapsed);
+    updateCityPigs(worldDt, worldElapsed);
+    if(active) updateCityEntry();
     updateGunMonster(worldDt, worldElapsed);
     updateSwordMonster(worldDt, worldElapsed);
     updateHybridMonster(worldDt, worldElapsed);
