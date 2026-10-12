@@ -1,0 +1,943 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Avatar Life</title>
+<style>
+  :root{
+    --bg:#fdf6f0;
+    --panel:#ffffff;
+    --ink:#3a2e2e;
+    --accent:#ff8fab;
+    --accent-2:#ffd6a5;
+    --accent-3:#a0e7e5;
+    --accent-4:#b9fbc0;
+    --muted:#9b8c8c;
+    --shadow: 0 6px 16px rgba(0,0,0,0.08);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#20181c;
+      --panel:#2c2226;
+      --ink:#f3e9e9;
+      --muted:#c2aeae;
+      --shadow: 0 6px 16px rgba(0,0,0,0.4);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#20181c;
+    --panel:#2c2226;
+    --ink:#f3e9e9;
+    --muted:#c2aeae;
+    --shadow: 0 6px 16px rgba(0,0,0,0.4);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family: 'Segoe UI', 'Noto Sans Thai', sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding:16px;
+    min-height:100vh;
+  }
+  h1{
+    font-size:1.4rem;
+    margin:4px 0 12px;
+    letter-spacing:0.5px;
+  }
+  .wrap{
+    width:100%;
+    max-width:720px;
+  }
+  .panel{
+    background:var(--panel);
+    border-radius:20px;
+    box-shadow:var(--shadow);
+    padding:16px;
+    margin-bottom:14px;
+  }
+  /* ---------- Creator screen ---------- */
+  #creatorScreen .rowlabel{
+    font-weight:600;
+    margin:10px 0 6px;
+    font-size:0.95rem;
+  }
+  .swatchRow{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+  }
+  .swatch{
+    width:34px;height:34px;
+    border-radius:50%;
+    border:3px solid transparent;
+    cursor:pointer;
+    transition: transform .15s;
+  }
+  .swatch:hover{ transform: scale(1.1); }
+  .swatch.selected{
+    border-color: var(--ink);
+  }
+  .optBtn{
+    padding:8px 14px;
+    border-radius:14px;
+    border:2px solid #ddd;
+    background:var(--bg);
+    color:var(--ink);
+    cursor:pointer;
+    font-size:0.85rem;
+  }
+  .optBtn.selected{
+    border-color: var(--accent);
+    background: var(--accent);
+    color:white;
+  }
+  .creatorMain{
+    display:flex;
+    gap:16px;
+    flex-wrap:wrap;
+  }
+  .previewBox{
+    flex: 0 0 180px;
+    background: linear-gradient(180deg,#eaf6ff, #ffffff);
+    border-radius:16px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    height:220px;
+  }
+  :root[data-theme="dark"] .previewBox, @media (prefers-color-scheme:dark){ .previewBox{ background: linear-gradient(180deg,#19303a,#2c2226); } }
+  .optionsBox{ flex: 1 1 260px; min-width:240px; }
+  button.primary{
+    padding:12px 22px;
+    border-radius:16px;
+    border:none;
+    background: var(--accent);
+    color:white;
+    font-size:1rem;
+    font-weight:700;
+    cursor:pointer;
+    box-shadow: var(--shadow);
+  }
+  button.secondary{
+    padding:10px 18px;
+    border-radius:16px;
+    border:2px solid var(--accent);
+    background:transparent;
+    color: var(--accent);
+    font-weight:700;
+    cursor:pointer;
+  }
+  .btnRow{ display:flex; gap:10px; margin-top:14px; flex-wrap:wrap; }
+
+  /* ---------- Game screen ---------- */
+  #gameScreen{ display:none; }
+  #hud{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:10px;
+    margin-bottom:8px;
+  }
+  .stats{ display:flex; gap:10px; flex-wrap:wrap; }
+  .stat{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    font-size:0.7rem;
+    color: var(--muted);
+    width:70px;
+  }
+  .barOuter{
+    width:100%;
+    height:8px;
+    border-radius:6px;
+    background:#eee;
+    overflow:hidden;
+    margin-top:3px;
+  }
+  .barInner{
+    height:100%;
+    border-radius:6px;
+    transition: width .3s;
+  }
+  #moneyTag{
+    font-weight:700;
+    background: var(--accent-2);
+    padding:6px 12px;
+    border-radius:12px;
+    font-size:0.85rem;
+  }
+  #canvasWrap{
+    position:relative;
+    width:100%;
+    aspect-ratio: 4/3;
+    border-radius:16px;
+    overflow:hidden;
+    box-shadow: var(--shadow);
+  }
+  canvas{
+    width:100%;
+    height:100%;
+    display:block;
+    background:#fef2e8;
+  }
+  #hint{
+    text-align:center;
+    font-size:0.78rem;
+    color:var(--muted);
+    margin-top:8px;
+  }
+  #toast{
+    position:absolute;
+    top:10px;
+    left:50%;
+    transform:translateX(-50%);
+    background:rgba(0,0,0,0.75);
+    color:white;
+    padding:6px 14px;
+    border-radius:20px;
+    font-size:0.8rem;
+    opacity:0;
+    transition:opacity .3s;
+    pointer-events:none;
+    white-space:nowrap;
+  }
+  #toast.show{ opacity:1; }
+  #dpad{
+    display:grid;
+    grid-template-columns: 50px 50px 50px;
+    grid-template-rows: 50px 50px 50px;
+    gap:4px;
+    justify-content:center;
+    margin-top:10px;
+  }
+  #dpad button{
+    border-radius:12px;
+    border:none;
+    background: var(--panel);
+    box-shadow: var(--shadow);
+    font-size:1.2rem;
+    cursor:pointer;
+    color: var(--ink);
+  }
+  #dpad button:active{ background: var(--accent-2); }
+  .topControls{ display:flex; justify-content:flex-end; margin-bottom:6px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>✨🎀 Avatar Life — แต่งตัวน้องให้น่ารักสุดๆ แล้วไปผจญภัยกัน! 🌸✨</h1>
+
+  <!-- CREATOR SCREEN -->
+  <div class="panel" id="creatorScreen">
+    <div class="creatorMain">
+      <div class="previewBox">
+        <canvas id="previewCanvas" width="160" height="200"></canvas>
+      </div>
+      <div class="optionsBox">
+        <div class="rowlabel">สีผิว</div>
+        <div class="swatchRow" id="skinRow"></div>
+
+        <div class="rowlabel">ทรงผม</div>
+        <div class="swatchRow" id="hairStyleRow"></div>
+
+        <div class="rowlabel">สีผม</div>
+        <div class="swatchRow" id="hairColorRow"></div>
+
+        <div class="rowlabel">ชุด</div>
+        <div class="swatchRow" id="outfitStyleRow"></div>
+
+        <div class="rowlabel">สีชุด</div>
+        <div class="swatchRow" id="outfitColorRow"></div>
+
+        <div class="rowlabel">ของประดับผม</div>
+        <div class="swatchRow" id="accessoryRow"></div>
+
+        <div class="rowlabel">สีของประดับ</div>
+        <div class="swatchRow" id="accessoryColorRow"></div>
+      </div>
+    </div>
+    <div class="btnRow">
+      <button class="secondary" id="randomBtn">🎲 สุ่ม</button>
+      <button class="primary" id="startBtn">เริ่มเล่น ▶</button>
+    </div>
+  </div>
+
+  <!-- GAME SCREEN -->
+  <div id="gameScreen">
+    <div id="hud">
+      <div class="stats">
+        <div class="stat">หิว
+          <div class="barOuter"><div class="barInner" id="bar-hunger" style="background:#ffb4a2;width:100%"></div></div>
+        </div>
+        <div class="stat">พลังงาน
+          <div class="barOuter"><div class="barInner" id="bar-energy" style="background:#ffd97d;width:100%"></div></div>
+        </div>
+        <div class="stat">สนุก
+          <div class="barOuter"><div class="barInner" id="bar-fun" style="background:#a0e7e5;width:100%"></div></div>
+        </div>
+        <div class="stat">สะอาด
+          <div class="barOuter"><div class="barInner" id="bar-hygiene" style="background:#b9fbc0;width:100%"></div></div>
+        </div>
+      </div>
+      <div id="moneyTag">💰 <span id="moneyVal">20</span></div>
+    </div>
+    <div class="topControls">
+      <button class="secondary" id="editBtn" style="padding:6px 12px;font-size:0.8rem;">✏️ แก้ไขอวาตาร์</button>
+    </div>
+    <div id="canvasWrap">
+      <canvas id="gameCanvas" width="640" height="480"></canvas>
+      <div id="toast"></div>
+    </div>
+    <div id="hint">ใช้ลูกศร / WASD เพื่อเดิน เข้าใกล้ของในห้องแล้วกด Space หรือแตะปุ่มกลางเพื่อโต้ตอบ</div>
+    <div id="dpad">
+      <div></div><button id="btnUp">▲</button><div></div>
+      <button id="btnLeft">◀</button><button id="btnAction">●</button><button id="btnRight">▶</button>
+      <div></div><button id="btnDown">▼</button><div></div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ---------------- Avatar data & options ---------------- */
+  const skinColors = ["#ffe6d2","#ffe0bd","#f1c27d","#e0ac69","#c68642","#8d5524"];
+  const hairColors = ["#2b2024","#6b4226","#c9a84c","#ffb5d8","#b19cd9","#8fd4ff"];
+  const hairStyles = ["pigtails","twinbun","wavy","bob"];
+  const outfitStyles = ["dress","tutu","overalls","hoodie"];
+  const outfitColors = ["#ff9fc1","#ffd3e0","#ffe29a","#b6f0d1","#c8b6f0","#aee3ff"];
+  const accessories = ["bow","flower","crown","none"];
+  const accessoryColors = ["#ff6f9c","#ffd43b","#9b6dff","#4dd4c0","#ff9f4d"];
+
+  const avatar = {
+    skin: skinColors[0],
+    hairStyle: hairStyles[0],
+    hairColor: hairColors[0],
+    outfitStyle: outfitStyles[0],
+    outfitColor: outfitColors[0],
+    accessory: accessories[0],
+    accessoryColor: accessoryColors[0]
+  };
+
+  function buildSwatchRow(container, colors, key){
+    container.innerHTML = "";
+    colors.forEach(c=>{
+      const d = document.createElement("div");
+      d.className = "swatch" + (avatar[key]===c ? " selected":"");
+      d.style.background = c;
+      d.addEventListener("click", ()=>{
+        avatar[key] = c;
+        [...container.children].forEach(ch=>ch.classList.remove("selected"));
+        d.classList.add("selected");
+        drawAvatarPreview();
+      });
+      container.appendChild(d);
+    });
+  }
+
+  function buildOptionRow(container, options, key, labels){
+    container.innerHTML = "";
+    options.forEach(o=>{
+      const b = document.createElement("button");
+      b.className = "optBtn" + (avatar[key]===o ? " selected":"");
+      b.textContent = labels[o] || o;
+      b.addEventListener("click", ()=>{
+        avatar[key] = o;
+        [...container.children].forEach(ch=>ch.classList.remove("selected"));
+        b.classList.add("selected");
+        drawAvatarPreview();
+      });
+      container.appendChild(b);
+    });
+  }
+
+  const hairStyleLabels = {pigtails:"หางม้าคู่",twinbun:"มวยคู่",wavy:"ลอนยาว",bob:"บ๊อบน่ารัก"};
+  const outfitStyleLabels = {dress:"เดรส",tutu:"กระโปรงตุ๊กตุ่ย",overalls:"เอี๊ยม",hoodie:"ฮู้ด"};
+  const accessoryLabels = {bow:"🎀 โบว์",flower:"🌸 ดอกไม้",crown:"👑 มงกุฎ",none:"ไม่ใส่"};
+
+  function refreshAllRows(){
+    buildSwatchRow(document.getElementById("skinRow"), skinColors, "skin");
+    buildOptionRow(document.getElementById("hairStyleRow"), hairStyles, "hairStyle", hairStyleLabels);
+    buildSwatchRow(document.getElementById("hairColorRow"), hairColors, "hairColor");
+    buildOptionRow(document.getElementById("outfitStyleRow"), outfitStyles, "outfitStyle", outfitStyleLabels);
+    buildSwatchRow(document.getElementById("outfitColorRow"), outfitColors, "outfitColor");
+    buildOptionRow(document.getElementById("accessoryRow"), accessories, "accessory", accessoryLabels);
+    buildSwatchRow(document.getElementById("accessoryColorRow"), accessoryColors, "accessoryColor");
+  }
+  refreshAllRows();
+
+  function randomPick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+  document.getElementById("randomBtn").addEventListener("click", ()=>{
+    avatar.skin = randomPick(skinColors);
+    avatar.hairStyle = randomPick(hairStyles);
+    avatar.hairColor = randomPick(hairColors);
+    avatar.outfitStyle = randomPick(outfitStyles);
+    avatar.outfitColor = randomPick(outfitColors);
+    avatar.accessory = randomPick(accessories);
+    avatar.accessoryColor = randomPick(accessoryColors);
+    refreshAllRows();
+    drawAvatarPreview();
+  });
+
+  /* ---------------- Drawing the avatar: cute chibi style (shared by preview & game) ---------------- */
+  function drawStar(ctx, cx, cy, r, color){
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    for(let i=0;i<5;i++){
+      const ang = -Math.PI/2 + i*(2*Math.PI/5);
+      const ang2 = ang + Math.PI/5;
+      ctx.lineTo(cx + Math.cos(ang)*r, cy + Math.sin(ang)*r);
+      ctx.lineTo(cx + Math.cos(ang2)*r*0.42, cy + Math.sin(ang2)*r*0.42);
+    }
+    ctx.closePath();
+    ctx.fill();
+  }
+
+  function drawBow(ctx, cx, cy, size, color){
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.fillStyle = color;
+    // two loops
+    ctx.beginPath();
+    ctx.moveTo(0,0);
+    ctx.quadraticCurveTo(-size, -size*0.9, -size*1.3, 0);
+    ctx.quadraticCurveTo(-size, size*0.9, 0, 0);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(0,0);
+    ctx.quadraticCurveTo(size, -size*0.9, size*1.3, 0);
+    ctx.quadraticCurveTo(size, size*0.9, 0, 0);
+    ctx.fill();
+    // center knot
+    ctx.beginPath();
+    ctx.fillStyle = "rgba(0,0,0,0.12)";
+    ctx.arc(0,0,size*0.32,0,Math.PI*2);
+    ctx.fill();
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.arc(0,0,size*0.26,0,Math.PI*2);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  function drawFlower(ctx, cx, cy, size, color){
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.fillStyle = color;
+    for(let i=0;i<5;i++){
+      const ang = i * (2*Math.PI/5);
+      ctx.beginPath();
+      ctx.ellipse(Math.cos(ang)*size*0.6, Math.sin(ang)*size*0.6, size*0.5, size*0.32, ang, 0, Math.PI*2);
+      ctx.fill();
+    }
+    ctx.fillStyle = "#ffd43b";
+    ctx.beginPath();
+    ctx.arc(0,0,size*0.38,0,Math.PI*2);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  function drawCrown(ctx, cx, cy, w, color){
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.fillStyle = color;
+    const h = w*0.55;
+    ctx.beginPath();
+    ctx.moveTo(-w/2, h*0.3);
+    ctx.lineTo(-w/2, -h*0.1);
+    ctx.lineTo(-w/4, h*0.15);
+    ctx.lineTo(0, -h*0.55);
+    ctx.lineTo(w/4, h*0.15);
+    ctx.lineTo(w/2, -h*0.1);
+    ctx.lineTo(w/2, h*0.3);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = "#fff6c9";
+    ctx.beginPath(); ctx.arc(0,-h*0.5,w*0.08,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(-w/4,h*0.1,w*0.06,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(w/4,h*0.1,w*0.06,0,Math.PI*2); ctx.fill();
+    ctx.restore();
+  }
+
+  // Chibi proportions: big head, small soft body, huge sparkly eyes.
+  function drawPerson(ctx, x, y, scale, a, facing, walkFrame){
+    // facing: 1 = right/front, -1 = left
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.scale(scale * facing, scale);
+
+    const legSwing = Math.sin(walkFrame) * 5;
+    const headR = 20;
+    const headCY = -22;
+
+    // soft shadow under character
+    ctx.fillStyle = "rgba(0,0,0,0.10)";
+    ctx.beginPath();
+    ctx.ellipse(0, 46, 16, 5, 0, 0, Math.PI*2);
+    ctx.fill();
+
+    // legs (short, stubby + cute shoes)
+    ctx.fillStyle = a.skin;
+    ctx.fillRect(-9, 26 + legSwing*0.3, 7, 14 - legSwing*0.3);
+    ctx.fillRect(2, 26 - legSwing*0.3, 7, 14 + legSwing*0.3);
+    ctx.fillStyle = a.accessoryColor;
+    ctx.beginPath(); ctx.ellipse(-5.5, 41 + legSwing*0.3*0.3, 6, 4, 0, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(5.5, 41 - legSwing*0.3*0.3, 6, 4, 0, 0, Math.PI*2); ctx.fill();
+
+    // outfit body (small & round, chibi-style)
+    ctx.fillStyle = a.outfitColor;
+    if(a.outfitStyle === "dress"){
+      ctx.beginPath();
+      ctx.moveTo(-12,-2);
+      ctx.quadraticCurveTo(-20, 18, -22, 32);
+      ctx.quadraticCurveTo(0, 40, 22, 32);
+      ctx.quadraticCurveTo(20, 18, 12, -2);
+      ctx.closePath();
+      ctx.fill();
+    } else if(a.outfitStyle === "tutu"){
+      ctx.beginPath();
+      ctx.moveTo(-11,-2);
+      ctx.lineTo(11,-2);
+      ctx.lineTo(13,14);
+      ctx.closePath();
+      ctx.fill();
+      // poofy tutu skirt
+      ctx.beginPath();
+      ctx.ellipse(0, 24, 22, 11, 0, 0, Math.PI*2);
+      ctx.fill();
+      ctx.fillStyle = "rgba(255,255,255,0.35)";
+      ctx.beginPath();
+      ctx.ellipse(-6, 20, 8, 5, -0.3, 0, Math.PI*2);
+      ctx.fill();
+    } else if(a.outfitStyle === "overalls"){
+      ctx.fillRect(-12,-2,24,30);
+      ctx.fillStyle = "rgba(255,255,255,0.3)";
+      ctx.fillRect(-12,-2,24,8);
+      ctx.fillStyle = a.accessoryColor;
+      ctx.beginPath(); ctx.arc(-6,6,2.2,0,Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(6,6,2.2,0,Math.PI*2); ctx.fill();
+    } else if(a.outfitStyle === "hoodie"){
+      ctx.beginPath();
+      ctx.moveTo(-13,-2);
+      ctx.quadraticCurveTo(-16,20,-10,30);
+      ctx.lineTo(10,30);
+      ctx.quadraticCurveTo(16,20,13,-2);
+      ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = "rgba(255,255,255,0.3)";
+      ctx.beginPath();
+      ctx.arc(0, 2, 11, Math.PI*0.1, Math.PI*0.9);
+      ctx.fill();
+    }
+
+    // arms (short & round)
+    ctx.fillStyle = a.outfitStyle === "overalls" ? a.outfitColor : (a.outfitStyle === "hoodie" ? a.outfitColor : a.skin);
+    ctx.beginPath(); ctx.ellipse(-16, 6 - legSwing*0.15, 6, 11, -0.15, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(16, 6 + legSwing*0.15, 6, 11, 0.15, 0, Math.PI*2); ctx.fill();
+    // hands
+    ctx.fillStyle = a.skin;
+    ctx.beginPath(); ctx.arc(-17, 16 - legSwing*0.15, 5, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(17, 16 + legSwing*0.15, 5, 0, Math.PI*2); ctx.fill();
+
+    // neck
+    ctx.fillStyle = a.skin;
+    ctx.fillRect(-4, -8, 8, 8);
+
+    // ---- big round chibi head ----
+    ctx.beginPath();
+    ctx.fillStyle = a.skin;
+    ctx.arc(0, headCY, headR, 0, Math.PI*2);
+    ctx.fill();
+
+    // ears
+    ctx.beginPath(); ctx.arc(-headR+1, headCY+2, 3.5, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(headR-1, headCY+2, 3.5, 0, Math.PI*2); ctx.fill();
+
+    // big rosy cheeks
+    ctx.fillStyle = "rgba(255,140,165,0.55)";
+    ctx.beginPath(); ctx.ellipse(-11, headCY+6, 4.2, 3, 0, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(11, headCY+6, 4.2, 3, 0, 0, Math.PI*2); ctx.fill();
+
+    // ---- huge sparkly anime-style eyes ----
+    [-7.5, 7.5].forEach(ex=>{
+      ctx.save();
+      ctx.translate(ex, headCY+2);
+      // white
+      ctx.fillStyle = "#ffffff";
+      ctx.beginPath(); ctx.ellipse(0,0,4.6,5.6,0,0,Math.PI*2); ctx.fill();
+      // iris
+      ctx.fillStyle = "#4a3426";
+      ctx.beginPath(); ctx.ellipse(0,0.6,3.6,4.6,0,0,Math.PI*2); ctx.fill();
+      // pupil
+      ctx.fillStyle = "#1a1210";
+      ctx.beginPath(); ctx.ellipse(0,1.4,2.0,2.6,0,0,Math.PI*2); ctx.fill();
+      // sparkle highlights
+      ctx.fillStyle = "#ffffff";
+      ctx.beginPath(); ctx.arc(-1.2,-1.2,1.3,0,Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(1.1,1.6,0.6,0,Math.PI*2); ctx.fill();
+      // upper lash
+      ctx.strokeStyle = "#2b2024";
+      ctx.lineWidth = 1.1;
+      ctx.beginPath(); ctx.arc(0,-0.5,4.8,Math.PI*1.08,Math.PI*1.9); ctx.stroke();
+      ctx.restore();
+    });
+
+    // tiny nose + smile
+    ctx.strokeStyle = "#e08a7a";
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.arc(0, headCY+6, 0.8, 0, Math.PI); ctx.stroke();
+    ctx.strokeStyle = "#c2566b";
+    ctx.lineWidth = 1.4;
+    ctx.beginPath();
+    ctx.arc(0, headCY+7, 4.2, 0.12*Math.PI, 0.88*Math.PI);
+    ctx.stroke();
+
+    // ---- hair (girly styles) ----
+    ctx.fillStyle = a.hairColor;
+    if(a.hairStyle === "bob"){
+      ctx.beginPath();
+      ctx.arc(0, headCY-2, headR+2, Math.PI*1.0, Math.PI*2.0);
+      ctx.quadraticCurveTo(headR+2, headCY+14, headR-3, headCY+16);
+      ctx.lineTo(-headR+3, headCY+16);
+      ctx.quadraticCurveTo(-headR-2, headCY+14, -headR-2, headCY);
+      ctx.fill();
+      // fringe
+      ctx.beginPath();
+      ctx.moveTo(-headR+2, headCY-2);
+      ctx.quadraticCurveTo(0, headCY+4, headR-2, headCY-2);
+      ctx.quadraticCurveTo(0, headCY-9, -headR+2, headCY-2);
+      ctx.fill();
+    } else if(a.hairStyle === "wavy"){
+      ctx.beginPath();
+      ctx.arc(0, headCY-2, headR+2, Math.PI*1.0, Math.PI*2.0);
+      ctx.fill();
+      // long wavy sides
+      [-1,1].forEach(side=>{
+        ctx.beginPath();
+        ctx.moveTo(side*(headR), headCY-2);
+        ctx.quadraticCurveTo(side*(headR+9), headCY+16, side*(headR+2), headCY+32);
+        ctx.quadraticCurveTo(side*(headR-6), headCY+20, side*(headR-4), headCY-2);
+        ctx.fill();
+      });
+      // fringe
+      ctx.beginPath();
+      ctx.moveTo(-headR+2, headCY-2);
+      ctx.quadraticCurveTo(0, headCY+4, headR-2, headCY-2);
+      ctx.quadraticCurveTo(0, headCY-9, -headR+2, headCY-2);
+      ctx.fill();
+    } else if(a.hairStyle === "pigtails"){
+      ctx.beginPath();
+      ctx.arc(0, headCY-2, headR+1, Math.PI*1.0, Math.PI*2.0);
+      ctx.fill();
+      // fringe
+      ctx.beginPath();
+      ctx.moveTo(-headR+2, headCY-2);
+      ctx.quadraticCurveTo(0, headCY+4, headR-2, headCY-2);
+      ctx.quadraticCurveTo(0, headCY-9, -headR+2, headCY-2);
+      ctx.fill();
+      // two round pigtail puffs with ribbon
+      [-1,1].forEach(side=>{
+        const px = side*(headR+3), py = headCY-1;
+        ctx.beginPath(); ctx.ellipse(px, py, 7, 13, side*0.15, 0, Math.PI*2); ctx.fill();
+        drawBow(ctx, px, py-12, 5, a.accessoryColor);
+      });
+    } else if(a.hairStyle === "twinbun"){
+      ctx.beginPath();
+      ctx.arc(0, headCY-2, headR+1, Math.PI*1.0, Math.PI*2.0);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(-headR+2, headCY-2);
+      ctx.quadraticCurveTo(0, headCY+4, headR-2, headCY-2);
+      ctx.quadraticCurveTo(0, headCY-9, -headR+2, headCY-2);
+      ctx.fill();
+      // two buns on top
+      [-1,1].forEach(side=>{
+        const bx = side*(headR*0.55), by = headCY-headR-2;
+        ctx.beginPath(); ctx.arc(bx, by, 7.5, 0, Math.PI*2); ctx.fill();
+        drawBow(ctx, bx, by+9, 3.6, a.accessoryColor);
+      });
+    }
+
+    // accessory on top of head (when not already using bows in hairstyle)
+    if(a.accessory !== "none"){
+      const topX = 0, topY = headCY - headR - 2;
+      if(a.accessory === "bow"){
+        drawBow(ctx, topX + headR*0.55, headCY - headR*0.6, 6, a.accessoryColor);
+      } else if(a.accessory === "flower"){
+        drawFlower(ctx, topX + headR*0.6, headCY - headR*0.65, 6, a.accessoryColor);
+      } else if(a.accessory === "crown"){
+        drawCrown(ctx, 0, topY + 4, headR*1.3, a.accessoryColor);
+      }
+    }
+
+    ctx.restore();
+  }
+
+  function drawAvatarPreview(){
+    const c = document.getElementById("previewCanvas");
+    const ctx = c.getContext("2d");
+    ctx.clearRect(0,0,c.width,c.height);
+    drawPerson(ctx, c.width/2, c.height/2 + 6, 1.9, avatar, 1, 0);
+  }
+  drawAvatarPreview();
+
+  /* ---------------- Screen switching ---------------- */
+  const creatorScreen = document.getElementById("creatorScreen");
+  const gameScreen = document.getElementById("gameScreen");
+  document.getElementById("startBtn").addEventListener("click", ()=>{
+    creatorScreen.style.display = "none";
+    gameScreen.style.display = "block";
+    resizeCanvas();
+  });
+  document.getElementById("editBtn").addEventListener("click", ()=>{
+    gameScreen.style.display = "none";
+    creatorScreen.style.display = "block";
+  });
+
+  /* ---------------- Game state ---------------- */
+  const state = {
+    hunger: 100,
+    energy: 100,
+    fun: 100,
+    hygiene: 100,
+    money: 20,
+    px: 320, py: 280,
+    facing: 1,
+    moving: false,
+    walkFrame: 0,
+    keys: {}
+  };
+
+  // Furniture / interactive objects in the room (positions on 640x480 canvas)
+  const objects = [
+    {id:"fridge", x:70, y:120, w:70, h:90, color:"#cfe8ff", label:"🧊", name:"ตู้เย็น", action:"eat"},
+    {id:"bed", x:480, y:100, w:120, h:80, color:"#ffd6e8", label:"🛏️", name:"เตียง", action:"sleep"},
+    {id:"tv", x:260, y:60, w:110, h:70, color:"#333", label:"📺", name:"ทีวี", action:"watch"},
+    {id:"shower", x:60, y:330, w:70, h:90, color:"#cdeedd", label:"🚿", name:"ห้องอาบน้ำ", action:"wash"},
+    {id:"computer", x:500, y:320, w:90, h:80, color:"#fff2cc", label:"💻", name:"คอมพิวเตอร์", action:"work"},
+  ];
+
+  const canvas = document.getElementById("gameCanvas");
+  const ctx = canvas.getContext("2d");
+  const toastEl = document.getElementById("toast");
+  let toastTimer = null;
+
+  function showToast(msg){
+    toastEl.textContent = msg;
+    toastEl.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(()=> toastEl.classList.remove("show"), 1400);
+  }
+
+  function resizeCanvas(){
+    // internal resolution stays 640x480; CSS scales it responsively
+  }
+  window.addEventListener("resize", resizeCanvas);
+
+  /* ---------------- Input ---------------- */
+  window.addEventListener("keydown", e=>{
+    state.keys[e.key.toLowerCase()] = true;
+    if(e.key === " "){ tryInteract(); e.preventDefault(); }
+  });
+  window.addEventListener("keyup", e=>{
+    state.keys[e.key.toLowerCase()] = false;
+  });
+
+  function bindHold(btnId, fn){
+    const btn = document.getElementById(btnId);
+    let active = false;
+    const start = (e)=>{ active = true; e.preventDefault(); };
+    const stop = ()=>{ active = false; };
+    btn.addEventListener("mousedown", start);
+    btn.addEventListener("touchstart", start, {passive:false});
+    window.addEventListener("mouseup", stop);
+    window.addEventListener("touchend", stop);
+    btn._isActive = ()=>active;
+  }
+  bindHold("btnUp"); bindHold("btnDown"); bindHold("btnLeft"); bindHold("btnRight");
+  document.getElementById("btnAction").addEventListener("click", tryInteract);
+
+  function dpadActive(id){
+    const b = document.getElementById(id);
+    return b._isActive && b._isActive();
+  }
+
+  /* ---------------- Interaction ---------------- */
+  function dist(ax,ay,bx,by){ return Math.hypot(ax-bx, ay-by); }
+
+  function nearestObject(){
+    let best = null, bestD = 70;
+    objects.forEach(o=>{
+      const ox = o.x + o.w/2, oy = o.y + o.h/2;
+      const d = dist(state.px, state.py, ox, oy);
+      if(d < bestD){ bestD = d; best = o; }
+    });
+    return best;
+  }
+
+  function clamp(v,min,max){ return Math.max(min, Math.min(max, v)); }
+
+  function tryInteract(){
+    const obj = nearestObject();
+    if(!obj){ showToast("ไม่มีอะไรให้ทำตรงนี้ ลองเดินเข้าใกล้ของในห้อง"); return; }
+    switch(obj.action){
+      case "eat":
+        if(state.money < 2){ showToast("เงินไม่พอซื้อของกิน 😅"); return; }
+        state.money -= 2;
+        state.hunger = clamp(state.hunger + 35, 0, 100);
+        showToast("🍗 อิ่มท้องแล้ว! (-$2)");
+        break;
+      case "sleep":
+        state.energy = clamp(state.energy + 50, 0, 100);
+        state.hunger = clamp(state.hunger - 10, 0, 100);
+        showToast("😴 นอนหลับฝันดี พลังงานเต็ม!");
+        break;
+      case "watch":
+        state.fun = clamp(state.fun + 30, 0, 100);
+        state.energy = clamp(state.energy - 5, 0, 100);
+        showToast("📺 ดูทีวีสนุกมาก!");
+        break;
+      case "wash":
+        state.hygiene = clamp(state.hygiene + 50, 0, 100);
+        showToast("🚿 สะอาดสดชื่น!");
+        break;
+      case "work":
+        if(state.energy < 15){ showToast("เหนื่อยเกินไป ไปนอนก่อนนะ 😮‍💨"); return; }
+        state.energy = clamp(state.energy - 15, 0, 100);
+        state.fun = clamp(state.fun - 5, 0, 100);
+        state.money += 10;
+        showToast("💻 ทำงานเสร็จ ได้เงิน +$10!");
+        break;
+    }
+    updateHUD();
+  }
+
+  function updateHUD(){
+    document.getElementById("bar-hunger").style.width = state.hunger + "%";
+    document.getElementById("bar-energy").style.width = state.energy + "%";
+    document.getElementById("bar-fun").style.width = state.fun + "%";
+    document.getElementById("bar-hygiene").style.width = state.hygiene + "%";
+    document.getElementById("moneyVal").textContent = state.money;
+  }
+
+  /* ---------------- Drawing the room ---------------- */
+  function drawRoom(){
+    // floor
+    ctx.fillStyle = "#fbead9";
+    ctx.fillRect(0,0,canvas.width, canvas.height);
+    // wall strip
+    ctx.fillStyle = "#f4dcc4";
+    ctx.fillRect(0,0,canvas.width, 40);
+    // floor tiles
+    ctx.strokeStyle = "rgba(0,0,0,0.04)";
+    for(let gx=0; gx<canvas.width; gx+=40){
+      ctx.beginPath(); ctx.moveTo(gx,40); ctx.lineTo(gx,canvas.height); ctx.stroke();
+    }
+    for(let gy=40; gy<canvas.height; gy+=40){
+      ctx.beginPath(); ctx.moveTo(0,gy); ctx.lineTo(canvas.width,gy); ctx.stroke();
+    }
+
+    const nearObj = nearestObject();
+
+    objects.forEach(o=>{
+      ctx.save();
+      if(nearObj === o){
+        ctx.shadowColor = "rgba(255,143,171,0.9)";
+        ctx.shadowBlur = 16;
+      }
+      ctx.fillStyle = o.color;
+      roundRect(ctx, o.x, o.y, o.w, o.h, 12);
+      ctx.fill();
+      ctx.restore();
+
+      ctx.font = "28px serif";
+      ctx.textAlign = "center";
+      ctx.fillText(o.label, o.x + o.w/2, o.y + o.h/2 + 10);
+
+      ctx.font = "12px sans-serif";
+      ctx.fillStyle = "#5a4a4a";
+      ctx.fillText(o.name, o.x + o.w/2, o.y + o.h + 14);
+    });
+
+    if(nearObj){
+      ctx.font = "13px sans-serif";
+      ctx.fillStyle = "#ff5c82";
+      ctx.textAlign = "center";
+      ctx.fillText("กด SPACE / ● เพื่อใช้งาน", nearObj.x + nearObj.w/2, nearObj.y - 8);
+    }
+  }
+
+  function roundRect(ctx,x,y,w,h,r){
+    ctx.beginPath();
+    ctx.moveTo(x+r,y);
+    ctx.arcTo(x+w,y,x+w,y+h,r);
+    ctx.arcTo(x+w,y+h,x,y+h,r);
+    ctx.arcTo(x,y+h,x,y,r);
+    ctx.arcTo(x,y,x+w,y,r);
+    ctx.closePath();
+  }
+
+  /* ---------------- Main loop ---------------- */
+  const SPEED = 2.6;
+  let lastStatTick = performance.now();
+  let lastWarn = {hunger:false, energy:false, hygiene:false};
+
+  function update(){
+    let dx = 0, dy = 0;
+    if(state.keys["arrowup"] || state.keys["w"] || dpadActive("btnUp")) dy -= 1;
+    if(state.keys["arrowdown"] || state.keys["s"] || dpadActive("btnDown")) dy += 1;
+    if(state.keys["arrowleft"] || state.keys["a"] || dpadActive("btnLeft")) dx -= 1;
+    if(state.keys["arrowright"] || state.keys["d"] || dpadActive("btnRight")) dx += 1;
+
+    state.moving = (dx !== 0 || dy !== 0);
+    if(state.moving){
+      const len = Math.hypot(dx,dy) || 1;
+      state.px = clamp(state.px + (dx/len)*SPEED, 30, canvas.width-30);
+      state.py = clamp(state.py + (dy/len)*SPEED, 95, canvas.height-55);
+      if(dx !== 0) state.facing = dx > 0 ? 1 : -1;
+      state.walkFrame += 0.25;
+    }
+
+    const now = performance.now();
+    if(now - lastStatTick > 1500){
+      lastStatTick = now;
+      state.hunger = clamp(state.hunger - 1.2, 0, 100);
+      state.energy = clamp(state.energy - 0.8, 0, 100);
+      state.fun = clamp(state.fun - 0.6, 0, 100);
+      state.hygiene = clamp(state.hygiene - 0.5, 0, 100);
+      updateHUD();
+
+      if(state.hunger < 20 && !lastWarn.hunger){ showToast("หิวมากแล้วนะ! ไปหาของกิน 🍽️"); lastWarn.hunger = true; }
+      if(state.hunger >= 20) lastWarn.hunger = false;
+      if(state.energy < 20 && !lastWarn.energy){ showToast("ง่วงมากแล้ว ไปนอนเถอะ 😴"); lastWarn.energy = true; }
+      if(state.energy >= 20) lastWarn.energy = false;
+      if(state.hygiene < 20 && !lastWarn.hygiene){ showToast("ตัวเหม็นแล้วนะ ไปอาบน้ำกัน 🚿"); lastWarn.hygiene = true; }
+      if(state.hygiene >= 20) lastWarn.hygiene = false;
+    }
+  }
+
+  function render(){
+    drawRoom();
+    drawPerson(ctx, state.px, state.py, 1.4, avatar, state.facing, state.moving ? state.walkFrame : 0);
+  }
+
+  function loop(){
+    update();
+    render();
+    requestAnimationFrame(loop);
+  }
+  updateHUD();
+  loop();
+
+})();
+</script>
+</body>
+</html>
